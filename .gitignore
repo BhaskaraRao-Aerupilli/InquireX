@@ -1,0 +1,71 @@
+# Environment files containing secrets
+.env
+.env.*
+*.env
+*.env.local
+!.env.example
+.venv
+.envrc
+
+# Virtual Environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Generated outputs & user data
+outputs/
+data/
+my-docs/
+temp/
+tmp/
+*.lock
+dist/
+build/
+docs/build/
+gpt_researcher.egg-info/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python cache & bytecode
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & Frontend build artifacts
+node_modules/
+.next/
+package-lock.json
+
+# IDE & Editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# LangGraph / App Data
+.langgraph-data/
+.docusaurus/
+
+# Log files
+logs/
+*.orig
+*.log
+server_log.txt
+
+# Cursor & History
+.cursorrules
+CURSOR_RULES.md
+/.history

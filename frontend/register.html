@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — InquireX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080b14;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --primary: #6c63ff;
+      --primary-glow: rgba(108,99,255,0.35);
+      --accent: #00d4ff;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --error: #f87171;
+      --success: #34d399;
+      --radius: 14px;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridShift 20s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes gridShift { from { transform: translateY(0); } to { transform: translateY(48px); } }
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.25; pointer-events: none; }
+    .orb-1 { width: 500px; height: 500px; background: var(--primary); top: -150px; right: -150px; animation: float1 9s ease-in-out infinite; }
+    .orb-2 { width: 350px; height: 350px; background: var(--accent); bottom: -100px; left: -100px; animation: float2 11s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,30px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-30px)} }
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px 40px;
+      width: 100%; max-width: 440px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(108,99,255,0.12), 0 20px 60px rgba(0,0,0,0.4);
+      animation: cardIn 0.5s ease;
+    }
+    @keyframes cardIn { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px var(--primary-glow); }
+    .logo-text { font-size: 22px; font-weight: 700; }
+    .logo-text span { background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tagline { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+    input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 16px; color: var(--text); font-size: 15px; font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+    input::placeholder { color: var(--muted); }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), #8b5cf6); color: #fff; box-shadow: 0 4px 20px var(--primary-glow); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 30px var(--primary-glow); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-google { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); margin-top: 12px; }
+    .btn-google:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--muted); font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 18px; display: none; }
+    .alert.error { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: var(--error); }
+    .alert.success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--success); }
+    .alert.show { display: block; }
+    .footer-link { text-align: center; margin-top: 24px; font-size: 14px; color: var(--muted); }
+    .footer-link a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    .footer-link a:hover { text-decoration: underline; }
+    .password-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">🔬</div>
+      <div class="logo-text"><span>InquireX</span></div>
+    </div>
+    <p class="tagline">Autonomous Deep Research & Intelligence Engine</p>
+
+    <h1>Create account</h1>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:28px;">Join to start running AI-powered research.</p>
+
+    <div class="alert error" id="alertError"></div>
+    <div class="alert success" id="alertSuccess"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" placeholder="John Doe" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Min. 6 characters" autocomplete="new-password" required />
+        <p class="password-hint">At least 6 characters.</p>
+      </div>
+      <button type="submit" class="btn btn-primary" id="registerBtn">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnText">Create Account</span>
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <a href="/auth/google" style="text-decoration:none;">
+      <button class="btn btn-google">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.4 30.3 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6.1C12.6 13.2 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z"/><path fill="#FBBC05" d="M10.8 28.6A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.7l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.1 0-11.4-3.7-13.2-9l-7.8 6c3.9 7.8 11.8 13.3 21 13.3z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+    </a>
+
+    <p class="footer-link">Already have an account? <a href="/login">Sign in</a></p>
+  </div>
+
+  <script>
+    function showAlert(type, msg) {
+      const el = document.getElementById('alert' + (type === 'error' ? 'Error' : 'Success'));
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+    function hideAlerts() {
+      document.getElementById('alertError').classList.remove('show');
+      document.getElementById('alertSuccess').classList.remove('show');
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlerts();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !password) {
+        showAlert('error', 'Please fill in all fields.');
+        return;
+      }
+      if (password.length < 6) {
+        showAlert('error', 'Password must be at least 6 characters.');
+        return;
+      }
+
+      const btn = document.getElementById('registerBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      btnText.textContent = 'Creating account…';
+
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showAlert('success', '🎉 Account created! Redirecting to login…');
+          setTimeout(() => { window.location.href = '/login'; }, 1500);
+        } else {
+          showAlert('error', data.detail || 'Registration failed. Please try again.');
+        }
+      } catch {
+        showAlert('error', 'Network error. Please check your connection.');
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

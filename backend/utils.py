@@ -1,0 +1,159 @@
+import aiofiles
+import urllib
+import mistune
+import os
+import re
+
+def _clean_think(text: str) -> str:
+    if not isinstance(text, str):
+        text = str(text)
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+
+async def write_to_file(filename: str, text: str) -> None:
+    """Asynchronously write text to a file in UTF-8 encoding.
+
+    Args:
+        filename (str): The filename to write to.
+        text (str): The text to write.
+    """
+    text = _clean_think(text)
+    # Convert text to UTF-8, replacing any problematic characters
+    text_utf8 = text.encode('utf-8', errors='replace').decode('utf-8')
+
+    async with aiofiles.open(filename, "w", encoding='utf-8') as file:
+        await file.write(text_utf8)
+
+async def write_text_to_md(text: str, filename: str = "") -> str:
+    """Writes text to a Markdown file and returns the file path.
+
+    Args:
+        text (str): Text to write to the Markdown file.
+
+    Returns:
+        str: The file path of the generated Markdown file.
+    """
+    import uuid
+    text = _clean_think(text)
+    safe_name = (filename or "").strip()[:60] or f"report-{uuid.uuid4().hex[:12]}"
+    safe_name = safe_name.replace("/", "-").replace("\\", "-")
+    os.makedirs("outputs", exist_ok=True)
+    file_path = f"outputs/{safe_name}.md"
+    await write_to_file(file_path, text)
+    return urllib.parse.quote(file_path)
+
+def _preprocess_images_for_pdf(text: str) -> str:
+    """Convert web image URLs to absolute file paths for PDF generation.
+    
+    Transforms /outputs/images/... URLs to absolute file:// paths that
+    weasyprint can resolve.
+    """
+    import re
+    
+    base_path = os.path.abspath(".")
+    
+    # Pattern to find markdown images with /outputs/ URLs
+    def replace_image_url(match):
+        alt_text = match.group(1)
+        url = match.group(2)
+        
+        # Convert /outputs/... to absolute path
+        if url.startswith("/outputs/"):
+            abs_path = os.path.join(base_path, url.lstrip("/"))
+            return f"![{alt_text}]({abs_path})"
+        return match.group(0)
+    
+    # Match ![alt text](/outputs/images/...)
+    pattern = r'!\[([^\]]*)\]\((/outputs/[^)]+)\)'
+    return re.sub(pattern, replace_image_url, text)
+
+
+async def write_md_to_pdf(text: str, filename: str = "") -> str:
+    """Converts Markdown text to a PDF file and returns the file path.
+
+    Args:
+        text (str): Markdown text to convert.
+
+    Returns:
+        str: The encoded file path of the generated PDF.
+    """
+    import uuid
+    text = _clean_think(text)
+
+    safe_name = (filename or "").strip()[:60] or f"report-{uuid.uuid4().hex[:12]}"
+    safe_name = safe_name.replace("/", "-").replace("\\", "-")
+    os.makedirs("outputs", exist_ok=True)
+    file_path = f"outputs/{safe_name}.pdf"
+
+    # Preprocess image URLs for PDF compatibility
+    processed_text = _preprocess_images_for_pdf(text)
+
+    # 1. Primary pure-Python PDF generator: markdown-pdf
+    try:
+        from markdown_pdf import MarkdownPdf, Section
+        pdf = MarkdownPdf(toc_level=2)
+        pdf.add_section(Section(processed_text))
+        pdf.save(file_path)
+        print(f"Report written to {file_path}")
+        encoded_file_path = urllib.parse.quote(file_path)
+        return encoded_file_path
+    except Exception as e1:
+        print(f"markdown-pdf generation failed, attempting md2pdf fallback: {e1}")
+
+    # 2. Secondary fallback: md2pdf
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        css_path = os.path.join(current_dir, "styles", "pdf_styles.css")
+        base_url = os.path.abspath(".")
+        from md2pdf.core import md2pdf
+        md2pdf(
+            file_path,
+            raw=processed_text,
+            css=css_path,
+            base_url=base_url,
+        )
+        print(f"Report written to {file_path}")
+        encoded_file_path = urllib.parse.quote(file_path)
+        return encoded_file_path
+    except Exception as e2:
+        print(f"Error in converting Markdown to PDF via md2pdf: {e2}")
+
+    return ""
+
+async def write_md_to_word(text: str, filename: str = "") -> str:
+    """Converts Markdown text to a DOCX file and returns the file path.
+
+    Args:
+        text (str): Markdown text to convert.
+
+    Returns:
+        str: The encoded file path of the generated DOCX.
+    """
+    import uuid
+    text = _clean_think(text)
+
+    safe_name = (filename or "").strip()[:60] or f"report-{uuid.uuid4().hex[:12]}"
+    safe_name = safe_name.replace("/", "-").replace("\\", "-")
+    os.makedirs("outputs", exist_ok=True)
+    file_path = f"outputs/{safe_name}.docx"
+
+    try:
+        from docx import Document
+        from htmldocx import HtmlToDocx
+        # Convert report markdown to HTML
+        html = mistune.html(text)
+        # Create a document object
+        doc = Document()
+        # Convert the html generated from the report to document format
+        HtmlToDocx().add_html_to_document(html, doc)
+
+        # Saving the docx document to file_path
+        doc.save(file_path)
+
+        print(f"Report written to {file_path}")
+
+        encoded_file_path = urllib.parse.quote(file_path)
+        return encoded_file_path
+
+    except Exception as e:
+        print(f"Error in converting Markdown to DOCX: {e}")
+        return ""

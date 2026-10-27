@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>InquireX — Autonomous Deep Research Engine</title>
+    <meta name="description" content="InquireX — Agentic multi-source deep research and strategic synthesis framework">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="./static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/site/styles.css?v=22.0" />
+    <style>
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .agent-name {
+            text-align: center;
+        }
+
+        .agent-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .agent-choices {
+            display: none;
+        }
+
+        .btn-show {
+            display: none;
+        }
+
+        /* Icon button style for inline buttons */
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(123, 104, 238, 0.1); /* Placeholder, adjust in styles.css */
+        }
+
+        .icon-button:active {
+        }
+
+        /* Ensure buttons are properly aligned in headings */
+        h2 .icon-button, h2 .expand-button {
+            vertical-align: middle;
+            font-size: 0.8em;
+        }
+        
+        /* New navigation buttons in the top-right corner */
+        .nav-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Buttons (moved from top bar) -->
+    <div class="nav-buttons">
+        <div id="navUserBadge" style="display:none;align-items:center;gap:8px;background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.3);border-radius:20px;padding:6px 14px;font-size:13px;color:#a5b4fc;font-weight:500;">
+            <i class="fas fa-user-circle" style="color:#6c63ff;"></i>
+            <span id="navUserName">User</span>
+        </div>
+        <div id="websocketPanelOpenBtn" class="top-websocket-button">
+            <i class="fas fa-network-wired"></i> Status
+        </div>
+        <div id="historyPanelOpenBtn" class="top-history-button">
+            <i class="fas fa-history"></i> History
+        </div>
+        <a href="/auth/logout" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:20px;padding:7px 14px;font-size:13px;color:#f87171;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;" title="Sign out">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <!-- WebSocket Status Panel -->
+    <div class="websocket-panel" id="websocketPanel">
+        <div class="websocket-panel-header">
+            <h3><i class="fas fa-plug"></i> Connection Status</h3>
+            <div class="websocket-panel-actions">
+                <button id="websocketPanelToggle" class="websocket-action-btn" title="Close panel">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+        </div>
+        <div class="websocket-status">
+            <div class="status-item">
+                <span class="status-label">Connection:</span>
+                <span class="status-value" id="connectionStatus">Disconnected</span>
+                <span class="status-indicator" id="connectionIndicator"></span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Research:</span>
+                <span class="status-value" id="researchStatus">Inactive</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Connected for:</span>
+                <span class="status-value" id="connectionDuration">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Last activity:</span>
+                <span class="status-value" id="lastActivity">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">ReadyState:</span>
+                <span class="status-value" id="readyState">-</span>
+            </div>
+            <div class="status-divider"></div>
+            <div class="status-item">
+                <span class="status-label">Connection attempts:</span>
+                <span class="status-value" id="connectionAttempts">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Messages received:</span>
+                <span class="status-value" id="messagesReceived">0</span>
+            </div>
+            <div class="status-divider"></div>
+            <div class="status-item">
+                <span class="status-label">Current task:</span>
+                <span class="status-value" id="currentTask">-</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="landing">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="project-pill-badge">
+                <i class="fas fa-microchip"></i> InquireX — Agentic Research Engine v2.0
+            </div>
+            <h1 class="text-4xl font-extrabold mx-auto lg:text-7xl">
+                An Agentic AI-Driven <br>
+                <span
+                    style="background-image:linear-gradient(to right, #9867F0, #6366F1, #ED4E50); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RAG Framework</span>
+            </h1>
+            <h3 class="text-xl font-bold text-gray-300 mt-2">for Automated Deep Web Research and Analytical Reporting</h3>
+            <p class="max-w-6xl mx-auto text-gray-400 mt-4" style="font-size:17px">
+                Autonomous multi-agent architecture for query decomposition, parallel deep-web scraping, vector context compression, verified citation synthesis, and auto-generated presentation slide decks.
+            </p>
+            
+            <!-- Hero Feature Badges Grid -->
+            <div class="hero-feature-badges">
+                <div class="hero-badge"><i class="fas fa-sitemap"></i> <span>Multi-Hop Planning</span></div>
+                <div class="hero-badge"><i class="fas fa-globe"></i> <span>Deep Web Retrieval</span></div>
+                <div class="hero-badge"><i class="fas fa-filter"></i> <span>Semantic Vector RAG</span></div>
+                <div class="hero-badge"><i class="fas fa-shield-alt"></i> <span>Citation Grounding</span></div>
+                <div class="hero-badge"><i class="fas fa-desktop"></i> <span>Presentation Slide Deck</span></div>
+            </div>
+
+            <a href="#form" class="btn btn-primary mt-4"><i class="fas fa-bolt"></i> Launch Research Agent</a>
+        </div>
+    </section>
+
+    <main class="container" id="form">
+        <div class="agent-item">
+            <div class="quantum-agent-orb" id="quantumAgentOrb">
+                <div class="orb-pulse-glow"></div>
+                <div class="orb-outer-ring"></div>
+                <div class="orb-gyro-ring"></div>
+                <div class="orb-core">
+                    <i class="fa-solid fa-brain-circuit orb-icon" id="agentOrbIcon"><i class="fa-solid fa-atom"></i></i>
+                </div>
+                <div class="orb-particles">
+                    <span class="p-dot dot-1"></span>
+                    <span class="p-dot dot-2"></span>
+                    <span class="p-dot dot-3"></span>
+                    <span class="p-dot dot-4"></span>
+                </div>
+            </div>
+            <div class="agent-status-badge">
+                <span class="status-indicator-dot"></span>
+                <span class="status-text">INQUIREX AUTONOMOUS AGENT CORE</span>
+            </div>
+        </div>
+        <form method="POST" class="mt-3" id="researchForm">
+            <div class="form-group">
+                <label for="task" class="agent-question">What would you like me to research next?</label>
+                <textarea id="task" name="task" class="form-control highlight-connection" placeholder="Enter any topic, question, or idea..." required autocomplete="on"></textarea>
+                <input type="radio" name="agent" id="autoAgent" value="Auto Agent" checked hidden>
+            </div>
+            <div class="form-group">
+                <div class="row">
+
+
+                </div>
+                <button type="button" id="btnShowAuto" class="btn btn-secondary mt-3 btn-show">Auto Agent</button>
+            </div>
+            <div class="form-group">
+                <label for="report_type" class="agent-question">What type of report would you like me to
+                    generate?</label>
+                <select name="report_type" id="report_type" class="form-control highlight-connection" required>
+                    <option value="research_report">Summary - Short and fast (~2 min)</option>
+                    <option value="detailed_report">Detailed - In depth and longer (~5 min)</option>
+                    <option value="resource_report">Resource Report</option>
+                    <option value="deep">Deep Research</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tone" class="agent-question">In which tone would you like the report to be
+                    generated?</label>
+                <select name="tone" id="tone" class="form-control highlight-connection" required>
+                    <option value="Objective">Objective - Impartial and unbiased presentation of facts and findings
+                    </option>
+                    <option value="Formal">Formal - Adheres to academic standards with sophisticated language and
+                        structure</option>
+                    <option value="Analytical">Analytical - Critical evaluation and detailed examination of data and
+                        theories</option>
+                    <option value="Persuasive">Persuasive - Convincing the audience of a particular viewpoint or
+                        argument</option>
+                    <option value="Informative">Informative - Providing clear and comprehensive information on a topic
+                    </option>
+                    <option value="Explanatory">Explanatory - Clarifying complex concepts and processes</option>
+                    <option value="Descriptive">Descriptive - Detailed depiction of phenomena, experiments, or case
+                        studies</option>
+                    <option value="Critical">Critical - Judging the validity and relevance of the research and its
+                        conclusions</option>
+                    <option value="Comparative">Comparative - Juxtaposing different theories, data, or methods to
+                        highlight differences and similarities</option>
+                    <option value="Speculative">Speculative - Exploring hypotheses and potential implications or future
+                        research directions</option>
+                    <option value="Reflective">Reflective - Considering the research process and personal insights or
+                        experiences</option>
+                    <option value="Narrative">Narrative - Telling a story to illustrate research findings or
+                        methodologies</option>
+                    <option value="Humorous">Humorous - Light-hearted and engaging, usually to make the content more
+                        relatable</option>
+                    <option value="Optimistic">Optimistic - Highlighting positive findings and potential benefits
+                    </option>
+                    <option value="Pessimistic">Pessimistic - Focusing on limitations, challenges, or negative outcomes
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="report_source" class="agent-question">What sources would you like me to research
+                    from?</label>
+                <p class="text-left mt-0 pt-0" style="font-size: 0.7rem;">You can now do research on local documents as
+                    well. Please make sure to add the DOC_PATH env variable pointing to your documents folder.</p>
+                <select name="report_source" id="report_source" class="form-control highlight-connection" required>
+                    <option value="web">The Web</option>
+                    <option value="local">My Documents (Private RAG)</option>
+                    <option value="hybrid">Hybrid (Web + My Documents)</option>
+                    <option value="azure">Azure storage</option>
+                </select>
+            </div>
+            <!-- Dynamic Document Upload Dropzone for Deployed & Local Private RAG -->
+            <div class="form-group" id="documentUploadSection" style="display: none;">
+                <label class="agent-question">📁 Upload Private Documents for RAG Ingestion</label>
+                <div class="doc-upload-dropzone" id="docUploadDropzone">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p><strong>Click to browse</strong> or drag & drop private documents here</p>
+                    <span>Supports PDF, DOCX, TXT, MD, CSV, PPTX</span>
+                    <input type="file" id="docFileInput" multiple accept=".pdf,.docx,.txt,.md,.csv,.pptx" style="display: none;">
+                </div>
+                <div class="uploaded-files-list" id="uploadedFilesList"></div>
+            </div>
+            <div class="form-group">
+                <label for="maxSearchResults" class="agent-question">How many websites should be scraped per query?</label>
+                <input type="number" class="form-control highlight-connection" id="maxSearchResults" name="max_search_results" min="1" max="20" value="5">
+                <small class="text-muted">Controls the number of websites scraped per search query (default: 5)</small>
+            </div>
+            <div class="form-group">
+                <label for="queryDomains" class="form-label">Query Domains (Optional)</label>
+                <input type="text" class="form-control highlight-connection" id="queryDomains" name="query_domains" placeholder="Enter domains separated by commas" autocomplete="on">
+                <small class="text-muted">Example: techcrunch.com, forbes.com</small>
+            </div>
+
+            <!-- MCP Configuration Section -->
+            <div class="form-group">
+                <div class="mcp-section">
+                    <div class="mcp-header">
+                        <label for="mcpEnabled" class="form-label">
+                            <input type="checkbox" id="mcpEnabled" name="mcp_enabled" class="mcp-toggle">
+                            Enable MCP (Model Context Protocol)
+                        </label>
+                        <button type="button" id="mcpInfoBtn" class="mcp-info-btn" title="Learn about MCP">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted">Connect to external tools and data sources through MCP servers</small>
+                    
+                    <div id="mcpConfigSection" class="mcp-config-section" style="display: none;">
+                        <div class="mcp-presets">
+                            <label class="form-label">Quick Presets</label>
+                            <div class="preset-buttons">
+                                <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-preset="github">
+                                    <i class="fab fa-github"></i> GitHub
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-preset="tavily">
+                                    <i class="fas fa-search"></i> Tavily Web Search
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-preset="filesystem">
+                                    <i class="fas fa-folder"></i> Local Files
+                                </button>
+                            </div>
+                            <small class="text-muted">Click a preset to add pre-configured MCP servers to the JSON below</small>
+                        </div>
+
+                        <div class="mcp-config-group">
+                            <label for="mcpConfig" class="form-label">MCP Servers Configuration</label>
+                            <textarea id="mcpConfig" name="mcp_config" class="form-control mcp-config-textarea" rows="8" placeholder="Paste your MCP servers configuration as JSON array...">[]</textarea>
+                            <div class="mcp-config-status">
+                                <span id="mcpConfigStatus" class="mcp-status-text">Valid JSON ✓</span>
+                                <button type="button" id="mcpFormatBtn" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-code"></i> Format JSON
+                                </button>
+                            </div>
+                            <small class="text-muted">
+                                Paste your MCP servers configuration as a JSON array. Each server should have properties like 
+                                <code>name</code>, <code>command</code>, <code>args</code>, and optional <code>env</code> variables.
+                                <a href="#" id="mcpExampleLink">See example →</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="submit" value="Begin Research" class="btn btn-primary button-padding" id="submitButton">
+        </form>
+
+        <!-- Add JSON button above Research Progress section -->
+        <div class="margin-div" id="jsonButtonContainer" style="display: none; text-align: right; margin-bottom: 10px;">
+            <a id="downloadLinkJsonTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-code"></i> JSON
+            </a>
+        </div>
+
+        <div class="margin-div research-output-container">
+            <!-- Move spinner to the left side of the text -->
+            <h2><div id="modernSpinner" class="modern-spinner"></div> Research Progress <button id="expandOutputBtn" class="expand-button" title="Expand"><i class="fas fa-expand-alt"></i></button></h2>
+            <p class="mt-2 text-left" style="font-size: 0.8rem;">
+                Watch as the Agentic AI orchestrates multi-source deep-web research in real-time.</p>
+            
+            <!-- Visual Agent Pipeline Tracker -->
+            <div class="agent-pipeline-tracker" id="agentPipelineTracker" style="display: none;">
+                <div class="pipeline-step active" id="step-plan" data-step="1">
+                    <div class="step-icon"><i class="fas fa-sitemap"></i></div>
+                    <div class="step-info">
+                        <span class="step-title">1. Planning</span>
+                        <span class="step-status" id="status-step-1">Sub-query decomposition</span>
+                    </div>
+                </div>
+                <div class="pipeline-connector" id="conn-1"></div>
+                <div class="pipeline-step" id="step-scrape" data-step="2">
+                    <div class="step-icon"><i class="fas fa-globe"></i></div>
+                    <div class="step-info">
+                        <span class="step-title">2. Deep Scraping</span>
+                        <span class="step-status" id="status-step-2">Parallel web retrieval</span>
+                    </div>
+                </div>
+                <div class="pipeline-connector" id="conn-2"></div>
+                <div class="pipeline-step" id="step-rag" data-step="3">
+                    <div class="step-icon"><i class="fas fa-filter"></i></div>
+                    <div class="step-info">
+                        <span class="step-title">3. Semantic RAG</span>
+                        <span class="step-status" id="status-step-3">Vector chunk filtering</span>
+                    </div>
+                </div>
+                <div class="pipeline-connector" id="conn-3"></div>
+                <div class="pipeline-step" id="step-synthesis" data-step="4">
+                    <div class="step-icon"><i class="fas fa-pen-nib"></i></div>
+                    <div class="step-info">
+                        <span class="step-title">4. Synthesis</span>
+                        <span class="step-status" id="status-step-4">Grounded drafting</span>
+                    </div>
+                </div>
+                <div class="pipeline-connector" id="conn-4"></div>
+                <div class="pipeline-step" id="step-verify" data-step="5">
+                    <div class="step-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="step-info">
+                        <span class="step-title">5. Verified</span>
+                        <span class="step-status" id="status-step-5">Citation checked</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="output"></div>
+        </div>
+        <div class="images_div">
+            <div id="selectedImagesContainer" style="display: none;"></div>
+        </div>
+        <div class="margin-div report-container">
+            <h2>Research Report
+                <button id="copyToClipboardTop" class="icon-button" title="Copy" style="display: none;">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button id="expandReportBtn" class="expand-button" title="Expand">
+                    <i class="fas fa-expand-alt"></i>
+                </button>
+            </h2>
+            <!-- Add download and view buttons above the report container -->
+            <div class="report-actions" style="display: none;">
+                <a id="downloadLinkTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+                <a id="downloadLinkWordTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-file-word"></i> Word
+                </a>
+                <a id="downloadLinkMdTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-file-lines"></i> Markdown
+                </a>
+                <button id="downloadLatexBtnTop" class="report-action-btn" title="Download LaTeX (.tex) Academic Source">
+                    <i class="fas fa-file-code"></i> LaTeX
+                </button>
+                <button id="audioBriefingBtnTop" class="report-action-btn" title="Listen to AI Voice Audio Briefing">
+                    <i class="fas fa-headphones"></i> Audio Briefing
+                </button>
+                <button id="viewSlidesBtnTop" class="report-action-btn" title="Present as Presentation Slide Deck">
+                    <i class="fas fa-desktop"></i> Slide Deck
+                </button>
+            </div>
+            <!-- Executive Metrics Card Container -->
+            <div id="executiveMetricsContainer" style="display: none;"></div>
+
+            <!-- AI Audio Briefing Player -->
+            <div id="audioBriefingContainer" class="audio-briefing-card" style="display: none;">
+                <div class="audio-card-header">
+                    <div class="audio-title-wrap">
+                        <div class="audio-icon-pulse"><i class="fa-solid fa-podcast"></i></div>
+                        <div>
+                            <h4>AI Executive Audio Briefing</h4>
+                            <p>Synthesized Voice Summary for Hands-Free Listening</p>
+                        </div>
+                    </div>
+                    <div class="audio-speed-wrap">
+                        <button class="audio-speed-btn" data-speed="0.85">0.85x</button><button class="audio-speed-btn active" data-speed="1.0">1.0x (Normal)</button>
+                        <button class="audio-speed-btn" data-speed="1.25">1.25x</button>
+                        <button class="audio-speed-btn" data-speed="1.5">1.5x</button>
+                    </div>
+                </div>
+                <div class="audio-player-body">
+                    <button id="playPauseAudioBtn" class="audio-play-btn" title="Play Briefing">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                    <div class="audio-waveform-container">
+                        <div class="audio-waveform-bars" id="audioWaveformBars">
+                            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        </div>
+                        <div class="audio-progress-bar">
+                            <div class="audio-progress-fill" id="audioProgressFill"></div>
+                        </div>
+                    </div>
+                    <div class="audio-time-display" id="audioTimeDisplay">0:00 / 1:15</div>
+                </div>
+            </div>
+
+            <div id="reportContainer"></div>
+
+            <!-- SWOT Strategic Analysis Matrix -->
+            <div id="swotMatrixContainer" class="swot-matrix-section" style="display: none;">
+                <div class="swot-header">
+                    <h3><i class="fa-solid fa-chart-pie"></i> Strategic SWOT & Impact Matrix</h3>
+                    <span class="badge badge-primary">Analytical Synthesis</span>
+                </div>
+                <div class="swot-grid" id="swotGrid"></div>
+            </div>
+
+            <!-- Concept Graph Mind Map Container -->
+            <div id="mindMapContainer" class="mind-map-section" style="display: none;">
+                <div class="mind-map-header">
+                    <div class="mind-map-title-wrap">
+                        <h3><i class="fas fa-project-diagram"></i> Research Concept Graph & Knowledge Map</h3>
+                        <span class="badge badge-info">Auto-Synthesized</span>
+                    </div>
+                    <div class="mind-map-controls">
+                        <div class="view-toggle-btns">
+                            <button id="viewHierarchyBtn" class="map-toggle-btn active" title="Crystal-Clear Tree Hierarchy View"><i class="fa-solid fa-sitemap"></i> Tree Hierarchy</button>
+                            <button id="viewNetworkBtn" class="map-toggle-btn" title="Neural Flowchart Graph View"><i class="fa-solid fa-circle-nodes"></i> Flow Graph</button>
+                        </div>
+                        <div class="graph-zoom-btns" id="graphZoomBtns" style="display: none;">
+                            <button id="zoomInGraphBtn" class="zoom-btn" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                            <button id="zoomOutGraphBtn" class="zoom-btn" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                            <button id="resetZoomGraphBtn" class="zoom-btn" title="Reset Zoom"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <!-- View 1: Ultra-Crisp Tree Hierarchy View (Default) -->
+                <div id="hierarchyMapView" class="hierarchy-map-wrapper"></div>
+                <!-- View 2: SVG Mermaid Network Graph View -->
+                <div id="networkMapView" class="network-map-wrapper" style="display: none;">
+                    <div id="mermaidGraph" class="mermaid"></div>
+                </div>
+            </div>
+
+            <!-- Deep Dive Multi-Hop Exploration Vectors -->
+            <div id="deepDiveContainer" class="deep-dive-section" style="display: none;">
+                <div class="deep-dive-header">
+                    <h3><i class="fa-solid fa-compass"></i> Suggested Deep-Dive Exploration Vectors</h3>
+                    <p>Click any vector to autonomously launch a linked sub-topic investigation</p>
+                </div>
+                <div class="deep-dive-pills" id="deepDivePills"></div>
+            </div>
+
+            <div id="reportActions" style="display: none;">
+                <div class="alert alert-info" role="alert" id="status"></div>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="margin-div chat-container" id="chatContainer" style="display: none;">
+            <h2><i class="fas fa-comments"></i> Chat with AI about this research <button id="expandChatBtn" class="expand-button" title="Expand"><i class="fas fa-expand-alt"></i></button></h2>
+            <p class="text-muted">Ask questions about the research report to get more insights</p>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <textarea id="chatInput" class="form-control chat-input" placeholder="Ask a question about this research..." rows="2"></textarea>
+                <button id="voiceInputBtn" class="btn btn-secondary" title="Use voice input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="sendChatBtn" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+
+        <!-- Fixed bottom bar styled like the top credits bar -->
+    </main>
+
+    <!-- Conversation History Panel -->
+    <div class="history-panel" id="historyPanel">
+        <div class="history-panel-header">
+            <h3><i class="fas fa-history"></i> Research History</h3>
+            <div class="history-panel-actions">
+                <button id="historyPanelToggle" class="history-action-btn" title="Close panel">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="history-panel-search">
+            <input type="text" id="historySearch" placeholder="Search research history...">
+            <button id="historySearchBtn" class="history-action-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        <div class="history-panel-filters">
+            <select id="historySortOrder">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+            </select>
+            <!-- JS will add Import/Export/Debug buttons here -->
+            <button id="historyClearBtn" class="history-action-btn" title="Clear all history">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+        <div class="history-panel-entries" id="historyEntries">
+            <!-- Entries will be populated dynamically -->
+        </div>
+    </div>
+    
+    <!-- Sticky Downloads Bar -->
+    <div class="sticky-downloads-bar" id="stickyDownloadsBar" style="display: none;"> <!-- Initially hidden -->
+        <div class="download-buttons-container">
+            <a id="copyToClipboard" class="download-option-btn disabled">
+                <i class="fas fa-copy"></i> Copy (Markdown)
+            </a>
+            <a id="downloadLinkMd" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-lines"></i> Markdown
+            </a>
+            <a id="downloadLink" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a id="downloadLinkWord" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-word"></i> Word
+            </a>
+            <a id="downloadLinkJson" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-code"></i> Log (JSON)
+            </a>
+            <a id="viewSlidesBtnSticky" href="#" class="download-option-btn disabled" title="Open Presentation Deck">
+                <i class="fas fa-desktop"></i> Slide Deck
+            </a>
+        </div>
+    </div>
+
+    <!-- Interactive Slide Deck Presentation Modal -->
+    <div class="slide-deck-modal" id="slideDeckModal" style="display: none;">
+        <div class="slide-deck-overlay" id="slideDeckOverlay"></div>
+        <div class="slide-deck-content">
+            <div class="slide-deck-header">
+                <div class="slide-deck-title"><i class="fas fa-presentation"></i> <span id="slideDeckTopic">Research Presentation</span></div>
+                <button class="slide-deck-close" id="closeSlideDeckBtn" title="Close Presentation"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="slide-body" id="slideBody">
+                <!-- Dynamically populated slide content -->
+            </div>
+            <div class="slide-deck-controls">
+                <button class="slide-nav-btn" id="prevSlideBtn"><i class="fas fa-chevron-left"></i> Previous</button>
+                <span class="slide-counter" id="slideCounter">Slide 1 of 1</span>
+                <button class="slide-nav-btn" id="nextSlideBtn">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <a href="#form">Research Console</a> |
+            <a target="_blank" href="https://github.com/assafelovic/gpt-researcher">Documentation</a> |
+            <a href="javascript:void(0)" onclick="document.getElementById('websocketPanelOpenBtn')?.click()">System Status</a>
+        </p>
+        <p>An Agentic AI-Driven RAG Framework &copy; 2026</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js"
+            integrity="sha512-YlctBG9PGZIhh9keoqI3eZkQM9T8QUbiBi7qNYAO/TUEo8jqWX5pLp5+x1cKRQDRzJ/lyGyJ9WUVNIRduxIIFw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // Load logged-in user info into the nav badge and sync user state
+        window.currentAuthUser = null;
+        (async () => {
+            try {
+                const res = await fetch('/auth/me', { credentials: 'include' });
+                if (res.ok) {
+                    const user = await res.json();
+                    window.currentAuthUser = user;
+                    const badge = document.getElementById('navUserBadge');
+                    const nameEl = document.getElementById('navUserName');
+                    if (badge && nameEl) {
+                        nameEl.textContent = user.email ? `${user.name} (${user.email})` : user.name;
+                        badge.style.display = 'flex';
+                    }
+                    // Refresh research history scoped to this specific user
+                    if (window.GPTResearcher && typeof window.GPTResearcher.loadUserHistory === 'function') {
+                        window.GPTResearcher.loadUserHistory(user.id);
+                    }
+                } else if (res.status === 401) {
+                    window.location.href = '/login';
+                }
+            } catch (e) { console.warn('Auth check failed', e); }
+        })();
+    </script>
+    <script src="/site/scripts.js?v=22.0"></script>
+    <script>
+        // Auto-resize textarea as content grows
+        const taskTextarea = document.getElementById('task');
+        if (taskTextarea) {
+            // Set initial height
+            taskTextarea.setAttribute('style', 'height: 38px; overflow-y: hidden;');
+
+            // Function to resize textarea based on content
+            const resizeTextarea = () => {
+                taskTextarea.style.height = 'auto';
+                taskTextarea.style.height = taskTextarea.scrollHeight + 'px';
+            };
+
+            // Add event listeners for input and focus
+            taskTextarea.addEventListener('input', resizeTextarea);
+            taskTextarea.addEventListener('focus', resizeTextarea);
+        }
+
+        // Ensure feature panels are positioned correctly on window resize
+        window.addEventListener('resize', function () {
+            // Adjust the feature panel width based on screen size
+            const viewportWidth = window.innerWidth;
+            const featurePanel = document.querySelector('.feature-panel');
+
+            if (featurePanel) {
+                if (viewportWidth < 1400) {
+                    featurePanel.style.display = 'none';
+                } else {
+                    featurePanel.style.display = 'block';
+                    // Adjust width based on screen size
+                    const panelWidth = Math.min(280, Math.max(200, viewportWidth * 0.15));
+                    featurePanel.style.width = `${panelWidth}px`;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
