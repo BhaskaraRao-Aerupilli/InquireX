@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=24.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=25.0" />
     <style>
         .avatar {
             width: 80px;
@@ -74,22 +74,29 @@
 </head>
 
 <body>
-    <!-- Navigation Buttons (moved from top bar) -->
-    <div class="nav-buttons">
-        <div id="navUserBadge" style="display:none;align-items:center;gap:8px;background:rgba(108,99,255,0.12);border:1px solid rgba(108,99,255,0.3);border-radius:20px;padding:6px 14px;font-size:13px;color:#a5b4fc;font-weight:500;">
-            <i class="fas fa-user-circle" style="color:#6c63ff;"></i>
-            <span id="navUserName">User</span>
+    <!-- Persistent Modern Top Navbar -->
+    <header class="app-top-navbar">
+        <div class="navbar-brand">
+            <div class="brand-icon-wrap"><i class="fa-solid fa-atom"></i></div>
+            <div class="brand-text">Inquire<strong>X</strong></div>
+            <span class="brand-core-badge">Autonomous Core</span>
         </div>
-        <div id="websocketPanelOpenBtn" class="top-websocket-button">
-            <i class="fas fa-network-wired"></i> Status
+        <div class="nav-buttons">
+            <div id="navUserBadge" class="nav-user-badge" style="display:none;">
+                <i class="fas fa-user-circle"></i>
+                <span id="navUserName">User</span>
+            </div>
+            <div id="websocketPanelOpenBtn" class="top-websocket-button">
+                <i class="fas fa-network-wired"></i> Status
+            </div>
+            <div id="historyPanelOpenBtn" class="top-history-button">
+                <i class="fas fa-history"></i> History
+            </div>
+            <a href="/auth/logout" class="top-logout-button" title="Sign out">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
         </div>
-        <div id="historyPanelOpenBtn" class="top-history-button">
-            <i class="fas fa-history"></i> History
-        </div>
-        <a href="/auth/logout" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:20px;padding:7px 14px;font-size:13px;color:#f87171;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;" title="Sign out">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-    </div>
+    </header>
 
     <!-- WebSocket Status Panel -->
     <div class="websocket-panel" id="websocketPanel">
@@ -526,7 +533,7 @@
         </div>
 
         <!-- Add JSON button above Research Progress section -->
-        <div class="margin-div" id="jsonButtonContainer" style="display: none; text-align: right; margin-bottom: 10px;">
+        <div id="jsonButtonContainer" style="display: none; text-align: right; margin-bottom: 10px;">
             <a id="downloadLinkJsonTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
                 <i class="fas fa-file-code"></i> JSON
             </a>
@@ -534,7 +541,10 @@
 
         <div class="margin-div research-output-container">
             <!-- Move spinner to the left side of the text -->
-            <h2><div id="modernSpinner" class="modern-spinner"></div> Research Progress <button id="expandOutputBtn" class="expand-button" title="Expand"><i class="fas fa-expand-alt"></i></button></h2>
+            <div class="research-output-header">
+                <h2><div id="modernSpinner" class="modern-spinner"></div> <span>Research Progress</span></h2>
+                <button id="expandOutputBtn" class="expand-button" title="Expand / Collapse Output"><i class="fas fa-expand-alt"></i></button>
+            </div>
             <p class="mt-2 text-left" style="font-size: 0.8rem;">
                 Watch as the Agentic AI orchestrates multi-source deep-web research in real-time.</p>
             
@@ -837,7 +847,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=24.0"></script>
+    <script src="/site/scripts.js?v=25.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');
