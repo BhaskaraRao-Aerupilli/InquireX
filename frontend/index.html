@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=27.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=28.0" />
     <style>
         .avatar {
             width: 80px;
@@ -342,187 +342,6 @@
             <input type="submit" value="Begin Research" class="btn btn-primary button-padding" id="submitButton">
         </form>
 
-        <!-- Full View Research Options Studio Modal -->
-        <div id="optionsFullViewModal" class="options-fullview-modal" style="display: none;">
-            <div class="options-fullview-backdrop" id="optionsFullViewBackdrop"></div>
-            <div class="options-fullview-container">
-                <div class="options-fullview-header">
-                    <div class="header-left">
-                        <div class="header-badge"><i class="fa-solid fa-sliders"></i> STUDIO MODE</div>
-                        <h2>Research Configuration & Agent Studio</h2>
-                        <p>Fine-tune query scope, agent persona, report architecture, data sources, and MCP tools in an expansive layout.</p>
-                    </div>
-                    <div class="header-right">
-                        <button type="button" id="closeOptionsFullViewBtn" class="btn-fullview-close" title="Close Full View">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="options-fullview-grid">
-                    <!-- Card 1: Core Prompt & Autonomous Persona -->
-                    <div class="option-studio-card">
-                        <div class="card-header">
-                            <i class="fa-solid fa-lightbulb"></i>
-                            <div>
-                                <h3>Query & Autonomous Persona</h3>
-                                <p>Define your research mission and agent specialization</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="modalTask">Research Objective / Topic</label>
-                                <textarea id="modalTask" class="form-control studio-textarea" rows="4" placeholder="Enter any research objective, hypothesis, or topic..."></textarea>
-                            </div>
-                            <div class="form-group mt-3">
-                                <label>Agent Persona Specialization</label>
-                                <div class="agent-persona-selector">
-                                    <label class="persona-chip active" data-agent="Auto Agent">
-                                        <input type="radio" name="modal_agent" value="Auto Agent" checked>
-                                        <i class="fa-solid fa-robot"></i> Auto Agent (Dynamic Routing)
-                                    </label>
-                                    <label class="persona-chip" data-agent="Business Analyst">
-                                        <input type="radio" name="modal_agent" value="Business Analyst">
-                                        <i class="fa-solid fa-chart-line"></i> Business & Market Analyst
-                                    </label>
-                                    <label class="persona-chip" data-agent="Academic Researcher">
-                                        <input type="radio" name="modal_agent" value="Academic Researcher">
-                                        <i class="fa-solid fa-graduation-cap"></i> Academic Researcher
-                                    </label>
-                                    <label class="persona-chip" data-agent="Technical Lead">
-                                        <input type="radio" name="modal_agent" value="Technical Lead">
-                                        <i class="fa-solid fa-code"></i> Technical Lead
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: Report Strategy & Tone -->
-                    <div class="option-studio-card">
-                        <div class="card-header">
-                            <i class="fa-solid fa-file-contract"></i>
-                            <div>
-                                <h3>Report Blueprint & Tone</h3>
-                                <p>Synthesis depth, formatting structure, and audience tone</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="modalReportType">Report Blueprint & Depth</label>
-                                <select id="modalReportType" class="form-control studio-select">
-                                    <option value="research_report">Summary Report (~2 min fast executive synthesis)</option>
-                                    <option value="detailed_report">Detailed Report (~5 min deep strategic breakdown)</option>
-                                    <option value="resource_report">Resource Report (Curated links, citations & bibliography)</option>
-                                    <option value="deep">Deep Research (Multi-pass iterative deep exploration)</option>
-                                </select>
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="modalTone">Tone of Voice & Perspective</label>
-                                <select id="modalTone" class="form-control studio-select">
-                                    <option value="Objective">Objective - Impartial and unbiased presentation of facts</option>
-                                    <option value="Formal">Formal - Adheres to academic and professional standards</option>
-                                    <option value="Analytical">Analytical - Critical evaluation and rigorous data examination</option>
-                                    <option value="Persuasive">Persuasive - Compelling synthesis tailored for stakeholders</option>
-                                    <option value="Informative">Informative - Comprehensive, clear knowledge transfer</option>
-                                    <option value="Explanatory">Explanatory - Demystifying complex technical concepts</option>
-                                    <option value="Descriptive">Descriptive - Detailed narrative of case studies & phenomena</option>
-                                    <option value="Critical">Critical - Validating hypotheses and probing flaws</option>
-                                    <option value="Comparative">Comparative - Benchmarking models, frameworks & metrics</option>
-                                    <option value="Speculative">Speculative - Exploring forward-looking trends & forecasts</option>
-                                    <option value="Reflective">Reflective - Qualitative insights and strategic context</option>
-                                    <option value="Narrative">Narrative - Engaging story-driven breakdown</option>
-                                    <option value="Humorous">Humorous - Engaging, accessible and light-hearted</option>
-                                    <option value="Optimistic">Optimistic - Highlighting upside opportunities and growth</option>
-                                    <option value="Pessimistic">Pessimistic - Stress-testing edge cases and risk factors</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Ingestion Sources & Depth -->
-                    <div class="option-studio-card">
-                        <div class="card-header">
-                            <i class="fa-solid fa-globe"></i>
-                            <div>
-                                <h3>Sources & Ingestion Depth</h3>
-                                <p>Web crawling bounds, private RAG documents, and domain targeting</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="modalReportSource">Data Source Pipeline</label>
-                                <select id="modalReportSource" class="form-control studio-select">
-                                    <option value="web">The Web (Live Multi-Engine Search)</option>
-                                    <option value="local">My Documents (Private Local RAG)</option>
-                                    <option value="hybrid">Hybrid (Live Web + Private Documents)</option>
-                                    <option value="azure">Azure Cloud Storage</option>
-                                </select>
-                            </div>
-                            <div class="form-group mt-3">
-                                <div class="slider-label-wrap">
-                                    <label for="modalMaxSearchResults">Scrape Depth per Sub-Query</label>
-                                    <span class="depth-badge" id="modalDepthValue">5 websites</span>
-                                </div>
-                                <input type="range" class="form-range studio-slider" id="modalMaxSearchResults" min="1" max="20" value="5">
-                                <small class="text-muted">Controls how many live websites are scraped per sub-question (1-20).</small>
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="modalQueryDomains">Query Domains Whitelist (Optional)</label>
-                                <input type="text" class="form-control studio-input" id="modalQueryDomains" placeholder="e.g. arxiv.org, nature.com, bloomberg.com">
-                                <small class="text-muted">Comma-separated domains to focus research gathering.</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 4: Model Context Protocol (MCP) -->
-                    <div class="option-studio-card">
-                        <div class="card-header">
-                            <i class="fa-solid fa-network-wired"></i>
-                            <div>
-                                <h3>Model Context Protocol (MCP)</h3>
-                                <p>Connect InquireX agents to tools, databases, and APIs</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="mcp-modal-toggle-row">
-                                <label class="custom-switch">
-                                    <input type="checkbox" id="modalMcpEnabled">
-                                    <span class="switch-indicator"></span>
-                                </label>
-                                <span class="toggle-text">Enable MCP Protocol Integration</span>
-                            </div>
-                            <div id="modalMcpControls" style="display: none; margin-top: 14px;">
-                                <div class="preset-buttons-wrap">
-                                    <label class="form-label" style="font-size: 0.8rem;">Quick Presets:</label>
-                                    <div class="preset-buttons">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="github"><i class="fab fa-github"></i> GitHub</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="tavily"><i class="fas fa-search"></i> Tavily</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="filesystem"><i class="fas fa-folder"></i> Local Files</button>
-                                    </div>
-                                </div>
-                                <div class="form-group mt-3">
-                                    <div class="slider-label-wrap">
-                                        <label for="modalMcpConfig" style="font-size: 0.8rem;">MCP Server JSON</label>
-                                        <button type="button" id="modalFormatMcpBtn" class="btn btn-sm btn-ghost"><i class="fas fa-code"></i> Format</button>
-                                    </div>
-                                    <textarea id="modalMcpConfig" class="form-control mcp-config-textarea" rows="4">[]</textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="options-fullview-footer">
-                    <button type="button" id="modalResetBtn" class="btn btn-secondary"><i class="fa-solid fa-arrow-rotate-left"></i> Reset Defaults</button>
-                    <div class="footer-actions">
-                        <button type="button" id="modalCancelBtn" class="btn btn-outline-light"><i class="fa-solid fa-xmark"></i> Close</button>
-                        <button type="button" id="modalLaunchBtn" class="btn btn-primary btn-launch-glow"><i class="fa-solid fa-bolt"></i> Launch Research</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Add JSON button above Research Progress section -->
         <div id="jsonButtonContainer" style="display: none; text-align: right; margin-bottom: 10px;">
             <a id="downloadLinkJsonTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
@@ -726,6 +545,188 @@
         <!-- Fixed bottom bar styled like the top credits bar -->
     </main>
 
+<!-- Full View Research Options Studio Modal -->
+        <div id="optionsFullViewModal" class="options-fullview-modal" style="display: none;">
+            <div class="options-fullview-backdrop" id="optionsFullViewBackdrop"></div>
+            <div class="options-fullview-container">
+                <div class="options-fullview-header">
+                    <div class="header-left">
+                        <div class="header-badge"><i class="fa-solid fa-sliders"></i> STUDIO MODE</div>
+                        <h2>Research Configuration & Agent Studio</h2>
+                        <p>Fine-tune query scope, agent persona, report architecture, data sources, and MCP tools in an expansive layout.</p>
+                    </div>
+                    <div class="header-right">
+                        <button type="button" id="closeOptionsFullViewBtn" class="btn-fullview-close" title="Close Full View">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="options-fullview-grid">
+                    <!-- Card 1: Core Prompt & Autonomous Persona -->
+                    <div class="option-studio-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <div>
+                                <h3>Query & Autonomous Persona</h3>
+                                <p>Define your research mission and agent specialization</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="modalTask">Research Objective / Topic</label>
+                                <textarea id="modalTask" class="form-control studio-textarea" rows="4" placeholder="Enter any research objective, hypothesis, or topic..."></textarea>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Agent Persona Specialization</label>
+                                <div class="agent-persona-selector">
+                                    <label class="persona-chip active" data-agent="Auto Agent">
+                                        <input type="radio" name="modal_agent" value="Auto Agent" checked>
+                                        <i class="fa-solid fa-robot"></i> Auto Agent (Dynamic Routing)
+                                    </label>
+                                    <label class="persona-chip" data-agent="Business Analyst">
+                                        <input type="radio" name="modal_agent" value="Business Analyst">
+                                        <i class="fa-solid fa-chart-line"></i> Business & Market Analyst
+                                    </label>
+                                    <label class="persona-chip" data-agent="Academic Researcher">
+                                        <input type="radio" name="modal_agent" value="Academic Researcher">
+                                        <i class="fa-solid fa-graduation-cap"></i> Academic Researcher
+                                    </label>
+                                    <label class="persona-chip" data-agent="Technical Lead">
+                                        <input type="radio" name="modal_agent" value="Technical Lead">
+                                        <i class="fa-solid fa-code"></i> Technical Lead
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Report Strategy & Tone -->
+                    <div class="option-studio-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-file-contract"></i>
+                            <div>
+                                <h3>Report Blueprint & Tone</h3>
+                                <p>Synthesis depth, formatting structure, and audience tone</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="modalReportType">Report Blueprint & Depth</label>
+                                <select id="modalReportType" class="form-control studio-select">
+                                    <option value="research_report">Summary Report (~2 min fast executive synthesis)</option>
+                                    <option value="detailed_report">Detailed Report (~5 min deep strategic breakdown)</option>
+                                    <option value="resource_report">Resource Report (Curated links, citations & bibliography)</option>
+                                    <option value="deep">Deep Research (Multi-pass iterative deep exploration)</option>
+                                </select>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="modalTone">Tone of Voice & Perspective</label>
+                                <select id="modalTone" class="form-control studio-select">
+                                    <option value="Objective">Objective - Impartial and unbiased presentation of facts</option>
+                                    <option value="Formal">Formal - Adheres to academic and professional standards</option>
+                                    <option value="Analytical">Analytical - Critical evaluation and rigorous data examination</option>
+                                    <option value="Persuasive">Persuasive - Compelling synthesis tailored for stakeholders</option>
+                                    <option value="Informative">Informative - Comprehensive, clear knowledge transfer</option>
+                                    <option value="Explanatory">Explanatory - Demystifying complex technical concepts</option>
+                                    <option value="Descriptive">Descriptive - Detailed narrative of case studies & phenomena</option>
+                                    <option value="Critical">Critical - Validating hypotheses and probing flaws</option>
+                                    <option value="Comparative">Comparative - Benchmarking models, frameworks & metrics</option>
+                                    <option value="Speculative">Speculative - Exploring forward-looking trends & forecasts</option>
+                                    <option value="Reflective">Reflective - Qualitative insights and strategic context</option>
+                                    <option value="Narrative">Narrative - Engaging story-driven breakdown</option>
+                                    <option value="Humorous">Humorous - Engaging, accessible and light-hearted</option>
+                                    <option value="Optimistic">Optimistic - Highlighting upside opportunities and growth</option>
+                                    <option value="Pessimistic">Pessimistic - Stress-testing edge cases and risk factors</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Ingestion Sources & Depth -->
+                    <div class="option-studio-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-globe"></i>
+                            <div>
+                                <h3>Sources & Ingestion Depth</h3>
+                                <p>Web crawling bounds, private RAG documents, and domain targeting</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="modalReportSource">Data Source Pipeline</label>
+                                <select id="modalReportSource" class="form-control studio-select">
+                                    <option value="web">The Web (Live Multi-Engine Search)</option>
+                                    <option value="local">My Documents (Private Local RAG)</option>
+                                    <option value="hybrid">Hybrid (Live Web + Private Documents)</option>
+                                    <option value="azure">Azure Cloud Storage</option>
+                                </select>
+                            </div>
+                            <div class="form-group mt-3">
+                                <div class="slider-label-wrap">
+                                    <label for="modalMaxSearchResults">Scrape Depth per Sub-Query</label>
+                                    <span class="depth-badge" id="modalDepthValue">5 websites</span>
+                                </div>
+                                <input type="range" class="form-range studio-slider" id="modalMaxSearchResults" min="1" max="20" value="5">
+                                <small class="text-muted">Controls how many live websites are scraped per sub-question (1-20).</small>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="modalQueryDomains">Query Domains Whitelist (Optional)</label>
+                                <input type="text" class="form-control studio-input" id="modalQueryDomains" placeholder="e.g. arxiv.org, nature.com, bloomberg.com">
+                                <small class="text-muted">Comma-separated domains to focus research gathering.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Model Context Protocol (MCP) -->
+                    <div class="option-studio-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-network-wired"></i>
+                            <div>
+                                <h3>Model Context Protocol (MCP)</h3>
+                                <p>Connect InquireX agents to tools, databases, and APIs</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mcp-modal-toggle-row">
+                                <label class="custom-switch">
+                                    <input type="checkbox" id="modalMcpEnabled">
+                                    <span class="switch-indicator"></span>
+                                </label>
+                                <span class="toggle-text">Enable MCP Protocol Integration</span>
+                            </div>
+                            <div id="modalMcpControls" style="display: none; margin-top: 14px;">
+                                <div class="preset-buttons-wrap">
+                                    <label class="form-label" style="font-size: 0.8rem;">Quick Presets:</label>
+                                    <div class="preset-buttons">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="github"><i class="fab fa-github"></i> GitHub</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="tavily"><i class="fas fa-search"></i> Tavily</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-modal-preset="filesystem"><i class="fas fa-folder"></i> Local Files</button>
+                                    </div>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <div class="slider-label-wrap">
+                                        <label for="modalMcpConfig" style="font-size: 0.8rem;">MCP Server JSON</label>
+                                        <button type="button" id="modalFormatMcpBtn" class="btn btn-sm btn-ghost"><i class="fas fa-code"></i> Format</button>
+                                    </div>
+                                    <textarea id="modalMcpConfig" class="form-control mcp-config-textarea" rows="4">[]</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="options-fullview-footer">
+                    <button type="button" id="modalResetBtn" class="btn btn-secondary"><i class="fa-solid fa-arrow-rotate-left"></i> Reset Defaults</button>
+                    <div class="footer-actions">
+                        <button type="button" id="modalCancelBtn" class="btn btn-outline-light"><i class="fa-solid fa-xmark"></i> Close</button>
+                        <button type="button" id="modalLaunchBtn" class="btn btn-primary btn-launch-glow"><i class="fa-solid fa-bolt"></i> Launch Research</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     <!-- Conversation History Panel -->
     <div class="history-panel" id="historyPanel">
         <div class="history-panel-header">
@@ -838,7 +839,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=27.0"></script>
+    <script src="/site/scripts.js?v=28.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');

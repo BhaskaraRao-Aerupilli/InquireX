@@ -5802,6 +5802,17 @@ const GPTResearcher = (() => {
     const modalFormatMcpBtn = document.getElementById('modalFormatMcpBtn');
     const personaChips = modal.querySelectorAll('.persona-chip');
 
+    // Helper: update active persona in main form
+    const updateMainAgentPersona = (agentVal) => {
+      let autoAgentRadio = document.getElementById('autoAgent');
+      if (autoAgentRadio) {
+        autoAgentRadio.value = agentVal;
+        autoAgentRadio.checked = true;
+      }
+      const btnShowAuto = document.getElementById('btnShowAuto');
+      if (btnShowAuto) btnShowAuto.innerText = agentVal;
+    };
+
     // Synchronize from Main Form to Modal
     const syncMainToModal = () => {
       if (taskInput && modalTask) modalTask.value = taskInput.value;
@@ -5825,8 +5836,8 @@ const GPTResearcher = (() => {
       if (mcpConfigTextarea && modalMcpConfig) modalMcpConfig.value = mcpConfigTextarea.value;
 
       // Sync active agent persona
-      const checkedRadio = document.querySelector('input[name="agent"]:checked');
-      const agentVal = checkedRadio ? checkedRadio.value : 'Auto Agent';
+      const autoAgentRadio = document.getElementById('autoAgent');
+      const agentVal = autoAgentRadio ? autoAgentRadio.value : 'Auto Agent';
       personaChips.forEach(chip => {
         const radio = chip.querySelector('input');
         if (radio && radio.value === agentVal) {
@@ -5834,6 +5845,7 @@ const GPTResearcher = (() => {
           radio.checked = true;
         } else {
           chip.classList.remove('active');
+          if (radio) radio.checked = false;
         }
       });
     };
@@ -5842,19 +5854,28 @@ const GPTResearcher = (() => {
     const syncModalToMain = () => {
       if (modalTask && taskInput) {
         taskInput.value = modalTask.value;
-        // Trigger auto-resize if handler exists
         taskInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
-      if (modalReportType && reportTypeSelect) reportTypeSelect.value = modalReportType.value;
-      if (modalTone && toneSelect) toneSelect.value = modalTone.value;
+      if (modalReportType && reportTypeSelect) {
+        reportTypeSelect.value = modalReportType.value;
+        reportTypeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (modalTone && toneSelect) {
+        toneSelect.value = modalTone.value;
+        toneSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
       if (modalReportSource && reportSourceSelect) {
         reportSourceSelect.value = modalReportSource.value;
         reportSourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
       if (modalMaxSearchResults && maxSearchResultsInput) {
         maxSearchResultsInput.value = modalMaxSearchResults.value;
+        maxSearchResultsInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
-      if (modalQueryDomains && queryDomainsInput) queryDomainsInput.value = modalQueryDomains.value;
+      if (modalQueryDomains && queryDomainsInput) {
+        queryDomainsInput.value = modalQueryDomains.value;
+        queryDomainsInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
 
       if (modalMcpEnabled && mcpEnabledCheckbox) {
         if (mcpEnabledCheckbox.checked !== modalMcpEnabled.checked) {
@@ -5867,19 +5888,29 @@ const GPTResearcher = (() => {
         mcpConfigTextarea.value = modalMcpConfig.value;
         mcpConfigTextarea.dispatchEvent(new Event('input', { bubbles: true }));
       }
+
+      // Sync active persona
+      const activeRadio = modal.querySelector('input[name="modal_agent"]:checked');
+      if (activeRadio) {
+        updateMainAgentPersona(activeRadio.value);
+      }
     };
 
     // Open Modal
     openBtn.addEventListener('click', () => {
       syncMainToModal();
       modal.style.display = 'flex';
-      if (modalTask) modalTask.focus();
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        if (modalTask) modalTask.focus();
+      }, 50);
     });
 
     // Close Modal helper
     const closeModal = () => {
       syncModalToMain();
       modal.style.display = 'none';
+      document.body.style.overflow = '';
     };
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
@@ -5904,20 +5935,13 @@ const GPTResearcher = (() => {
 
     // Persona chips selection
     personaChips.forEach(chip => {
-      chip.addEventListener('click', () => {
+      chip.addEventListener('click', (e) => {
         personaChips.forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         const radio = chip.querySelector('input');
         if (radio) {
           radio.checked = true;
-          const agentVal = radio.value;
-          // Sync to main form
-          const mainRadios = document.querySelectorAll('input[name="agent"]');
-          mainRadios.forEach(mr => {
-            if (mr.value === agentVal) mr.checked = true;
-          });
-          const btnShowAuto = document.getElementById('btnShowAuto');
-          if (btnShowAuto) btnShowAuto.innerText = agentVal;
+          updateMainAgentPersona(radio.value);
         }
       });
     });
@@ -6003,18 +6027,21 @@ const GPTResearcher = (() => {
 
         syncModalToMain();
         modal.style.display = 'none';
+        document.body.style.overflow = '';
 
-        const mainForm = document.getElementById('researchForm');
-        if (mainForm) {
-          mainForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        if (typeof startResearch === 'function') {
+          startResearch();
+        } else {
+          const mainForm = document.getElementById('researchForm');
+          if (mainForm) {
+            mainForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }
         }
       });
     }
   };
 
-
-
-  const initDocumentUploadSection = () => {
+    const initDocumentUploadSection = () => {
 
     const reportSourceSelect = document.getElementById('report_source');
 
