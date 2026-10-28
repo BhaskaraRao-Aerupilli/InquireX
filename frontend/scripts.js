@@ -138,6 +138,9 @@ const GPTResearcher = (() => {
 
     initDocumentUploadSection();
 
+    // Initialize Research Options Full View Studio
+    initOptionsFullView();
+
 
 
     // Initialize Audio Briefing, LaTeX Export, Mind Map Controls, and PDF Fallbacks
@@ -1924,6 +1927,7 @@ const GPTResearcher = (() => {
 
     }
 
+    activeResearchImages = [];
     activeResearchImageUrls.clear();
 
     seenImageSignatures.clear();
@@ -2579,6 +2583,8 @@ const GPTResearcher = (() => {
 
 
     // Auto-scroll to the bottom of the container
+
+    enhanceReportImages(reportContainer);
 
     reportContainer.scrollTop = reportContainer.scrollHeight;
 
@@ -5391,300 +5397,619 @@ const GPTResearcher = (() => {
 
 
 
+  let activeResearchImages = []; // Array of { url, alt, title, domain }
   let activeResearchImageUrls = new Set();
-
   let seenImageSignatures = new Set();
-
-
+  let currentLightboxIndex = 0;
+  let lightboxZoomLevel = 1.0;
 
   const getCleanImageSignature = (url) => {
-
     try {
-
       const u = new URL(url);
-
       const cleanPath = u.pathname.toLowerCase();
-
       const parts = cleanPath.split('/').filter(Boolean);
-
       const filename = parts.pop() || '';
-
       const nameOnly = filename.split('.')[0].replace(/[-_\d]+$/, '');
-
       return nameOnly.length >= 4 ? nameOnly : cleanPath;
-
     } catch (e) {
-
       return url.toLowerCase().split('?')[0];
-
     }
-
   };
 
-
-
   const displaySelectedImages = (data) => {
-
     const imageContainer = document.getElementById('selectedImagesContainer');
-
     if (!imageContainer) return;
 
-    
-
     let images = [];
-
     try {
-
       images = typeof data.output === 'string' ? JSON.parse(data.output) : data.output;
-
     } catch (e) {
-
       console.warn('Failed to parse images payload:', e);
-
       return;
-
     }
-
-
 
     if (!Array.isArray(images) || images.length === 0) return;
 
-
-
-    // Strict filter for junk banners, icons, tracking pixels, logos
-
-    const junkPattern = /(\.svg|\.ico|\.gif|pixel|avatar|favicon|logo|tracking|badge|spinner|1x1|ad-|advertisement|doubleclick|button|icon|share|placeholder|banner)/i;
-
-
+    // Strict filter for junk banners, icons, tracking pixels, thumbnails, avatars
+    const junkPattern = /(\.svg|\.ico|\.gif|pixel|avatar|favicon|logo|tracking|badge|spinner|1x1|ad-|advertisement|doubleclick|button|icon|share|placeholder|banner|w_64|w_32|w_100|64x64|32x32|fallback|thumb_|author|profile|gravatar)/i;
 
     images.forEach(imgObj => {
+      let url = '';
+      let alt = 'Research Visual Figure';
+      let title = 'Visual Figure';
 
-      const url = typeof imgObj === 'string' ? imgObj : (imgObj && imgObj.url ? imgObj.url : '');
-
-      if (!url || !url.startsWith('http')) return;
-
-      if (junkPattern.test(url)) return;
-
-      
-
-      const sig = getCleanImageSignature(url);
-
-      if (seenImageSignatures.has(sig) || activeResearchImageUrls.has(url)) {
-
-        return; // Skip duplicate / identical image
-
+      if (typeof imgObj === 'string') {
+        url = imgObj;
+      } else if (imgObj && typeof imgObj === 'object') {
+        url = imgObj.url || '';
+        alt = imgObj.alt || imgObj.title || 'Research Visual Figure';
+        title = imgObj.title || imgObj.alt || 'Visual Figure';
       }
 
+      if (!url || !url.startsWith('http')) return;
+      if (junkPattern.test(url)) return;
 
+      const sig = getCleanImageSignature(url);
+      if (seenImageSignatures.has(sig) || activeResearchImageUrls.has(url)) {
+        return; // Skip duplicate / identical image
+      }
 
-      if (activeResearchImageUrls.size >= 6) return; // Limit to 6 verified distinct visual figures
+      if (activeResearchImages.length >= 8) return; // Limit to 8 verified distinct visual figures
 
-
+      let domain = '';
+      try {
+        domain = new URL(url).hostname.replace(/^www\./, '');
+      } catch (e) {
+        domain = 'source';
+      }
 
       seenImageSignatures.add(sig);
-
       activeResearchImageUrls.add(url);
-
+      activeResearchImages.push({
+        url,
+        alt: alt || 'Research Visual Figure',
+        title: title || 'Visual Figure',
+        domain
+      });
     });
-
-
 
     renderImageGallery();
-
   };
-
-
 
   const renderImageGallery = () => {
-
     const imageContainer = document.getElementById('selectedImagesContainer');
-
     if (!imageContainer) return;
 
-
-
-    if (activeResearchImageUrls.size === 0) {
-
+    if (activeResearchImages.length === 0) {
       imageContainer.style.display = 'none';
-
       imageContainer.innerHTML = '';
-
       return;
-
     }
 
-
-
     imageContainer.innerHTML = `
-
       <div class="research-gallery-header">
-
         <div class="gallery-title-wrap">
-
           <i class="fa-solid fa-images"></i>
-
-          <span>Verified Research Visuals & Figures (${activeResearchImageUrls.size})</span>
-
+          <span>Verified Research Visuals & Figures (${activeResearchImages.length})</span>
         </div>
-
-        <span class="gallery-hint">Click any visual to enlarge</span>
-
+        <span class="gallery-hint"><i class="fa-solid fa-magnifying-glass-plus"></i> Click any visual to inspect in High-Res Studio Lightbox</span>
       </div>
-
       <div class="research-gallery-grid" id="researchGalleryGrid"></div>
-
     `;
 
-
-
     const grid = document.getElementById('researchGalleryGrid');
-
-    activeResearchImageUrls.forEach(url => {
-
+    activeResearchImages.forEach((item, index) => {
       const card = document.createElement('div');
-
       card.className = 'gallery-image-card';
+      card.title = `${item.alt} (Click to open full view)`;
 
-      
+      const viewport = document.createElement('div');
+      viewport.className = 'gallery-img-viewport';
 
       const img = document.createElement('img');
-
-      img.src = url;
-
-      img.alt = 'Research Visual Asset';
-
+      img.src = item.url;
+      img.alt = item.alt;
       img.loading = 'lazy';
 
-      
-
       // Auto-remove card if image fails to load or hotlinking is blocked
-
       img.onerror = () => {
-
-        activeResearchImageUrls.delete(url);
-
+        const foundIdx = activeResearchImages.findIndex(i => i.url === item.url);
+        if (foundIdx > -1) activeResearchImages.splice(foundIdx, 1);
+        activeResearchImageUrls.delete(item.url);
         card.remove();
-
-        const remaining = grid.querySelectorAll('.gallery-image-card').length;
-
-        if (remaining === 0) {
-
+        if (activeResearchImages.length === 0) {
           imageContainer.style.display = 'none';
-
         }
-
       };
 
-
-
       const overlay = document.createElement('div');
-
       overlay.className = 'gallery-card-overlay';
-
       overlay.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i>';
 
-      
+      viewport.appendChild(img);
+      viewport.appendChild(overlay);
 
-      card.appendChild(img);
+      const captionBar = document.createElement('div');
+      captionBar.className = 'gallery-card-caption-bar';
+      captionBar.innerHTML = `
+        <span class="gallery-card-title">${escapeHtml(item.alt)}</span>
+        <span class="gallery-domain-pill">${escapeHtml(item.domain)}</span>
+      `;
 
-      card.appendChild(overlay);
+      card.appendChild(viewport);
+      card.appendChild(captionBar);
 
-      card.onclick = () => showImageDialog(url);
-
-      
-
+      card.onclick = () => showImageLightbox(index);
       grid.appendChild(card);
-
     });
 
-
-
     imageContainer.style.display = 'block';
+  };
 
+  const enhanceReportImages = (container) => {
+    if (!container) return;
+    const images = container.querySelectorAll('img:not([data-enhanced])');
+    images.forEach(img => {
+      img.setAttribute('data-enhanced', 'true');
+      img.loading = 'lazy';
+      img.title = img.alt ? `${img.alt} (Click to expand)` : 'Click to expand image';
+
+      const altText = (img.alt || '').trim();
+      const parent = img.parentElement;
+
+      // Add click-to-lightbox handler
+      img.addEventListener('click', () => {
+        showImageLightbox(img.src, altText || 'Report Figure');
+      });
+
+      // Handle hotlink errors gracefully with an elegant fallback card
+      img.onerror = () => {
+        const fallback = document.createElement('div');
+        fallback.className = 'report-figure-wrap';
+        fallback.innerHTML = `
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px dashed rgba(99,102,241,0.4); border-radius: 10px; padding: 14px; text-align: center; margin: 12px 0;">
+            <i class="fa-solid fa-image text-muted" style="font-size: 1.5rem; margin-bottom: 6px;"></i>
+            <div style="font-size: 0.82rem; color: #cbd5e1; font-weight: 500;">${escapeHtml(altText || 'External Research Visual Asset')}</div>
+            <a href="${img.src}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary mt-2" style="font-size: 0.76rem; border-radius: 20px;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Original Image Source
+            </a>
+          </div>
+        `;
+        img.replaceWith(fallback);
+      };
+
+      // If there is alt text and parent isn't already a figure, add a caption
+      if (altText && (!parent || parent.tagName.toLowerCase() !== 'figure')) {
+        const caption = document.createElement('figcaption');
+        caption.className = 'report-image-caption';
+        caption.innerHTML = `<i class="fa-solid fa-camera"></i> <span>${escapeHtml(altText)}</span>`;
+        if (img.nextSibling) {
+          parent.insertBefore(caption, img.nextSibling);
+        } else {
+          parent.appendChild(caption);
+        }
+      }
+    });
   };
 
 
+  // Professional Fullscreen Interactive Lightbox
+  const showImageLightbox = (urlOrIndex, customAlt = '') => {
+    let imagesList = activeResearchImages.slice();
+    let initialIdx = 0;
 
-  const showImageDialog = (imageUrl) => {
-
-    let dialog = document.querySelector('.image-dialog');
-
-    if (!dialog) {
-
-        dialog = document.createElement('div');
-
-        dialog.className = 'image-dialog';
-
-
-
-        const img = document.createElement('img');
-
-        img.alt = 'Full-size Research Image';
-
-
-
-        const closeBtn = document.createElement('button');
-
-        closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-
-        closeBtn.className = 'close-btn';
-
-
-
-        dialog.appendChild(img);
-
-        dialog.appendChild(closeBtn);
-
-        document.body.appendChild(dialog);
-
-
-
-        closeBtn.onclick = () => {
-
-            dialog.classList.remove('visible');
-
-        };
-
-        // Close on clicking backdrop
-
-        dialog.addEventListener('click', (e) => {
-
-            if (e.target === dialog) {
-
-                dialog.classList.remove('visible');
-
-            }
-
-        });
-
+    if (typeof urlOrIndex === 'number') {
+      initialIdx = Math.max(0, Math.min(urlOrIndex, imagesList.length - 1));
+    } else if (typeof urlOrIndex === 'string') {
+      const foundIdx = imagesList.findIndex(i => i.url === urlOrIndex);
+      if (foundIdx > -1) {
+        initialIdx = foundIdx;
+      } else {
+        // Add single image from report markdown
+        let domain = '';
+        try { domain = new URL(urlOrIndex).hostname.replace(/^www\./, ''); } catch (e) {}
+        imagesList = [{
+          url: urlOrIndex,
+          alt: customAlt || 'Report Visual Figure',
+          title: customAlt || 'Visual Figure',
+          domain
+        }];
+        initialIdx = 0;
+      }
     }
 
+    currentLightboxIndex = initialIdx;
+    lightboxZoomLevel = 1.0;
 
+    let lightbox = document.getElementById('inquirexLightbox');
+    if (!lightbox) {
+      lightbox = document.createElement('div');
+      lightbox.id = 'inquirexLightbox';
+      lightbox.className = 'inquirex-lightbox';
+      lightbox.innerHTML = `
+        <div class="lightbox-toolbar">
+          <div class="lightbox-info">
+            <span class="lightbox-counter" id="lightboxCounter">Figure 1 of 1</span>
+            <span class="lightbox-title" id="lightboxTitle">Research Visual</span>
+          </div>
+          <div class="lightbox-actions">
+            <button type="button" class="lightbox-btn" id="lightboxZoomOutBtn" title="Zoom Out (-)"><i class="fa-solid fa-minus"></i></button>
+            <button type="button" class="lightbox-btn" id="lightboxZoomResetBtn" title="Reset Zoom (100%)" style="font-size: 0.78rem; font-weight: 700; width: auto; padding: 0 10px;">100%</button>
+            <button type="button" class="lightbox-btn" id="lightboxZoomInBtn" title="Zoom In (+)"><i class="fa-solid fa-plus"></i></button>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="lightbox-btn" id="lightboxOpenSourceBtn" title="Open Original Source in New Tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            <button type="button" class="lightbox-btn lightbox-btn-close" id="lightboxCloseBtn" title="Close (Esc)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="lightbox-stage" id="lightboxStage">
+          <button type="button" class="lightbox-nav-btn prev" id="lightboxPrevBtn" title="Previous Image (Left Arrow)"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="lightbox-viewport" id="lightboxViewport">
+            <img id="lightboxImg" src="" alt="Research Visual" />
+          </div>
+          <button type="button" class="lightbox-nav-btn next" id="lightboxNextBtn" title="Next Image (Right Arrow)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="lightbox-footer-caption" id="lightboxFooterCaption"></div>
+      `;
+      document.body.appendChild(lightbox);
 
-    const imgElement = dialog.querySelector('img');
+      // Wire zoom buttons
+      const applyZoom = () => {
+        const vp = document.getElementById('lightboxViewport');
+        const resetBtn = document.getElementById('lightboxZoomResetBtn');
+        if (vp) vp.style.transform = `scale(${lightboxZoomLevel})`;
+        if (resetBtn) resetBtn.innerText = `${Math.round(lightboxZoomLevel * 100)}%`;
+      };
 
-    imgElement.src = imageUrl;
+      document.getElementById('lightboxZoomInBtn').onclick = () => {
+        lightboxZoomLevel = Math.min(3.0, lightboxZoomLevel + 0.25);
+        applyZoom();
+      };
+      document.getElementById('lightboxZoomOutBtn').onclick = () => {
+        lightboxZoomLevel = Math.max(0.5, lightboxZoomLevel - 0.25);
+        applyZoom();
+      };
+      document.getElementById('lightboxZoomResetBtn').onclick = () => {
+        lightboxZoomLevel = 1.0;
+        applyZoom();
+      };
 
-    dialog.classList.add('visible');
+      // Close handlers
+      const closeLightbox = () => {
+        lightbox.classList.remove('visible');
+        lightboxZoomLevel = 1.0;
+        const vp = document.getElementById('lightboxViewport');
+        if (vp) vp.style.transform = 'scale(1)';
+      };
 
-
-
-    // Close with Escape key
-
-    const escapeKeyListener = (e) => {
-
-        if (e.key === 'Escape') {
-
-            dialog.classList.remove('visible');
-
-            document.removeEventListener('keydown', escapeKeyListener);
-
+      document.getElementById('lightboxCloseBtn').onclick = closeLightbox;
+      document.getElementById('lightboxStage').onclick = (e) => {
+        if (e.target === document.getElementById('lightboxStage')) {
+          closeLightbox();
         }
+      };
 
+      // Navigation handlers
+      document.getElementById('lightboxPrevBtn').onclick = () => {
+        if (currentLightboxIndex > 0) {
+          currentLightboxIndex--;
+          lightboxZoomLevel = 1.0;
+          updateLightboxContent();
+        }
+      };
+      document.getElementById('lightboxNextBtn').onclick = () => {
+        if (currentLightboxIndex < imagesList.length - 1) {
+          currentLightboxIndex++;
+          lightboxZoomLevel = 1.0;
+          updateLightboxContent();
+        }
+      };
+
+      // Global keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('visible')) return;
+        if (e.key === 'Escape') {
+          closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+          if (currentLightboxIndex > 0) {
+            currentLightboxIndex--;
+            lightboxZoomLevel = 1.0;
+            updateLightboxContent();
+          }
+        } else if (e.key === 'ArrowRight') {
+          if (currentLightboxIndex < imagesList.length - 1) {
+            currentLightboxIndex++;
+            lightboxZoomLevel = 1.0;
+            updateLightboxContent();
+          }
+        } else if (e.key === '+' || e.key === '=') {
+          lightboxZoomLevel = Math.min(3.0, lightboxZoomLevel + 0.25);
+          applyZoom();
+        } else if (e.key === '-') {
+          lightboxZoomLevel = Math.max(0.5, lightboxZoomLevel - 0.25);
+          applyZoom();
+        }
+      });
+    }
+
+    const updateLightboxContent = () => {
+      const curItem = imagesList[currentLightboxIndex] || { url: '', alt: 'Figure', title: 'Figure', domain: '' };
+      const imgEl = document.getElementById('lightboxImg');
+      const counterEl = document.getElementById('lightboxCounter');
+      const titleEl = document.getElementById('lightboxTitle');
+      const captionEl = document.getElementById('lightboxFooterCaption');
+      const openSourceBtn = document.getElementById('lightboxOpenSourceBtn');
+      const prevBtn = document.getElementById('lightboxPrevBtn');
+      const nextBtn = document.getElementById('lightboxNextBtn');
+      const resetBtn = document.getElementById('lightboxZoomResetBtn');
+      const vp = document.getElementById('lightboxViewport');
+
+      if (imgEl) imgEl.src = curItem.url;
+      if (counterEl) counterEl.innerText = `Figure ${currentLightboxIndex + 1} of ${imagesList.length}`;
+      if (titleEl) titleEl.innerText = curItem.alt || curItem.title || 'Research Visual Figure';
+      if (captionEl) {
+        captionEl.innerHTML = `<span><strong>${escapeHtml(curItem.alt || curItem.title || 'Visual Figure')}</strong> ${curItem.domain ? '— Source: ' + escapeHtml(curItem.domain) : ''}</span>`;
+      }
+      if (openSourceBtn) openSourceBtn.href = curItem.url;
+      if (resetBtn) resetBtn.innerText = '100%';
+      if (vp) vp.style.transform = 'scale(1)';
+
+      if (prevBtn) prevBtn.style.display = imagesList.length > 1 && currentLightboxIndex > 0 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = imagesList.length > 1 && currentLightboxIndex < imagesList.length - 1 ? 'flex' : 'none';
     };
 
-    document.addEventListener('keydown', escapeKeyListener);
+    updateLightboxContent();
+    lightbox.classList.add('visible');
+  };
 
+  const showImageDialog = (imageUrl) => {
+    showImageLightbox(imageUrl);
+  };
+
+  // --------------------------------------------------------------------------
+  // Research Options Full View Studio
+  // --------------------------------------------------------------------------
+  const initOptionsFullView = () => {
+    const openBtn = document.getElementById('optionsFullViewBtn');
+    const modal = document.getElementById('optionsFullViewModal');
+    const closeBtn = document.getElementById('closeOptionsFullViewBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    const backdrop = document.getElementById('optionsFullViewBackdrop');
+    const launchBtn = document.getElementById('modalLaunchBtn');
+    const resetBtn = document.getElementById('modalResetBtn');
+
+    if (!openBtn || !modal) return;
+
+    // Main form fields
+    const taskInput = document.getElementById('task');
+    const reportTypeSelect = document.getElementById('report_type');
+    const toneSelect = document.getElementById('tone');
+    const reportSourceSelect = document.getElementById('report_source');
+    const maxSearchResultsInput = document.getElementById('maxSearchResults');
+    const queryDomainsInput = document.getElementById('queryDomains');
+    const mcpEnabledCheckbox = document.getElementById('mcpEnabled');
+    const mcpConfigTextarea = document.getElementById('mcpConfig');
+
+    // Modal fields
+    const modalTask = document.getElementById('modalTask');
+    const modalReportType = document.getElementById('modalReportType');
+    const modalTone = document.getElementById('modalTone');
+    const modalReportSource = document.getElementById('modalReportSource');
+    const modalMaxSearchResults = document.getElementById('modalMaxSearchResults');
+    const modalDepthValue = document.getElementById('modalDepthValue');
+    const modalQueryDomains = document.getElementById('modalQueryDomains');
+    const modalMcpEnabled = document.getElementById('modalMcpEnabled');
+    const modalMcpControls = document.getElementById('modalMcpControls');
+    const modalMcpConfig = document.getElementById('modalMcpConfig');
+    const modalFormatMcpBtn = document.getElementById('modalFormatMcpBtn');
+    const personaChips = modal.querySelectorAll('.persona-chip');
+
+    // Synchronize from Main Form to Modal
+    const syncMainToModal = () => {
+      if (taskInput && modalTask) modalTask.value = taskInput.value;
+      if (reportTypeSelect && modalReportType) modalReportType.value = reportTypeSelect.value;
+      if (toneSelect && modalTone) modalTone.value = toneSelect.value;
+      if (reportSourceSelect && modalReportSource) modalReportSource.value = reportSourceSelect.value;
+
+      if (maxSearchResultsInput && modalMaxSearchResults) {
+        const val = maxSearchResultsInput.value || '5';
+        modalMaxSearchResults.value = val;
+        if (modalDepthValue) modalDepthValue.innerText = `${val} websites`;
+      }
+
+      if (queryDomainsInput && modalQueryDomains) modalQueryDomains.value = queryDomainsInput.value;
+
+      if (mcpEnabledCheckbox && modalMcpEnabled) {
+        modalMcpEnabled.checked = mcpEnabledCheckbox.checked;
+        if (modalMcpControls) modalMcpControls.style.display = mcpEnabledCheckbox.checked ? 'block' : 'none';
+      }
+
+      if (mcpConfigTextarea && modalMcpConfig) modalMcpConfig.value = mcpConfigTextarea.value;
+
+      // Sync active agent persona
+      const checkedRadio = document.querySelector('input[name="agent"]:checked');
+      const agentVal = checkedRadio ? checkedRadio.value : 'Auto Agent';
+      personaChips.forEach(chip => {
+        const radio = chip.querySelector('input');
+        if (radio && radio.value === agentVal) {
+          chip.classList.add('active');
+          radio.checked = true;
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    };
+
+    // Synchronize from Modal to Main Form
+    const syncModalToMain = () => {
+      if (modalTask && taskInput) {
+        taskInput.value = modalTask.value;
+        // Trigger auto-resize if handler exists
+        taskInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (modalReportType && reportTypeSelect) reportTypeSelect.value = modalReportType.value;
+      if (modalTone && toneSelect) toneSelect.value = modalTone.value;
+      if (modalReportSource && reportSourceSelect) {
+        reportSourceSelect.value = modalReportSource.value;
+        reportSourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (modalMaxSearchResults && maxSearchResultsInput) {
+        maxSearchResultsInput.value = modalMaxSearchResults.value;
+      }
+      if (modalQueryDomains && queryDomainsInput) queryDomainsInput.value = modalQueryDomains.value;
+
+      if (modalMcpEnabled && mcpEnabledCheckbox) {
+        if (mcpEnabledCheckbox.checked !== modalMcpEnabled.checked) {
+          mcpEnabledCheckbox.checked = modalMcpEnabled.checked;
+          mcpEnabledCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      if (modalMcpConfig && mcpConfigTextarea) {
+        mcpConfigTextarea.value = modalMcpConfig.value;
+        mcpConfigTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+
+    // Open Modal
+    openBtn.addEventListener('click', () => {
+      syncMainToModal();
+      modal.style.display = 'flex';
+      if (modalTask) modalTask.focus();
+    });
+
+    // Close Modal helper
+    const closeModal = () => {
+      syncModalToMain();
+      modal.style.display = 'none';
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+
+    // Escape key listener for options full view
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display !== 'none') {
+        closeModal();
+      }
+    });
+
+    // Range slider live feedback
+    if (modalMaxSearchResults) {
+      modalMaxSearchResults.addEventListener('input', () => {
+        const val = modalMaxSearchResults.value;
+        if (modalDepthValue) modalDepthValue.innerText = `${val} websites`;
+        if (maxSearchResultsInput) maxSearchResultsInput.value = val;
+      });
+    }
+
+    // Persona chips selection
+    personaChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        personaChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const radio = chip.querySelector('input');
+        if (radio) {
+          radio.checked = true;
+          const agentVal = radio.value;
+          // Sync to main form
+          const mainRadios = document.querySelectorAll('input[name="agent"]');
+          mainRadios.forEach(mr => {
+            if (mr.value === agentVal) mr.checked = true;
+          });
+          const btnShowAuto = document.getElementById('btnShowAuto');
+          if (btnShowAuto) btnShowAuto.innerText = agentVal;
+        }
+      });
+    });
+
+    // MCP toggle in modal
+    if (modalMcpEnabled) {
+      modalMcpEnabled.addEventListener('change', () => {
+        if (modalMcpControls) modalMcpControls.style.display = modalMcpEnabled.checked ? 'block' : 'none';
+        if (mcpEnabledCheckbox) {
+          mcpEnabledCheckbox.checked = modalMcpEnabled.checked;
+          mcpEnabledCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    // Modal Presets
+    const modalPresets = modal.querySelectorAll('[data-modal-preset]');
+    modalPresets.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.modalPreset;
+        if (typeof addMCPPreset === 'function') {
+          addMCPPreset(preset);
+          if (mcpConfigTextarea && modalMcpConfig) {
+            modalMcpConfig.value = mcpConfigTextarea.value;
+          }
+        }
+      });
+    });
+
+    // Modal Format JSON
+    if (modalFormatMcpBtn) {
+      modalFormatMcpBtn.addEventListener('click', () => {
+        try {
+          const parsed = JSON.parse(modalMcpConfig.value);
+          modalMcpConfig.value = JSON.stringify(parsed, null, 2);
+          if (mcpConfigTextarea) mcpConfigTextarea.value = modalMcpConfig.value;
+        } catch (e) {
+          alert('Invalid JSON in MCP configuration');
+        }
+      });
+    }
+
+    // Reset Defaults
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (modalReportType) modalReportType.value = 'research_report';
+        if (modalTone) modalTone.value = 'Objective';
+        if (modalReportSource) modalReportSource.value = 'web';
+        if (modalMaxSearchResults) {
+          modalMaxSearchResults.value = '5';
+          if (modalDepthValue) modalDepthValue.innerText = '5 websites';
+        }
+        if (modalQueryDomains) modalQueryDomains.value = '';
+        if (modalMcpEnabled) {
+          modalMcpEnabled.checked = false;
+          if (modalMcpControls) modalMcpControls.style.display = 'none';
+        }
+        if (modalMcpConfig) modalMcpConfig.value = '[]';
+
+        personaChips.forEach(chip => {
+          const radio = chip.querySelector('input');
+          if (radio && radio.value === 'Auto Agent') {
+            chip.classList.add('active');
+            radio.checked = true;
+          } else {
+            chip.classList.remove('active');
+          }
+        });
+
+        syncModalToMain();
+      });
+    }
+
+    // Launch Research button inside Modal
+    if (launchBtn) {
+      launchBtn.addEventListener('click', () => {
+        const taskVal = modalTask ? modalTask.value.trim() : '';
+        if (!taskVal) {
+          if (modalTask) modalTask.focus();
+          alert('Please enter a research topic or question before launching.');
+          return;
+        }
+
+        syncModalToMain();
+        modal.style.display = 'none';
+
+        const mainForm = document.getElementById('researchForm');
+        if (mainForm) {
+          mainForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+      });
+    }
   };
 
 

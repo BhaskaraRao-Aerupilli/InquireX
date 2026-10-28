@@ -83,16 +83,9 @@ class BrowserManager:
 
         return scraped_content
 
-    def select_top_images(self, images: list[dict], k: int = 2) -> list[str]:
+    def select_top_images(self, images: list[dict], k: int = 4) -> list[dict]:
         """
-        Select most relevant images and remove duplicates based on image content.
-
-        Args:
-            images (list[dict]): list of image dictionaries with 'url' and 'score' keys.
-            k (int): Number of top images to select if no high-score images are found.
-
-        Returns:
-            list[str]: list of selected image URLs.
+        Select most relevant images and remove duplicates based on image content and URLs.
         """
         unique_images = []
         seen_hashes = set()
@@ -100,14 +93,22 @@ class BrowserManager:
         existing_urls = {img['url'] if isinstance(img, dict) else str(img) for img in existing_imgs}
 
         junk_keywords = (
-            '.svg', '.ico', 'pixel', 'avatar', 'favicon', 'logo', 'tracking',
+            '.svg', '.ico', '.gif', 'pixel', 'avatar', 'favicon', 'logo', 'tracking',
             'badge', 'spinner', '1x1', 'ad-', 'advertisement', 'doubleclick',
-            'share_icon', 'social', 'button'
+            'share_icon', 'social', 'button', 'w_64', 'w_32', '64x64', 'fallback',
+            'icon', 'sponsor', 'placeholder'
         )
 
-        # Process images in descending order of their scores
-        for img in sorted(images, key=lambda im: im.get("score", 0), reverse=True):
-            url = img.get('url', '')
+        for img in sorted(images, key=lambda im: im.get("score", 0) if isinstance(im, dict) else 0, reverse=True):
+            if isinstance(img, dict):
+                url = img.get('url', '')
+                alt = img.get('alt', 'Research Visual Figure')
+                title = img.get('title', 'Visual Figure')
+            else:
+                url = str(img)
+                alt = 'Research Visual Figure'
+                title = 'Visual Figure'
+
             if not url or not url.startswith('http'):
                 continue
             
@@ -123,7 +124,11 @@ class BrowserManager:
             ):
                 seen_hashes.add(img_hash)
                 existing_urls.add(url)
-                unique_images.append(url)
+                unique_images.append({
+                    'url': url,
+                    'alt': alt,
+                    'title': title
+                })
 
                 if len(unique_images) == k:
                     break

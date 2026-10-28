@@ -14,42 +14,69 @@ from bs4 import BeautifulSoup
 
 
 def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
-    """Extract relevant images from the page"""
+    """Extract relevant, high-resolution content images from the page with captions"""
     image_urls = []
     
+    junk_patterns = (
+        '.svg', '.ico', '.gif', 'pixel', 'avatar', 'favicon', 'logo', 'tracking',
+        'badge', 'spinner', '1x1', 'ad-', 'advertisement', 'doubleclick', 'button',
+        'icon', 'share', 'placeholder', 'banner', 'sponsor', 'w_64', 'w_32', 'w_100',
+        '64x64', '32x32', 'fallback', 'author', 'profile', 'thumb_'
+    )
+
     try:
-        # Find all img tags with src attribute
         all_images = soup.find_all('img', src=True)
         
         for img in all_images:
             img_src = urljoin(url, img['src'])
-            if img_src.startswith(('http://', 'https://')):
-                score = 0
-                # Check for relevant classes
-                if any(cls in img.get('class', []) for cls in ['header', 'featured', 'hero', 'thumbnail', 'main', 'content']):
-                    score = 4  # Higher score
-                # Check for size attributes
-                elif img.get('width') and img.get('height'):
-                    width = parse_dimension(img['width'])
-                    height = parse_dimension(img['height'])
-                    if width and height:
-                        if width >= 2000 and height >= 1000:
-                            score = 3  # Medium score (very large images)
-                        elif width >= 1600 or height >= 800:
-                            score = 2  # Lower score
-                        elif width >= 800 or height >= 500:
-                            score = 1  # Lowest score
-                        elif width >= 500 or height >= 300:
-                            score = 0  # Lowest score
-                        else:
-                            continue  # Skip small images
-                
-                image_urls.append({'url': img_src, 'score': score})
+            if not img_src.startswith(('http://', 'https://')):
+                continue
+            
+            src_lower = img_src.lower()
+            if any(junk in src_lower for junk in junk_patterns):
+                continue
+            
+            # Check explicit dimensions if present
+            width = parse_dimension(img.get('width', ''))
+            height = parse_dimension(img.get('height', ''))
+            if width and width < 220:
+                continue
+            if height and height < 160:
+                continue
+            
+            score = 1
+            # Check for relevant semantic classes (excluding thumbnail)
+            classes = [c.lower() for c in img.get('class', [])]
+            if any(cls in classes for cls in ['featured', 'hero', 'lead', 'main', 'content', 'article-image', 'figure']):
+                score += 3
+            
+            # Bonus for descriptive alt or title text
+            alt_text = img.get('alt', '').strip()
+            title_text = img.get('title', '').strip()
+            caption = alt_text or title_text
+            
+            if caption and len(caption) > 10:
+                score += 2
+                caption_lower = caption.lower()
+                if any(junk in caption_lower for junk in ['logo', 'icon', 'advertisement', 'banner', 'avatar', 'thumbnail']):
+                    continue
+            
+            if width and height:
+                if width >= 1200 or height >= 700:
+                    score += 2
+                elif width >= 600 or height >= 400:
+                    score += 1
+
+            image_urls.append({
+                'url': img_src,
+                'score': score,
+                'alt': caption or 'Research Visual Figure',
+                'title': title_text or caption or 'Visual Figure'
+            })
         
-        # Sort images by score (highest first)
+        # Sort by score descending
         sorted_images = sorted(image_urls, key=lambda x: x['score'], reverse=True)
-        
-        return sorted_images[:10]  # Ensure we don't return more than 10 images in total
+        return sorted_images[:10]
     
     except Exception as e:
         logging.error(f"Error in get_relevant_images: {e}")
