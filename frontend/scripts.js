@@ -140,6 +140,7 @@ const GPTResearcher = (() => {
 
     // Initialize Research Options Full View Studio
     initOptionsFullView();
+    initExportOverlaySuite();
 
 
 
@@ -1893,14 +1894,20 @@ const GPTResearcher = (() => {
 
 
 
-    // Hide the download bar
-
+    // Hide export suites during new research run
+    const sidebarPanel = document.getElementById('exportSidebarPanel');
+    if (sidebarPanel) {
+      sidebarPanel.classList.remove('visible');
+      sidebarPanel.style.display = 'none';
+    }
     const stickyDownloadsBar = document.getElementById('stickyDownloadsBar');
-
     if (stickyDownloadsBar) {
-
       stickyDownloadsBar.classList.remove('visible');
-
+      stickyDownloadsBar.style.display = 'none';
+    }
+    const navExportSuite = document.getElementById('navExportSuite');
+    if (navExportSuite) {
+      navExportSuite.style.display = 'none';
     }
 
 
@@ -2663,6 +2670,12 @@ const GPTResearcher = (() => {
     updateLink('downloadLinkMd', currentLinks.md);
 
     updateLink('downloadLinkJson', currentLinks.json);
+
+    // Update fixed top navbar export suite links
+    updateLink('navExportPdf', currentLinks.pdf);
+    updateLink('navExportWord', currentLinks.docx);
+    updateLink('navExportMd', currentLinks.md);
+    updateLink('navExportJson', currentLinks.json);
 
 
 
@@ -3786,6 +3799,38 @@ const GPTResearcher = (() => {
   };
 
 
+
+  // --------------------------------------------------------------------------
+  // Export Overlay Suite (Fixed Header Bar & Persistent Right-Hand Sidebar Dock)
+  // --------------------------------------------------------------------------
+  const initExportOverlaySuite = () => {
+    const dockToggle = document.getElementById('exportDockToggle');
+    const exportPanel = document.getElementById('exportSidebarPanel');
+    if (dockToggle && exportPanel) {
+      dockToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportPanel.classList.toggle('collapsed');
+      });
+    }
+
+    // Top navbar copy button
+    const navCopyBtn = document.getElementById('navExportCopy');
+    if (navCopyBtn) {
+      navCopyBtn.addEventListener('click', () => {
+        const copyBtn = document.getElementById('copyToClipboard');
+        if (copyBtn) {
+          copyBtn.click();
+        } else {
+          const reportEl = document.getElementById('reportContainer');
+          if (reportEl) {
+            navigator.clipboard.writeText(reportEl.innerText || reportEl.textContent || '')
+              .then(() => alert('Report copied to clipboard!'))
+              .catch(err => console.error('Copy failed:', err));
+          }
+        }
+      });
+    }
+  };
 
   const initAudioBriefing = () => {
 
@@ -6276,41 +6321,35 @@ const GPTResearcher = (() => {
   // Function to show download bar and enable buttons
 
   const showDownloadPanels = () => {
-
-    // Show the bar by adding the visible class
-
+    // Show persistent right-hand sidebar export dock
+    const sidebarPanel = document.getElementById('exportSidebarPanel');
+    if (sidebarPanel) {
+      sidebarPanel.style.display = 'block';
+      setTimeout(() => sidebarPanel.classList.add('visible'), 20);
+    }
     const stickyDownloadsBar = document.getElementById('stickyDownloadsBar');
-
     if (stickyDownloadsBar) {
-
+      stickyDownloadsBar.style.display = 'block';
       stickyDownloadsBar.classList.add('visible');
-
     }
 
+    // Show fixed top navbar export suite
+    const navExportSuite = document.getElementById('navExportSuite');
+    if (navExportSuite) {
+      navExportSuite.style.display = 'flex';
+    }
 
-
-    // Enable all download buttons
-
-    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn');
-
+    // Enable all export buttons across navbar, sidebar, and report
+    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn');
     downloadButtons.forEach(button => {
-
       button.classList.remove('disabled');
-
     });
 
-
-
     // Make top buttons report-actions section visible
-
     const reportActions = document.querySelector('.report-actions');
-
     if (reportActions) {
-
       reportActions.style.display = 'flex';
-
     }
-
   }
 
 
@@ -8461,7 +8500,11 @@ const GPTResearcher = (() => {
 
     sendChatMessage,
 
-    addChatMessage
+    addChatMessage,
+
+    showDownloadPanels,
+
+    updateDownloadLink
 
   }
 

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=28.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=29.0" />
     <style>
         .avatar {
             width: 80px;
@@ -71,6 +71,30 @@
             <div class="brand-icon-wrap"><i class="fa-solid fa-atom"></i></div>
             <div class="brand-text">Inquire<strong>X</strong></div>
             <span class="brand-core-badge">Autonomous Core</span>
+        </div>
+                <!-- Header Bar Export Suite (Fixed top bar export buttons) -->
+        <div class="nav-export-suite" id="navExportSuite" style="display: none;">
+            <div class="nav-export-label">
+                <i class="fa-solid fa-file-export"></i>
+                <span>Export</span>
+            </div>
+            <div class="nav-export-links">
+                <a id="navExportPdf" href="#" class="nav-export-btn btn-pdf disabled" target="_blank" rel="noopener noreferrer" title="Export PDF Document">
+                    <i class="fas fa-file-pdf"></i> <span>PDF</span>
+                </a>
+                <a id="navExportWord" href="#" class="nav-export-btn btn-word disabled" target="_blank" rel="noopener noreferrer" title="Export Microsoft Word (.docx)">
+                    <i class="fas fa-file-word"></i> <span>Word</span>
+                </a>
+                <a id="navExportMd" href="#" class="nav-export-btn btn-md disabled" target="_blank" rel="noopener noreferrer" title="Export Markdown (.md)">
+                    <i class="fas fa-file-lines"></i> <span>Markdown</span>
+                </a>
+                <a id="navExportJson" href="#" class="nav-export-btn btn-json disabled" target="_blank" rel="noopener noreferrer" title="Export Log (JSON)">
+                    <i class="fas fa-file-code"></i> <span>Log JSON</span>
+                </a>
+                <button type="button" id="navExportCopy" class="nav-export-btn btn-copy" title="Copy Report Markdown">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
         </div>
         <div class="nav-buttons">
             <div id="navUserBadge" class="nav-user-badge" style="display:none;">
@@ -758,29 +782,72 @@
         </div>
     </div>
     
-    <!-- Sticky Downloads Bar -->
-    <div class="sticky-downloads-bar" id="stickyDownloadsBar" style="display: none;"> <!-- Initially hidden -->
-        <div class="download-buttons-container">
-            <a id="copyToClipboard" class="download-option-btn disabled">
-                <i class="fas fa-copy"></i> Copy (Markdown)
-            </a>
-            <a id="downloadLinkMd" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-file-lines"></i> Markdown
-            </a>
-            <a id="downloadLink" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-file-pdf"></i> PDF
-            </a>
-            <a id="downloadLinkWord" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-file-word"></i> Word
-            </a>
-            <a id="downloadLinkJson" href="#" class="download-option-btn disabled" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-file-code"></i> Log (JSON)
-            </a>
-            <a id="viewSlidesBtnSticky" href="#" class="download-option-btn disabled" title="Open Presentation Deck">
-                <i class="fas fa-desktop"></i> Slide Deck
-            </a>
+    <!-- Persistent Right-Hand Sidebar Export Dock (Zero Overlap on Report Body) -->
+    <aside class="export-sidebar-panel" id="exportSidebarPanel" style="display: none;">
+        <div class="export-panel-dock">
+            <!-- Sidebar Header / Toggle Tab -->
+            <div class="export-dock-header" id="exportDockHeader">
+                <div class="export-dock-title">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span>Export Suite</span>
+                </div>
+                <button type="button" class="export-dock-toggle" id="exportDockToggle" title="Minimize / Expand Export Dock">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <!-- Export Action Items -->
+            <div class="export-dock-body">
+                <a id="downloadLink" href="#" class="export-dock-item item-pdf disabled" target="_blank" rel="noopener noreferrer" title="Download High-Res PDF">
+                    <div class="dock-item-icon"><i class="fas fa-file-pdf"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">PDF Document</span>
+                        <span class="dock-item-meta">Formatted Report</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-down dock-dl-arrow"></i>
+                </a>
+                <a id="downloadLinkWord" href="#" class="export-dock-item item-word disabled" target="_blank" rel="noopener noreferrer" title="Download Word Document">
+                    <div class="dock-item-icon"><i class="fas fa-file-word"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">Word (.docx)</span>
+                        <span class="dock-item-meta">Editable Office</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-down dock-dl-arrow"></i>
+                </a>
+                <a id="downloadLinkMd" href="#" class="export-dock-item item-md disabled" target="_blank" rel="noopener noreferrer" title="Download Markdown Source">
+                    <div class="dock-item-icon"><i class="fas fa-file-lines"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">Markdown (.md)</span>
+                        <span class="dock-item-meta">Plain Text Source</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-down dock-dl-arrow"></i>
+                </a>
+                <a id="downloadLinkJson" href="#" class="export-dock-item item-json disabled" target="_blank" rel="noopener noreferrer" title="Download Structured Logs JSON">
+                    <div class="dock-item-icon"><i class="fas fa-file-code"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">Log JSON</span>
+                        <span class="dock-item-meta">Research Trace</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-down dock-dl-arrow"></i>
+                </a>
+                <a id="viewSlidesBtnSticky" href="#" class="export-dock-item item-slides disabled" title="Open Interactive Slide Deck">
+                    <div class="dock-item-icon"><i class="fas fa-desktop"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">Slide Deck</span>
+                        <span class="dock-item-meta">Presentation Mode</span>
+                    </div>
+                    <i class="fa-solid fa-play dock-dl-arrow"></i>
+                </a>
+                <button type="button" id="copyToClipboard" class="export-dock-item item-copy disabled" title="Copy Full Markdown">
+                    <div class="dock-item-icon"><i class="fas fa-copy"></i></div>
+                    <div class="dock-item-info">
+                        <span class="dock-item-name">Copy Markdown</span>
+                        <span class="dock-item-meta">Clipboard</span>
+                    </div>
+                    <i class="fa-solid fa-clipboard-check dock-dl-arrow"></i>
+                </button>
+            </div>
         </div>
-    </div>
+    </aside>
 
     <!-- Interactive Slide Deck Presentation Modal -->
     <div class="slide-deck-modal" id="slideDeckModal" style="display: none;">
@@ -839,7 +906,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=28.0"></script>
+    <script src="/site/scripts.js?v=29.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');
