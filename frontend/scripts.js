@@ -137,25 +137,14 @@ window.stripMarkdown = stripMarkdown;
 // Collapsible Left Sidebar Controller
 function toggleResearchSidebar(open) {
   const sidebar = document.getElementById('researchSidebar');
-  const floatBtn = document.getElementById('sidebarFloatingExpandBtn');
   if (!sidebar) return;
 
   if (open === undefined) {
-    open = sidebar.classList.contains('collapsed');
-  }
-
-  if (open) {
+    sidebar.classList.toggle('collapsed');
+  } else if (open) {
     sidebar.classList.remove('collapsed');
-    if (floatBtn) {
-      floatBtn.style.setProperty('display', 'none', 'important');
-      floatBtn.classList.add('hidden');
-    }
   } else {
     sidebar.classList.add('collapsed');
-    if (floatBtn) {
-      floatBtn.style.setProperty('display', 'inline-flex', 'important');
-      floatBtn.classList.remove('hidden');
-    }
   }
 }
 window.toggleResearchSidebar = toggleResearchSidebar;
@@ -247,11 +236,10 @@ const GPTResearcher = (() => {
 
 
 
-    document
-
-      .getElementById('copyToClipboard')
-
-      .addEventListener('click', copyToClipboard)
+    const copyBtn = document.getElementById('copyToClipboard');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', copyToClipboard);
+    }
 
 
 
@@ -419,50 +407,42 @@ const GPTResearcher = (() => {
 
 
 
+    const openResearchHistoryPanel = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      loadConversationHistory();
+      if (historyPanel) {
+        historyPanel.classList.toggle('open');
+      }
+    };
+    window.openResearchHistoryPanel = openResearchHistoryPanel;
+
     if (historyPanelOpenBtn) {
-
-      historyPanelOpenBtn.addEventListener('click', () => {
-
-        loadConversationHistory(); // Reload history when opening panel
-
-        historyPanel.classList.add('open');
-
-      });
-
+      historyPanelOpenBtn.addEventListener('click', openResearchHistoryPanel);
     }
-
-
 
     if (historyPanelToggle) {
-
-      historyPanelToggle.addEventListener('click', () => {
-
-        historyPanel.classList.remove('open');
-
+      historyPanelToggle.addEventListener('click', (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        if (historyPanel) historyPanel.classList.remove('open');
       });
-
     }
 
-
-
     // Close panel when clicking outside
-
     document.addEventListener('click', (e) => {
-
-      // If the panel is open and the click is outside the panel and not on the toggle button
-
-      if (historyPanel.classList.contains('open') &&
-
+      const sidebarHistoryBtn = document.getElementById('sidebarHistoryBtn');
+      if (historyPanel && historyPanel.classList.contains('open') &&
         !historyPanel.contains(e.target) &&
-
         e.target !== historyPanelOpenBtn &&
-
-        !historyPanelOpenBtn.contains(e.target)) {
-
+        !historyPanelOpenBtn?.contains(e.target) &&
+        (!sidebarHistoryBtn || (e.target !== sidebarHistoryBtn && !sidebarHistoryBtn.contains(e.target)))) {
         historyPanel.classList.remove('open');
-
       }
-
     });
 
 
@@ -647,52 +627,36 @@ const GPTResearcher = (() => {
 
 
 
-    websocketPanelOpenBtn.addEventListener('click', (e) => {
+    const openSystemStatusPanel = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (websocketPanel) {
+        websocketPanel.classList.toggle('open');
+      }
+    };
+    window.openSystemStatusPanel = openSystemStatusPanel;
 
-      e.preventDefault();
-
-      e.stopPropagation();
-
-      console.log("Opening WebSocket panel");
-
-      websocketPanel.classList.add('open');
-
-    });
-
-
+    websocketPanelOpenBtn.addEventListener('click', openSystemStatusPanel);
 
     websocketPanelToggle.addEventListener('click', (e) => {
-
       e.preventDefault();
-
       e.stopPropagation();
-
       console.log("Closing WebSocket panel");
-
-      websocketPanel.classList.remove('open');
-
+      if (websocketPanel) websocketPanel.classList.remove('open');
     });
 
-
-
     // Close panel when clicking outside
-
     document.addEventListener('click', (e) => {
-
-      // If the panel is open and the click is outside the panel and not on the toggle button
-
-      if (websocketPanel.classList.contains('open') &&
-
+      const sidebarStatusBtn = document.getElementById('sidebarStatusBtn');
+      if (websocketPanel && websocketPanel.classList.contains('open') &&
         !websocketPanel.contains(e.target) &&
-
         e.target !== websocketPanelOpenBtn &&
-
-        !websocketPanelOpenBtn.contains(e.target)) {
-
+        !websocketPanelOpenBtn?.contains(e.target) &&
+        (!sidebarStatusBtn || (e.target !== sidebarStatusBtn && !sidebarStatusBtn.contains(e.target)))) {
         websocketPanel.classList.remove('open');
-
       }
-
     });
 
 
@@ -6101,14 +6065,21 @@ const GPTResearcher = (() => {
     };
 
     // Open Modal
-    openBtn.addEventListener('click', () => {
+    const openStudioModeModal = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       syncMainToModal();
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       setTimeout(() => {
         if (modalTask) modalTask.focus();
       }, 50);
-    });
+    };
+    window.openStudioModeModal = openStudioModeModal;
+
+    openBtn.addEventListener('click', openStudioModeModal);
 
     // Close Modal helper
     const closeModal = () => {
