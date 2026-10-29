@@ -41,6 +41,48 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import re
+
+STOPWORDS = {
+    'in', 'the', 'a', 'an', 'of', 'for', 'to', 'and', 'on', 'with', 'is', 'are',
+    'about', 'how', 'what', 'why', 'when', 'where', 'who', 'which', 'from', 'by',
+    'as', 'at', 'or', 'its', 'it', 'that', 'this', 'into', 'within', 'across',
+    'report', 'analysis', 'overview', 'summary', 'research', 'guide', 'study', 'details'
+}
+
+def _extract_core_entities(query: str) -> List[str]:
+    words = re.findall(r"[a-zA-Z0-9_\-]+", query.lower())
+    return [w for w in words if w not in STOPWORDS and len(w) >= 3]
+
+def disambiguate_sub_queries(sub_queries: List[str], parent_query: str) -> List[str]:
+    """Ensure sub-queries retain domain and entity context of the task to prevent keyword collision.
+
+    If a sub-query lacks any of the core entity tokens from parent_query (for example,
+    generating bare 'character' for 'Zoro in One Piece'), anchor it by prepending the
+    parent entity so search retrievers do not fetch unrelated topics like java.lang.Character.
+    """
+    if not parent_query or not parent_query.strip():
+        return sub_queries
+    core_entities = _extract_core_entities(parent_query)
+    if not core_entities:
+        return sub_queries
+
+    disambiguated = []
+    for q in sub_queries:
+        q_clean = q.strip()
+        if not q_clean:
+            continue
+        q_lower = q_clean.lower()
+        has_entity = any(re.search(r'\b' + re.escape(e) + r'\b', q_lower) for e in core_entities)
+        if not has_entity:
+            anchored = f"{parent_query} {q_clean}"
+            disambiguated.append(anchored)
+            logger.info(f"Disambiguated query without entity context: '{q_clean}' -> '{anchored}'")
+        else:
+            disambiguated.append(q_clean)
+    return disambiguated
+
+
 async def get_search_results(
     query: str,
     retriever: Any,
@@ -153,7 +195,8 @@ async def generate_sub_queries(
                 **kwargs
             )
 
-    return _normalize_sub_queries(json_repair.loads(response), query)
+    sub_queries = _normalize_sub_queries(json_repair.loads(response), query)
+    return disambiguate_sub_queries(sub_queries, parent_query or query)
 
 async def plan_research_outline(
     query: str,

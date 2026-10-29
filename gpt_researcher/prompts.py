@@ -247,9 +247,16 @@ Use this context to inform and refine your search queries. The context provides 
 
         return f"""Write {max_iterations} search queries to research the following task: "{task}"
 
-Each query must be a plain natural language phrase. Do not use search operator syntax
-such as site:, filetype:, inurl:, intitle:, OR, AND, or NOT — these operators are
-not universally supported and will return empty results on many search backends.
+CRITICAL INSTRUCTIONS FOR QUERY DISAMBIGUATION & CONTEXT PRESERVATION:
+1. Enforce Domain & Entity Context:
+   - EVERY generated search query MUST explicitly include the core subject name, domain, and entity context of the task (e.g., if the task is "{task}", every sub-query must include specific terms like key entity names to keep searches firmly grounded in this exact domain).
+   - For example, for "Zoro in One Piece", require terms like "One Piece Zoro" or "Roronoa Zoro" in all queries (e.g., "One Piece Zoro character backstory", "Roronoa Zoro swordsmanship abilities").
+2. STRICTLY PROHIBIT Bare Ambiguous Keywords:
+   - NEVER generate bare, isolated keywords (such as "character", "character bio", "traits", "abilities", "swordsman", "skills", "overview", "methods") without the subject entity attached. Standalone generic words trigger keyword collision with unrelated domains (such as programming language APIs like java.lang.Character, dictionary definitions, or unrelated products).
+3. Plain natural language phrases ONLY:
+   - Do not use search operator syntax such as site:, filetype:, inurl:, intitle:, OR, AND, or NOT — these operators are not universally supported and will return empty results on many search backends.
+4. Specificity & Independence:
+   - Each query must be fully self-contained, disambiguated, and directly targeted to discover verified factual data about "{task}".
 
 Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if required.
 

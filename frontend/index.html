@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=29.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=30.0" />
     <style>
         .avatar {
             width: 80px;
@@ -893,7 +893,8 @@
                     const badge = document.getElementById('navUserBadge');
                     const nameEl = document.getElementById('navUserName');
                     if (badge && nameEl) {
-                        nameEl.textContent = user.email ? `${user.name} (${user.email})` : user.name;
+                        nameEl.textContent = user.name || user.email || "User";
+                        badge.title = user.email ? `${user.name} (${user.email})` : user.name;
                         badge.style.display = 'flex';
                     }
                     // Refresh research history scoped to this specific user
@@ -906,7 +907,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=29.0"></script>
+    <script src="/site/scripts.js?v=30.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');

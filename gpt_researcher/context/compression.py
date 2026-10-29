@@ -31,6 +31,34 @@ from ..prompts import PromptFamily
 from ..utils.costs import estimate_embedding_cost
 from ..vector_store import VectorStoreWrapper
 from .retriever import SearchAPIRetriever, SectionRetriever
+import logging
+import re
+
+logger = logging.getLogger(__name__)
+
+STOPWORDS = {
+    'in', 'the', 'a', 'an', 'of', 'for', 'to', 'and', 'on', 'with', 'is', 'are',
+    'about', 'how', 'what', 'why', 'when', 'where', 'who', 'which', 'from', 'by',
+    'as', 'at', 'or', 'its', 'it', 'that', 'this', 'into', 'within', 'across',
+    'report', 'analysis', 'overview', 'summary', 'research', 'guide', 'study', 'details'
+}
+
+def extract_core_entities(query: str) -> list[str]:
+    """Extract substantive entity tokens from a query for relevance checking."""
+    words = re.findall(r"[a-zA-Z0-9_\-]+", query.lower())
+    return [w for w in words if w not in STOPWORDS and len(w) >= 3]
+
+def has_entity_overlap(content: str, title: str, source: str, core_entities: list[str]) -> bool:
+    """Return True if content/title/source has at least one core entity keyword.
+
+    If core_entities is empty (e.g. abstract or short test queries), returns True to avoid over-filtering.
+    If core_entities are present, drops chunks that share 0 semantic/keyword overlap with the core entity.
+    """
+    if not core_entities:
+        return True
+    blob = f"{title} {source} {content}".lower()
+    return any(re.search(r'\b' + re.escape(entity) + r'\b', blob) for entity in core_entities)
+
 
 
 class VectorstoreCompressor:
@@ -79,7 +107,19 @@ class VectorstoreCompressor:
             Formatted string of relevant document content.
         """
         results = await self.vector_store.asimilarity_search(query=query, k=max_results, filter=self.filter)
-        return self.prompt_family.pretty_print_docs(results)
+        core_entities = extract_core_entities(query)
+        validated_results = []
+        for doc in results:
+            content = doc.page_content or ''
+            title = doc.metadata.get('title', '') or ''
+            source = doc.metadata.get('source', '') or ''
+            if has_entity_overlap(content, title, source, core_entities):
+                validated_results.append(doc)
+            else:
+                logger.warning(
+                    f"RAG Filter: Dropping vectorstore result with 0 entity overlap for query '{query}': title='{title}', source='{source}'"
+                )
+        return self.prompt_family.pretty_print_docs(validated_results)
 
 
 class ContextCompressor:
@@ -163,21 +203,30 @@ class ContextCompressor:
         total_chars = sum(len(str(doc.get('raw_content', ''))) for doc in self.documents)
         chunk_threshold = int(os.environ.get("COMPRESSION_THRESHOLD", "8000"))
 
+        core_entities = extract_core_entities(query)
+
         # If total content is small, skip expensive compression and return directly
         if total_chars < chunk_threshold and len(self.documents) <= max_results:
-            # Fast path: no compression needed
-            # Map scraper/retriever dict keys into metadata that pretty_print_docs expects.
-            # Raw dicts use `url`; SearchAPIRetriever / pretty_print use `source`.
-            direct_docs = [
-                Document(
-                    page_content=doc.get('raw_content', '') or '',
-                    metadata={
-                        "title": doc.get("title", "") or "",
-                        "source": doc.get("source") or doc.get("url") or "",
-                    },
-                )
-                for doc in self.documents[:max_results]
-            ]
+            # Fast path: filter by entity relevance before converting to Documents
+            direct_docs = []
+            for doc in self.documents[:max_results]:
+                content = doc.get('raw_content', '') or ''
+                title = doc.get('title', '') or ''
+                source = doc.get('source') or doc.get('url') or ''
+                if has_entity_overlap(content, title, source, core_entities):
+                    direct_docs.append(
+                        Document(
+                            page_content=content,
+                            metadata={
+                                "title": title,
+                                "source": source,
+                            },
+                        )
+                    )
+                else:
+                    logger.warning(
+                        f"RAG Filter: Dropping chunk with 0 entity overlap for query '{query}': title='{title}', source='{source}'"
+                    )
             return self.prompt_family.pretty_print_docs(direct_docs, max_results)
 
         # Standard path: use compression for large content
@@ -185,7 +234,21 @@ class ContextCompressor:
         if cost_callback:
             cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
         relevant_docs = await asyncio.to_thread(compressed_docs.invoke, query, **self.kwargs)
-        return self.prompt_family.pretty_print_docs(relevant_docs, max_results)
+
+        # RAG Context Validation: Filter out chunks with 0 entity overlap
+        validated_docs = []
+        for doc in relevant_docs:
+            content = doc.page_content or ''
+            title = doc.metadata.get('title', '') or ''
+            source = doc.metadata.get('source', '') or ''
+            if has_entity_overlap(content, title, source, core_entities):
+                validated_docs.append(doc)
+            else:
+                logger.warning(
+                    f"RAG Filter: Dropping compressed chunk with 0 entity overlap for query '{query}': title='{title}', source='{source}'"
+                )
+
+        return self.prompt_family.pretty_print_docs(validated_docs, max_results)
 
 
 class WrittenContentCompressor:

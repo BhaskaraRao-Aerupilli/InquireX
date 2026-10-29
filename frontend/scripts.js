@@ -4382,92 +4382,49 @@ const GPTResearcher = (() => {
 
 
 
-      // 4. Ensure every quadrant is richly populated (minimum 3 items each)
+      // 4. Validate context sufficiency & prevent hallucinated placeholder text
+      const totalExtracted = strengths.length + weaknesses.length + opportunities.length + threats.length;
+      const isSparseOrMissing = candidateSentences.length < 2 || totalExtracted === 0;
 
-      if (strengths.length < 3) {
-
-        strengths.push(
-
-          `High-efficiency execution and robust operational capabilities across ${primaryDomain}`,
-
-          `Pioneering innovation benchmarks and verified performance milestones identified in current reporting`
-
-        );
-
+      if (isSparseOrMissing) {
+        grid.innerHTML = `
+          <div class="swot-fallback-state">
+            <div class="swot-fallback-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="swot-fallback-content">
+              <h4>Insufficient data gathered for SWOT analysis</h4>
+              <p>The retrieved research context did not contain enough verified analytical, operational, or risk metrics to synthesize a rigorous SWOT matrix without speculation.</p>
+            </div>
+          </div>
+        `;
+        container.style.display = 'block';
+        return;
       }
 
-      if (weaknesses.length < 3) {
-
-        weaknesses.push(
-
-          `Operational friction and infrastructure adaptation overhead across ${secondaryDomain}`,
-
-          `Complex logistical dependencies and resource allocation challenges during scaling`
-
-        );
-
-      }
-
-      if (opportunities.length < 3) {
-
-        opportunities.push(
-
-          `Accelerated market adoption and next-generation capability expansion across ${primaryDomain}`,
-
-          `Integration with emerging autonomous workflows and cross-sector collaborative frameworks`
-
-        );
-
-      }
-
-      if (threats.length < 3) {
-
-        threats.push(
-
-          `Evolving regulatory compliance mandates and data governance risk factors`,
-
-          `External market volatility, environmental impacts, and competitive disruption pressures`
-
-        );
-
-      }
-
-
+      // Helper to render quadrant items without hallucinated generic placeholders
+      const renderQuadrantItems = (items, categoryName) => {
+        if (!items || items.length === 0) {
+          return `<li><span class="swot-item-muted">No verified ${categoryName} identified in gathered context</span></li>`;
+        }
+        return items.slice(0, 4).map(s => `<li>${s}</li>`).join('');
+      };
 
       grid.innerHTML = `
-
         <div class="swot-quadrant strengths">
-
           <div class="swot-quadrant-title"><i class="fa-solid fa-circle-check"></i> Strengths & Strategic Advantages</div>
-
-          <ul class="swot-items-list">${strengths.slice(0, 4).map(s => `<li>${s}</li>`).join('')}</ul>
-
+          <ul class="swot-items-list">${renderQuadrantItems(strengths, 'strengths')}</ul>
         </div>
-
         <div class="swot-quadrant weaknesses">
-
           <div class="swot-quadrant-title"><i class="fa-solid fa-triangle-exclamation"></i> Challenges & Operational Limitations</div>
-
-          <ul class="swot-items-list">${weaknesses.slice(0, 4).map(w => `<li>${w}</li>`).join('')}</ul>
-
+          <ul class="swot-items-list">${renderQuadrantItems(weaknesses, 'challenges')}</ul>
         </div>
-
         <div class="swot-quadrant opportunities">
-
           <div class="swot-quadrant-title"><i class="fa-solid fa-arrow-trend-up"></i> Growth & Emerging Opportunities</div>
-
-          <ul class="swot-items-list">${opportunities.slice(0, 4).map(o => `<li>${o}</li>`).join('')}</ul>
-
+          <ul class="swot-items-list">${renderQuadrantItems(opportunities, 'growth opportunities')}</ul>
         </div>
-
         <div class="swot-quadrant threats">
-
           <div class="swot-quadrant-title"><i class="fa-solid fa-shield-halved"></i> Risk Factors & Environmental Threats</div>
-
-          <ul class="swot-items-list">${threats.slice(0, 4).map(t => `<li>${t}</li>`).join('')}</ul>
-
+          <ul class="swot-items-list">${renderQuadrantItems(threats, 'risk factors')}</ul>
         </div>
-
       `;
 
 
