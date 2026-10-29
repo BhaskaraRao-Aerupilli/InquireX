@@ -3,7 +3,7 @@ from .base import BaseConfig
 DEFAULT_CONFIG: BaseConfig = {
     "RETRIEVER": "tavily",
     "EMBEDDING": "openai:text-embedding-3-small",
-    "SIMILARITY_THRESHOLD": 0.42,
+    "SIMILARITY_THRESHOLD": 0.25,
     "FAST_LLM": "openai:gpt-5.4-mini",
     "SMART_LLM": "openai:gpt-5.4",  # Has support for long responses (2k+ words).
     "STRATEGIC_LLM": "openai:gpt-5.4",  # Reasoning model used for planning; tune REASONING_EFFORT for speed vs. depth.
@@ -18,7 +18,7 @@ DEFAULT_CONFIG: BaseConfig = {
     "SUMMARY_TOKEN_LIMIT": 700,
     "TEMPERATURE": 0.4,
     "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0",
-    "MAX_SEARCH_RESULTS_PER_QUERY": 5,
+    "MAX_SEARCH_RESULTS_PER_QUERY": 10,
     "MEMORY_BACKEND": "local",
     "TOTAL_WORDS": 1200,
     "REPORT_FORMAT": "APA",

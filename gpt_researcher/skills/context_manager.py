@@ -84,7 +84,7 @@ class ContextManager:
             self.researcher.vector_store, filter=filter, prompt_family=self.researcher.prompt_family,
             **self.researcher.kwargs
         )
-        return await vectorstore_compressor.async_get_context(query=query, max_results=8)
+        return await vectorstore_compressor.async_get_context(query=query, max_results=10)
 
     async def get_similar_written_contents_by_draft_section_titles(
         self,

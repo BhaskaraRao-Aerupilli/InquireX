@@ -76,7 +76,7 @@ class VectorstoreCompressor:
     def __init__(
         self,
         vector_store: VectorStoreWrapper,
-        max_results: int = 7,
+        max_results: int = 10,
         filter: Optional[dict] = None,
         prompt_family: type[PromptFamily] | PromptFamily = PromptFamily,
         **kwargs,
@@ -96,7 +96,7 @@ class VectorstoreCompressor:
         self.kwargs = kwargs
         self.prompt_family = prompt_family
 
-    async def async_get_context(self, query: str, max_results: int = 5) -> str:
+    async def async_get_context(self, query: str, max_results: int = 10) -> str:
         """Get relevant context from the vector store.
 
         Args:
@@ -139,7 +139,7 @@ class ContextCompressor:
         self,
         documents,
         embeddings,
-        max_results: int = 5,
+        max_results: int = 10,
         similarity_threshold: float | None = None,
         prompt_family: type[PromptFamily] | PromptFamily = PromptFamily,
         **kwargs,
@@ -160,7 +160,7 @@ class ContextCompressor:
         self.kwargs = kwargs
         self.embeddings = embeddings
         if similarity_threshold is None:
-            similarity_threshold = float(os.environ.get("SIMILARITY_THRESHOLD", 0.35))
+            similarity_threshold = float(os.environ.get("SIMILARITY_THRESHOLD", 0.25))
         self.similarity_threshold = similarity_threshold
         self.prompt_family = prompt_family
 
@@ -185,7 +185,7 @@ class ContextCompressor:
         )
         return contextual_retriever
 
-    async def async_get_context(self, query: str, max_results: int = 5, cost_callback=None) -> str:
+    async def async_get_context(self, query: str, max_results: int = 10, cost_callback=None) -> str:
         """Get relevant context from documents asynchronously.
 
         Optimization: Skip expensive compression pipeline for small document sets.
