@@ -5,9 +5,13 @@ writing, including introductions, conclusions, and subtopic management.
 """
 
 import json
+import re
+import logging
 from typing import Dict, Optional
 
 from ..actions import (
+    identify_distinct_entities,
+    balance_multi_entity_context,
     generate_draft_section_titles,
     generate_report,
     stream_output,
@@ -15,6 +19,9 @@ from ..actions import (
     write_report_introduction,
 )
 from ..utils.llm import construct_subtopics
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReportGenerator:
@@ -86,6 +93,50 @@ class ReportGenerator:
                 "No sources were retrieved (searches may have returned nothing or been "
                 "blocked), so I am not able to produce a reliable, sourced report."
             )
+
+        # MULTI-ENTITY RETRIEVAL & BALANCE GUARD
+        entities = identify_distinct_entities(self.researcher.query)
+        if entities and len(entities) >= 2:
+            # 1. Even Matrix Check: verify facts/metrics exist for EVERY subject
+            _ctx_str = "\n".join(context) if isinstance(context, list) else str(context or "")
+            for ent in entities:
+                ent_hits = len(re.findall(r'\b' + re.escape(ent) + r'\b', _ctx_str, re.IGNORECASE))
+                if ent_hits < 2:
+                    if self.researcher.verbose:
+                        await stream_output(
+                            "logs",
+                            "even_matrix_re_retrieval",
+                            f"⚖️ Even Matrix Guard: Context for '{ent}' is sparse/missing ({ent_hits} occurrences). Triggering targeted re-retrieval...",
+                            self.researcher.websocket,
+                        )
+                    try:
+                        targeted_sub_query = f"{ent} key facts stats features overview"
+                        re_retrieved = await self.researcher.research_conductor._process_sub_query(
+                            targeted_sub_query,
+                            query_domains=getattr(self.researcher, "query_domains", [])
+                        )
+                        if re_retrieved:
+                            if isinstance(context, list):
+                                if isinstance(re_retrieved, list):
+                                    context.extend(re_retrieved)
+                                else:
+                                    context.append(str(re_retrieved))
+                            else:
+                                context = str(context) + "\n\n" + str(re_retrieved)
+                            self.researcher.context = context
+                            _ctx_str = "\n".join(context) if isinstance(context, list) else str(context or "")
+                    except Exception as e:
+                        logger.warning(f"Targeted re-retrieval for '{ent}' failed: {e}")
+
+            # 2. Entity Balancing: Equal token allocation + 60% ceiling
+            context = balance_multi_entity_context(context, entities, max_ratio=0.60)
+            if self.researcher.verbose:
+                await stream_output(
+                    "logs",
+                    "entity_balanced",
+                    f"⚖️ Entity Balance Guard: Balanced equal context allocation across {', '.join(entities)} (capped <= 60% per entity)",
+                    self.researcher.websocket,
+                )
         
         # Log image availability
         if available_images and self.researcher.verbose:

@@ -332,9 +332,10 @@ Please follow all of the following guidelines in your report:
   2. If the user asks for "just X" or "that's it", eliminate ALL fluff: do not write introductions, background history, long explanations, or conclusions. Deliver ONLY the requested content.
   3. If the user requests a specific structure (e.g., Markdown Table, JSON, Bullet Points, Executive Brief), you MUST format the entire primary output in that structure. Never replace a requested table with paragraphs or prose.
 
-- MULTI-ENTITY & COMPARISON COMPLIANCE:
-  1. When asked to compare multiple entities: the output MUST explicitly include every entity requested by the user.
-  2. If retrieved RAG context for an entity is sparse or missing, use verified general knowledge or mark missing fields clearly as "Not specified in sources" inside the requested structure—DO NOT drop the entity from the final output.
+- MULTI-ENTITY RETRIEVAL & BALANCE GUARD:
+  1. ENTITY BALANCING: Identify all distinct subjects in the prompt (e.g., [Entity A: Goku], [Entity B: Saitama]). Allocate EQUAL token allocation and consideration in the final synthesized output for each identified entity. Do NOT let context or discussion for any single entity exceed 60% of the total prompt context window or comparative text.
+  2. EVEN MATRIX CHECK: Prior to completing the final report, verify that facts, stats, and metrics exist for EVERY subject in the user's comparison request.
+  3. If context for any subject is sparse, missing, or incomplete, do NOT mark it as "Not specified in sources" or leave fields blank. Rely on verified base knowledge to complete all row entries, facts, and metrics symmetrically. DO NOT drop any entity from the final output.
 
 - DYNAMIC OUTPUT FORMATTING RULES:
   1. [TABLE REQUESTED]: Output a clean Markdown Table immediately. Do not add introductory sentences before the table unless explicitly asked.

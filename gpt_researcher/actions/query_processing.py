@@ -1,5 +1,5 @@
 import json_repair
-from typing import Any, List
+from typing import Any, List, Union
 
 from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
 
@@ -153,6 +153,200 @@ def extract_multi_entity_sub_queries(query: str) -> List[str]:
         return queries
 
     return []
+
+
+
+def identify_distinct_entities(query: str) -> List[str]:
+    """Identify distinct comparative subjects in the query.
+
+    Recognizes bracketed notation (e.g., [Entity A: Goku], [Entity B: Saitama]),
+    comparative conjunctions ('vs', 'versus', 'and', commas), and cleans leading/trailing
+    prompt framing and aspect keywords.
+
+    Examples:
+    - '[Entity A: Goku], [Entity B: Saitama]' -> ['Goku', 'Saitama']
+    - 'Goku and Saitama strengths' -> ['Goku', 'Saitama']
+    - 'Compare React vs Vue vs Angular performance' -> ['React', 'Vue', 'Angular']
+    - 'differences between Python and JavaScript' -> ['Python', 'JavaScript']
+    """
+    if not query or not query.strip():
+        return []
+
+    clean_q = query.strip()
+
+    # 1. Bracketed entity notation
+    bracketed = re.findall(r'\[(?:Entity\s+[A-Za-z0-9]+:\s*)?([^\]]+)\]', clean_q)
+    if len(bracketed) >= 2:
+        return [b.strip() for b in bracketed if b.strip()]
+
+    # 2. Topic/inquiry prefix check: If query starts with informational/exploratory phrase
+    # (e.g. 'Latest developments in...', 'Overview of...') and lacks an explicit comparative marker,
+    # it is not a comparative multi-entity query.
+    has_explicit_comp = bool(re.search(
+        r'\b(?:vs\.?|versus|v\.|compare|comparison|differences?\s+between|similarities\s+and\s+differences|pros\s+and\s+cons)\b',
+        clean_q,
+        re.IGNORECASE
+    ))
+
+    topic_prefix = bool(re.search(
+        r'^(?:latest\s+developments\s+in|developments\s+in|overview\s+of|summary\s+of|guide\s+to|impact\s+of|future\s+of|history\s+of|trends\s+in|state\s+of|what\s+are\s+the|tell\s+me\s+about)\s+',
+        clean_q,
+        re.IGNORECASE
+    ))
+
+    if topic_prefix and not has_explicit_comp:
+        return []
+
+    stripped = re.sub(
+        r'^(?:what\s+is\s+the\s+)?(?:please\s+)?(?:compare\s+(?:and\s+contrast\s+)?|differences?\s+between\s+|comparison\s+between\s+|similarities\s+and\s+differences\s+between\s+)',
+        '',
+        clean_q,
+        flags=re.IGNORECASE,
+    ).strip()
+
+    # Strip aspect clauses like 'in terms of ...', 'regarding ...', 'with respect to ...'
+    stripped = re.sub(r'\s+(?:in\s+terms\s+of|regarding|with\s+respect\s+to|for|on)\s+.*$', '', stripped, flags=re.IGNORECASE).strip()
+    stripped = re.sub(r'\?+$', '', stripped).strip()
+
+    aspect_words = [
+        'strengths and weaknesses', 'pros and cons', 'strengths', 'weaknesses', 'powers', 'abilities',
+        'feats', 'features', 'performance', 'stats', 'specs', 'camera', 'architecture',
+        'speed', 'comparison', 'overview', 'market share', 'battery life', 'differences', 'similarities'
+    ]
+
+    while True:
+        matched = False
+        lower_stripped = stripped.lower()
+        for aw in aspect_words:
+            if lower_stripped.endswith(aw):
+                stripped = stripped[:-len(aw)].strip()
+                stripped = re.sub(r'\s+(?:in|of|for|on|with|regarding|and|or|&)$', '', stripped, flags=re.IGNORECASE).strip()
+                matched = True
+                break
+        if not matched:
+            break
+
+    parts = re.split(r'\s+(?:vs\.?|versus|v\.)\s+|\s*,\s*(?:and\s+)?|\s+and\s+', stripped, flags=re.IGNORECASE)
+    parts = [p.strip() for p in parts if p.strip()]
+
+    cleaned = []
+    for p in parts:
+        p_clean = re.sub(r'^(?:the\s+)?', '', p, flags=re.IGNORECASE).strip()
+        for aw in aspect_words:
+            if p_clean.lower().endswith(' ' + aw):
+                p_clean = p_clean[:-len(aw)-1].strip()
+        if p_clean and len(p_clean.split()) <= 4 and p_clean.lower() not in {'both', 'each', 'all', 'comparison'}:
+            cleaned.append(p_clean)
+
+    if len(cleaned) >= 2:
+        return cleaned
+
+    return []
+
+
+def balance_multi_entity_context(
+    context: Union[str, List[Any]],
+    entities: List[str],
+    max_ratio: float = 0.60
+) -> Union[str, List[Any]]:
+    """Enforce entity balancing and ceiling guard on synthesized context window.
+
+    1. Equal Token Allocation:
+       Allocates equal dedicated context chunks/tokens for each identified entity.
+    2. 60% Context Ceiling:
+       Ensures no single entity exceeds max_ratio (default 60%) of the total context window.
+    """
+    if not entities or len(entities) < 2 or not context:
+        return context
+
+    is_str_input = isinstance(context, str)
+    if is_str_input:
+        raw_chunks = [c.strip() for c in re.split(r'\n{2,}|\n(?=Source:)', context) if c.strip()]
+    else:
+        raw_chunks = [str(c).strip() for c in context if str(c).strip()]
+
+    if not raw_chunks:
+        return context
+
+    def get_hits(text: str, ent: str) -> int:
+        pattern = r'\b' + re.escape(ent) + r'\b'
+        return len(re.findall(pattern, text, flags=re.IGNORECASE))
+
+    dedicated = {ent: [] for ent in entities}
+    shared = []
+    neutral = []
+
+    for chunk in raw_chunks:
+        hits = {ent: get_hits(chunk, ent) for ent in entities}
+        active_ents = [ent for ent, h in hits.items() if h > 0]
+        if len(active_ents) > 1:
+            shared.append(chunk)
+        elif len(active_ents) == 1:
+            dedicated[active_ents[0]].append(chunk)
+        else:
+            neutral.append(chunk)
+
+    # Calculate dedicated length per entity
+    ent_lengths = {ent: sum(len(c) for c in dedicated[ent]) for ent in entities}
+    active_lengths = [l for l in ent_lengths.values() if l > 0]
+
+    # Equal allocation target: balance dedicated allocations across all active entities
+    if active_lengths:
+        min_len = min(active_lengths)
+        target_allocation = max(min_len, 400)
+    else:
+        target_allocation = 1000
+
+    balanced_dedicated = {ent: [] for ent in entities}
+    for ent in entities:
+        cur_len = 0
+        for chunk in dedicated[ent]:
+            chunk_len = len(chunk)
+            if cur_len + chunk_len <= target_allocation or not balanced_dedicated[ent]:
+                balanced_dedicated[ent].append(chunk)
+                cur_len += chunk_len
+            else:
+                break
+
+    # Recombine: shared comparison chunks first (highest comparative value),
+    # then dedicated chunks interleaved symmetrically, then neutral/background chunks
+    final_chunks = list(shared)
+    max_chunks = max((len(balanced_dedicated[ent]) for ent in entities), default=0)
+    for idx in range(max_chunks):
+        for ent in entities:
+            if idx < len(balanced_dedicated[ent]):
+                final_chunks.append(balanced_dedicated[ent][idx])
+    final_chunks.extend(neutral)
+
+    # 60% Ceiling enforcement: Ensure no single entity exceeds max_ratio of total context window
+    while True:
+        total_len = sum(len(c) for c in final_chunks)
+        if total_len == 0:
+            break
+        violated = False
+        for ent in entities:
+            # Apportioned entity length (shared chunks divided evenly amongst their active entities)
+            ent_len = sum(
+                len(c) * (1.0 / len([e for e in entities if get_hits(c, e) > 0]))
+                for c in final_chunks if get_hits(c, ent) > 0
+            )
+            ratio = ent_len / total_len
+            if ratio > max_ratio:
+                # Find dedicated chunk for this entity and remove the last one
+                dedicated_idx = [
+                    i for i, c in enumerate(final_chunks)
+                    if get_hits(c, ent) > 0 and all(get_hits(c, other) == 0 for other in entities if other != ent)
+                ]
+                if dedicated_idx:
+                    final_chunks.pop(dedicated_idx[-1])
+                    violated = True
+                    break
+        if not violated:
+            break
+
+    if is_str_input:
+        return "\n\n".join(final_chunks)
+    return final_chunks
 
 
 async def get_search_results(
