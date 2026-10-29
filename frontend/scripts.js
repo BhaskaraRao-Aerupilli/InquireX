@@ -50,10 +50,37 @@ function toggleExportDropdown(open) {
 }
 window.toggleExportDropdown = toggleExportDropdown;
 
-// Close export dropdown when clicking outside
+// Click-outside listener & option selection closer
 document.addEventListener('click', (e) => {
   const wrapper = document.getElementById('exportDropdownWrapper');
-  if (wrapper && !wrapper.contains(e.target)) {
+  const menu = document.getElementById('exportDropdownMenu');
+  if (!wrapper || !menu || menu.style.display === 'none') return;
+
+  // 1. Click outside the wrapper -> close dropdown
+  if (!wrapper.contains(e.target)) {
+    toggleExportDropdown(false);
+    return;
+  }
+
+  // 2. Click on an option inside the dropdown menu (e.g. PDF, Word, Markdown) -> close menu immediately
+  if (e.target.closest('.dropdown-export-item') || (menu.contains(e.target) && e.target !== menu)) {
+    setTimeout(() => {
+      toggleExportDropdown(false);
+    }, 50);
+  }
+});
+
+// Close dropdown automatically on window scroll to prevent floating artifacts
+window.addEventListener('scroll', () => {
+  const menu = document.getElementById('exportDropdownMenu');
+  if (menu && menu.style.display !== 'none') {
+    toggleExportDropdown(false);
+  }
+}, { passive: true });
+
+// Close dropdown on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
     toggleExportDropdown(false);
   }
 });
