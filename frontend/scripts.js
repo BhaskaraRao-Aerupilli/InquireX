@@ -1161,15 +1161,12 @@ const GPTResearcher = (() => {
         }
 
         return {
-
           prompt: entry.prompt || '',
-
           links: entry.links || {},
-
+          images: Array.isArray(entry.images) ? entry.images : [],
+          metrics: entry.metrics || {},
           reportKey: entry.timestamp ? getReportHtmlKey(entry.timestamp) : '',
-
           timestamp: entry.timestamp || new Date().toISOString()
-
         };
 
       });
@@ -1568,14 +1565,46 @@ const GPTResearcher = (() => {
 
 
 
+    // Restore research visual figures from history entry
+    if (entry.images && Array.isArray(entry.images) && entry.images.length > 0) {
+      activeResearchImages = [...entry.images];
+      activeResearchImageUrls = new Set(activeResearchImages.map(i => i.url));
+      renderImageGallery();
+    } else if (entry.reportHtml) {
+      // Fallback: extract images from saved report HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(entry.reportHtml, 'text/html');
+      const foundImgs = doc.querySelectorAll('img');
+      if (foundImgs.length > 0) {
+        activeResearchImages = [];
+        activeResearchImageUrls.clear();
+        foundImgs.forEach(img => {
+          if (img.src && !activeResearchImageUrls.has(img.src)) {
+            activeResearchImageUrls.add(img.src);
+            activeResearchImages.push({
+              url: img.src,
+              alt: img.alt || 'Research Figure',
+              title: img.title || img.alt || 'Figure',
+              domain: ''
+            });
+          }
+        });
+        renderImageGallery();
+      } else {
+        const imageContainer = document.getElementById('selectedImagesContainer');
+        if (imageContainer) {
+          imageContainer.innerHTML = '';
+          imageContainer.style.display = 'none';
+        }
+      }
+    }
+
+    const safeHtml = typeof entry.reportHtml === 'string' && entry.reportHtml.trim() !== '' ? entry.reportHtml : (typeof entry.report === 'string' ? entry.report : '');
+
     // If we have saved report HTML, display it
-
-    if (entry.reportHtml) {
-
+    if (safeHtml) {
       // Restore the report content
-
-      document.getElementById('reportContainer').innerHTML = entry.reportHtml;
-
+      document.getElementById('reportContainer').innerHTML = safeHtml;
       document.getElementById('output').innerHTML = '';
 
 
@@ -1731,16 +1760,27 @@ const GPTResearcher = (() => {
       showToast(`Loaded: "${entry.prompt}"`);
 
     } else {
-
-      // No saved HTML — just reset the form and let the user run research again
-
+      // Query loaded without cached report HTML - show informative restored query card instead of blank screen
       document.getElementById('output').innerHTML = '';
-
-      document.getElementById('reportContainer').innerHTML = '';
-
-      document.getElementById('selectedImagesContainer').innerHTML = '';
-
-      document.getElementById('selectedImagesContainer').style.display = 'none';
+      const rContainer = document.getElementById('reportContainer');
+      if (rContainer) {
+        rContainer.innerHTML = `
+          <div class="card p-4 text-center" style="max-width: 640px; margin: 30px auto; background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <i class="fa-solid fa-clock-rotate-left" style="font-size: 2.2rem; color: #818cf8; margin-bottom: 12px; display: inline-block;"></i>
+            <h5 style="color: #f8fafc; font-weight: 600; margin-bottom: 8px;">Previous Research Query Restored</h5>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">
+              Query "<strong>${escapeHtml(entry.prompt || '')}</strong>" has been restored to your search console. Click <strong>Start Research</strong> to run a fresh deep search.
+            </p>
+          </div>
+        `;
+      }
+      if (!activeResearchImages || activeResearchImages.length === 0) {
+        const imgCont = document.getElementById('selectedImagesContainer');
+        if (imgCont) {
+          imgCont.innerHTML = '';
+          imgCont.style.display = 'none';
+        }
+      }
 
 
 
@@ -1909,17 +1949,12 @@ const GPTResearcher = (() => {
 
 
     // Create history entry with timestamp & genuine provenance metrics
-
     const historyEntry = {
-
       prompt,
-
       links,
-
-      reportHtml: reportHtml || '',
-
+      reportHtml: typeof reportHtml === 'string' ? reportHtml : (typeof report === 'string' ? report : ''),
+      images: Array.isArray(activeResearchImages) ? [...activeResearchImages] : [],
       timestamp: new Date().toISOString(),
-
       metrics: {
 
         elapsedSec: elapsed,
@@ -3224,7 +3259,7 @@ const GPTResearcher = (() => {
 
     
 
-    if (!reportHtml || reportHtml.trim() === '') {
+    if (!reportHtml || typeof reportHtml !== 'string' || reportHtml.trim() === '') {
 
       container.style.display = 'none';
 
@@ -5706,15 +5741,18 @@ const GPTResearcher = (() => {
       img.alt = item.alt;
       img.loading = 'lazy';
 
-      // Auto-remove card if image fails to load or hotlinking is blocked
+      // Prevent cross-origin hotlink blocks
+      img.setAttribute('referrerpolicy', 'no-referrer');
+
+      // Graceful fallback display without deleting the card or wiping the gallery
       img.onerror = () => {
-        const foundIdx = activeResearchImages.findIndex(i => i.url === item.url);
-        if (foundIdx > -1) activeResearchImages.splice(foundIdx, 1);
-        activeResearchImageUrls.delete(item.url);
-        card.remove();
-        if (activeResearchImages.length === 0) {
-          imageContainer.style.display = 'none';
-        }
+        img.onerror = null;
+        img.style.display = 'none';
+        const fallback = document.createElement('div');
+        fallback.className = 'gallery-fallback-icon';
+        fallback.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:rgba(15,23,42,0.85);color:#94a3b8;padding:12px;text-align:center;';
+        fallback.innerHTML = `<i class="fa-solid fa-image" style="font-size:1.8rem;margin-bottom:6px;color:#818cf8;"></i><span style="font-size:0.75rem;font-weight:600;color:#e2e8f0;display:block;">${escapeHtml(item.alt || 'Research Visual')}</span><span style="font-size:0.7rem;color:#64748b;">${escapeHtml(item.domain || '')}</span>`;
+        viewport.appendChild(fallback);
       };
 
       const overlay = document.createElement('div');
@@ -5813,6 +5851,10 @@ const GPTResearcher = (() => {
       }
     }
 
+    if (!imagesList || imagesList.length === 0) {
+      console.warn('No images available to display in lightbox');
+      return;
+    }
     currentLightboxIndex = initialIdx;
     lightboxZoomLevel = 1.0;
 
@@ -5838,7 +5880,7 @@ const GPTResearcher = (() => {
         <div class="lightbox-stage" id="lightboxStage">
           <button type="button" class="lightbox-nav-btn prev" id="lightboxPrevBtn" title="Previous Image (Left Arrow)"><i class="fa-solid fa-chevron-left"></i></button>
           <div class="lightbox-viewport" id="lightboxViewport">
-            <img id="lightboxImg" src="" alt="Research Visual" />
+            <img id="lightboxImg" src="" referrerpolicy="no-referrer" alt="Research Visual" />
           </div>
           <button type="button" class="lightbox-nav-btn next" id="lightboxNextBtn" title="Next Image (Right Arrow)"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
@@ -5937,7 +5979,26 @@ const GPTResearcher = (() => {
       const resetBtn = document.getElementById('lightboxZoomResetBtn');
       const vp = document.getElementById('lightboxViewport');
 
-      if (imgEl) imgEl.src = curItem.url;
+      const fallback = document.getElementById('lightboxFallback');
+      if (fallback) fallback.style.display = 'none';
+
+      if (imgEl) {
+        imgEl.style.display = 'block';
+        imgEl.onerror = () => {
+          imgEl.style.display = 'none';
+          let fb = document.getElementById('lightboxFallback');
+          if (!fb) {
+            fb = document.createElement('div');
+            fb.id = 'lightboxFallback';
+            fb.style.cssText = 'color:#94a3b8;text-align:center;padding:40px;font-size:1rem;';
+            fb.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:2.5rem;color:#f59e0b;margin-bottom:12px;display:block;"></i><span>Preview not available from host source. Click <strong>Open Original Source</strong> above to view.</span>';
+            if (vp) vp.appendChild(fb);
+          } else {
+            fb.style.display = 'block';
+          }
+        };
+        imgEl.src = curItem.url;
+      }
       if (counterEl) counterEl.innerText = `Figure ${currentLightboxIndex + 1} of ${imagesList.length}`;
       if (titleEl) titleEl.innerText = curItem.alt || curItem.title || 'Research Visual Figure';
       if (captionEl) {
@@ -8655,7 +8716,13 @@ const GPTResearcher = (() => {
 
     showDownloadPanels,
 
-    updateDownloadLink
+    updateDownloadLink,
+
+    saveToHistory,
+
+    loadResearchEntry,
+
+    renderImageGallery
 
   }
 

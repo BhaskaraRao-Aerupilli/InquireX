@@ -4708,6 +4708,9 @@ footer a:hover {
    ============================================================== */
 
 /* HOME VIEW: hide workspace, show landing */
+[data-view="home"] #topSidebarMenuBtn {
+    display: none !important;
+}
 [data-view="home"] #workspace-view {
     display: none !important;
 }
