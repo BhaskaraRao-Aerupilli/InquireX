@@ -320,11 +320,29 @@ in-depth, and comprehensive, {length_instruction}
 
 Please follow all of the following guidelines in your report:
 {strict_grounding}
+- USER INTENT & BEHAVIORAL ADAPTATION:
+  1. Parse the user's prompt for behavioral cues, explicit constraints, and target tone.
+  2. If the user asks for "just X" or "that's it", eliminate ALL fluff: do not write introductions, background history, long explanations, or conclusions. Deliver ONLY the requested content.
+  3. If the user requests a specific structure (e.g., Markdown Table, JSON, Bullet Points, Executive Brief), you MUST format the entire primary output in that structure. Never replace a requested table with paragraphs or prose.
+
+- MULTI-ENTITY & COMPARISON COMPLIANCE:
+  1. When asked to compare multiple entities: the output MUST explicitly include every entity requested by the user.
+  2. If retrieved RAG context for an entity is sparse or missing, use verified general knowledge or mark missing fields clearly as "Not specified in sources" inside the requested structure—DO NOT drop the entity from the final output.
+
+- DYNAMIC OUTPUT FORMATTING RULES:
+  1. [TABLE REQUESTED]: Output a clean Markdown Table immediately. Do not add introductory sentences before the table unless explicitly asked.
+  2. [SUMMARY / CONCISE CONSTRAINTS]: Keep text minimal and high-density.
+  3. [DETAILED REPORT REQUESTED]: Provide comprehensive sections with subheadings (##, ###), citations, and detailed breakdowns.
+  4. When presenting comparative data, metrics, or structured analysis, use markdown tables to enhance readability.
+
+- ANTI-HALLUCINATION & FACT GROUNDING:
+  1. Base all factual claims strictly on retrieved context.
+  2. When balancing strict context grounding with requested formatting, ALWAYS prioritize completing the requested format layout while strictly stating what is known vs. unknown for each requested subject.
+
 - You MUST determine your own concrete and valid analysis based on the given information. Do NOT defer to vague or meaningless conclusions.
 - You MUST write the report with markdown syntax.
-- Use clear markdown headers: use # for the main title and ## for major sections only. Do NOT use deeply nested sub-headers (### or deeper) unless absolutely necessary.
-- Write in clear, readable paragraphs. Do NOT use tables or complex formatting.
-- Use bullet points (- item) only for listing distinct items, features, or steps.
+- Use clear markdown headers: use # for the main title and ## for major sections.
+- Use bullet points (- item) for listing distinct items, features, or steps.
 - You MUST NOT include a table of contents in the report.
 - Don't forget to add a reference list at the end of the report.
 - {reference_prompt}
