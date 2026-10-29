@@ -1,4 +1,75 @@
 
+// --- InquireX V3.0 Minimalist Search & Dropdown Controllers ---
+
+// Toggle Advanced Settings Accordion
+function toggleAdvancedSettings() {
+  const accordion = document.getElementById('advancedSettingsAccordion');
+  const toggleBtn = document.getElementById('advancedSettingsToggle');
+  if (!accordion) return;
+
+  const isHidden = accordion.style.display === 'none' || !accordion.style.display;
+  if (isHidden) {
+    accordion.style.display = 'block';
+    if (toggleBtn) toggleBtn.classList.add('open');
+  } else {
+    accordion.style.display = 'none';
+    if (toggleBtn) toggleBtn.classList.remove('open');
+  }
+}
+window.toggleAdvancedSettings = toggleAdvancedSettings;
+
+// Quick Report Type Preset Chips in Search Hero
+function setQuickReportType(typeVal, btnElement) {
+  const select = document.getElementById('report_type');
+  if (select) {
+    select.value = typeVal;
+    select.dispatchEvent(new Event('change'));
+  }
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  if (btnElement) btnElement.classList.add('active');
+}
+window.setQuickReportType = setQuickReportType;
+
+// Toggle Consolidated Export Dropdown Menu
+function toggleExportDropdown(open) {
+  const menu = document.getElementById('exportDropdownMenu');
+  const wrapper = document.getElementById('exportDropdownWrapper');
+  if (!menu) return;
+
+  if (open === undefined) {
+    open = menu.style.display === 'none' || !menu.style.display;
+  }
+
+  if (open) {
+    menu.style.display = 'flex';
+    if (wrapper) wrapper.classList.add('open');
+  } else {
+    menu.style.display = 'none';
+    if (wrapper) wrapper.classList.remove('open');
+  }
+}
+window.toggleExportDropdown = toggleExportDropdown;
+
+// Close export dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrapper = document.getElementById('exportDropdownWrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    toggleExportDropdown(false);
+  }
+});
+
+// New Research Action
+function createNewResearch() {
+  const taskInput = document.getElementById('task');
+  if (taskInput) {
+    taskInput.value = '';
+    taskInput.focus();
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.createNewResearch = createNewResearch;
+
+
 // ==============================================================
 // InquireX V2.0 -- View Router
 // Manages 'home' vs 'agent' view transitions via data-view attr
@@ -6428,7 +6499,7 @@ const GPTResearcher = (() => {
     }
 
     // Enable all export buttons across navbar, sidebar, and report
-    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn, .export-tool-btn');
+    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn, .export-tool-btn, .dropdown-export-item');
     downloadButtons.forEach(button => {
       button.classList.remove('disabled');
     });
@@ -7856,19 +7927,17 @@ const GPTResearcher = (() => {
 
 
 
-        // Reset heights back to original when collapsed
-
+        // Reset heights and relative bounds when collapsed
         const contentContainers = element.querySelectorAll('#reportContainer, #output, #chatMessages');
-
         contentContainers.forEach(container => {
-
           if (container) {
-
             container.style.maxHeight = '';
-
           }
-
         });
+        element.style.width = '';
+        element.style.transform = '';
+        element.style.gridColumn = '';
+        window.scrollTo({ left: 0 });
 
       }
 
