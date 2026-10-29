@@ -119,7 +119,7 @@ def extract_multi_entity_sub_queries(query: str) -> List[str]:
         else:
             e2 = rest
         if e1 and e2 and len(e1.split()) <= 5 and len(e2.split()) <= 5:
-            aspect_suffix = f" {aspect}".strip() if aspect else " strengths powers abilities feats"
+            aspect_suffix = f" {aspect}".strip() if aspect else " peak feats destructive capabilities durability speed scaling"
             return [
                 f"{e1} {aspect_suffix}".strip(),
                 f"{e2} {aspect_suffix}".strip(),
@@ -144,7 +144,7 @@ def extract_multi_entity_sub_queries(query: str) -> List[str]:
     parts = [p.strip() for p in parts if p.strip()]
 
     if len(parts) >= 2 and all(len(p.split()) <= 5 for p in parts):
-        suffix = f" {found_aspect}".strip() if found_aspect else " strengths powers abilities feats"
+        suffix = f" {found_aspect}".strip() if found_aspect else " peak feats destructive capabilities durability speed scaling"
         queries = [f"{p} {suffix}".strip() for p in parts]
         comp = f"{parts[0]} vs {parts[1]}"
         if found_aspect:

@@ -346,6 +346,20 @@ Please follow all of the following guidelines in your report:
   3. [DETAILED REPORT REQUESTED]: Provide comprehensive sections with subheadings (##, ###), citations, and detailed breakdowns.
   4. When presenting comparative data, metrics, or structured analysis, use markdown tables to enhance readability.
 
+- EXPERT DEEP RESEARCH & FACT-CHECKING EVALUATOR GUIDELINES:
+  1. DOMAIN FOCUS & CANONICAL SCALING:
+     - Prioritize primary lore, canonical scaling feats, official database entries, and tiering documentation over superficial listicles, wiki trivia, or gag-based descriptions.
+     - For character comparisons or technical evaluations, explicitly evaluate peak feats, destructive capabilities, durability, speed feats, and high-tier scaling events.
+  2. DOMAIN COMPLETENESS CHECK:
+     - Before outputting, evaluate if key tier-defining attributes are missing. If retrieved context only contains low-level trivia (e.g., gag moves, minor physical traits) instead of core capabilities, flag the dataset as incomplete rather than drawing definitive conclusions.
+     - Assertions must be grounded in verified context. Do not present minor surface-level details as representative of peak capability.
+  3. NO ARBITRARY QUANTIFICATION:
+     - NEVER invent, hallucinate, or fabricate point values, numerical scores, or arbitrary rating scales (e.g., assigning a "2" vs "1") unless those exact numerical metrics are explicitly present in the verified research context.
+  4. HANDLING UNCLEAR WINNERS:
+     - If the underlying research context is missing critical high-tier data or direct empirical metrics, explicitly state that a clear winner cannot be determined based on the gathered evidence.
+  5. CATEGORICAL ACCURACY:
+     - Evaluate abilities based on their full context rather than literal word-matching. Do not dismiss scalable power simply due to a lack of physical transformations if dynamic scaling is present in the source text.
+
 - ANTI-HALLUCINATION & FACT GROUNDING:
   1. Base all factual claims strictly on retrieved context.
   2. When balancing strict context grounding with requested formatting, ALWAYS prioritize completing the requested format layout while strictly stating what is known vs. unknown for each requested subject.

@@ -110,7 +110,7 @@ class ReportGenerator:
                             self.researcher.websocket,
                         )
                     try:
-                        targeted_sub_query = f"{ent} key facts stats features overview"
+                        targeted_sub_query = f"{ent} peak feats destructive capabilities durability speed stats scaling overview"
                         re_retrieved = await self.researcher.research_conductor._process_sub_query(
                             targeted_sub_query,
                             query_domains=getattr(self.researcher, "query_domains", [])
