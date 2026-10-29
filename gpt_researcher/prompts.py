@@ -338,7 +338,7 @@ Please follow all of the following guidelines in your report:
   3. BALANCED COMPARATIVE TABLES & MATRICES:
      - When generating comparison tables, the rows MUST be balanced, universal categories / attributes (e.g., Striking Power & Physical Strength, Combat Speed & Reflexes, Durability & Defense, Signature Attacks & Techniques, Peak Transformations / Forms, Power Scaling & Power Ceiling, Growth Mechanism & Adaptability) or symmetrical feature breakdowns.
      - CRITICAL: NEVER use one entity's universe-specific moves or terms (e.g., Kamehameha, Super Saiyan, Bankai, Chakra, Devil Fruit) as the row criteria for the other entity!
-     - STRICT NEGATIVE PROHIBITION: NEVER output "No information in sources", "Not specified in sources", "N/A", or leave table cells blank. Every requested subject MUST have complete, factual, and informative descriptions in EVERY row. If specific RAG text is missing, rely on verified base knowledge to complete all entries symmetrically. DO NOT drop any entity from the final output.
+     - STRICT NEGATIVE PROHIBITION: NEVER output "Not detailed in the provided sources", "No information in sources", "Not specified in sources", "N/A", or leave table cells blank. Every requested subject MUST have complete, factual, and informative descriptions in EVERY row. If specific RAG text is missing, rely on verified base knowledge to complete all entries symmetrically. DO NOT drop any entity from the final output.
 
 - DYNAMIC OUTPUT FORMATTING RULES:
   1. [TABLE REQUESTED]: Output a clean Markdown Table immediately. Do not add introductory sentences before the table unless explicitly asked.
@@ -362,7 +362,7 @@ Please follow all of the following guidelines in your report:
 
 - ANTI-HALLUCINATION & FACT GROUNDING:
   1. Base all factual claims strictly on retrieved context.
-  2. When balancing strict context grounding with requested formatting, ALWAYS prioritize completing the requested format layout while strictly stating what is known vs. unknown for each requested subject.
+  2. When balancing strict context grounding with requested formatting, ALWAYS prioritize completing the requested format layout rely on verified canonical knowledge about the entity to complete all row entries symmetrically rather than writing "Not detailed in the provided sources", "Unknown", or leaving fields blank.
 
 - You MUST determine your own concrete and valid analysis based on the given information. Do NOT defer to vague or meaningless conclusions.
 - You MUST write the report with markdown syntax.

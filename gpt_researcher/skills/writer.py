@@ -101,7 +101,12 @@ class ReportGenerator:
             _ctx_str = "\n".join(context) if isinstance(context, list) else str(context or "")
             for ent in entities:
                 ent_hits = len(re.findall(r'\b' + re.escape(ent) + r'\b', _ctx_str, re.IGNORECASE))
-                if ent_hits < 2:
+                # Check character volume dedicated to this entity
+                ent_chars = sum(
+                    len(c) for c in (context if isinstance(context, list) else [_ctx_str])
+                    if re.search(r'\b' + re.escape(ent) + r'\b', str(c), re.IGNORECASE)
+                )
+                if ent_hits < 3 or ent_chars < 500:
                     if self.researcher.verbose:
                         await stream_output(
                             "logs",
