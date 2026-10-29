@@ -138,11 +138,36 @@ document.addEventListener('keydown', (e) => {
 function createNewResearch() {
   setReportReady(false);
   toggleExportDropdown(false);
+
+  // 1. Clear previous research images gallery completely
+  if (window.clearResearchImages) {
+    window.clearResearchImages();
+  } else {
+    const imgContainer = document.getElementById('selectedImagesContainer');
+    if (imgContainer) {
+      imgContainer.innerHTML = '';
+      imgContainer.style.setProperty('display', 'none', 'important');
+    }
+  }
+
+  // 2. Clear output terminal and report body
+  const output = document.getElementById('output');
+  if (output) output.innerHTML = '';
+  const reportContainer = document.getElementById('reportContainer');
+  if (reportContainer) reportContainer.innerHTML = '';
+
+  // 3. Clear task input and focus
   const taskInput = document.getElementById('task');
   if (taskInput) {
     taskInput.value = '';
     taskInput.focus();
   }
+
+  // 4. Reset researcher state to initial if available
+  if (window.GPTResearcher && window.GPTResearcher.resetState) {
+    window.GPTResearcher.resetState();
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.createNewResearch = createNewResearch;
@@ -274,7 +299,19 @@ const GPTResearcher = (() => {
 
   let reconnectInterval = 2000; // Start with 2 seconds
 
+  // (Image state variables activeResearchImages, activeResearchImageUrls, seenImageSignatures declared at top)
 
+  const clearResearchImages = () => {
+    activeResearchImages = [];
+    if (activeResearchImageUrls && activeResearchImageUrls.clear) activeResearchImageUrls.clear();
+    if (seenImageSignatures && seenImageSignatures.clear) seenImageSignatures.clear();
+    const imageContainer = document.getElementById('selectedImagesContainer');
+    if (imageContainer) {
+      imageContainer.innerHTML = '';
+      imageContainer.style.setProperty('display', 'none', 'important');
+    }
+  };
+  window.clearResearchImages = clearResearchImages;
 
   const init = () => {
     setReportReady(false);
@@ -3130,31 +3167,26 @@ const GPTResearcher = (() => {
       btn.innerHTML = '<i class="fas fa-plus-circle"></i> New Research';
 
       btn.addEventListener('click', () => {
-
-        // Clear everything and scroll to the top form
-
+        // Clear everything including previous research images
+        clearResearchImages();
         document.getElementById('output').innerHTML = '';
-
         document.getElementById('reportContainer').innerHTML = '';
-
         document.getElementById('task').value = '';
+        setReportReady(false);
+        toggleExportDropdown(false);
 
         const stickyDownloadsBar = document.getElementById('stickyDownloadsBar');
-
         if (stickyDownloadsBar) stickyDownloadsBar.classList.remove('visible');
 
         const chatEl = document.getElementById('chatContainer');
-
         if (chatEl) chatEl.style.display = 'none';
 
         updateState('initial');
 
         const formElement = document.getElementById('form');
-
         if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
 
         document.getElementById('task').focus();
-
       });
 
       // Insert after the report container section
@@ -5498,6 +5530,8 @@ const GPTResearcher = (() => {
         setReportReady(false);
 
         toggleExportDropdown(false);
+
+        clearResearchImages();
 
         setReportActionsStatus('hidden')
 
@@ -8783,6 +8817,10 @@ const GPTResearcher = (() => {
     showDownloadPanels,
 
     updateDownloadLink,
+
+    clearResearchImages,
+
+    resetState: () => { clearResearchImages(); updateState('initial'); },
 
     saveToHistory,
 
