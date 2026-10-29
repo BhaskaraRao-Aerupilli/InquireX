@@ -271,23 +271,30 @@ Place each image on its own line after the relevant section header or paragraph.
             cost_callback=cost_callback,
             **kwargs
         )
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Streaming report generation failed: {e}. Retrying non-streaming fallback...")
+        report = ""
+
+    # Reliable fallback: If streaming failed or returned empty (e.g. socket dropped during rate limit backoff),
+    # invoke non-streaming completion directly to guarantee output.
+    if not report:
         try:
             report = await create_chat_completion(
                 model=cfg.smart_llm_model,
                 messages=[
-                    {"role": "user", "content": f"{agent_role_prompt}\n\n{content}"},
+                    {"role": "system", "content": f"{agent_role_prompt}"},
+                    {"role": "user", "content": content},
                 ],
                 temperature=0.35,
                 llm_provider=cfg.smart_llm_provider,
-                stream=True,
-                websocket=websocket,
+                stream=False,
+                websocket=None,
                 max_tokens=cfg.smart_token_limit,
                 llm_kwargs=cfg.llm_kwargs,
                 cost_callback=cost_callback,
                 **kwargs
             )
         except Exception as e:
-            print(f"Error in generate_report: {e}")
+            logger.error(f"Non-streaming report fallback also failed: {e}")
 
     return report

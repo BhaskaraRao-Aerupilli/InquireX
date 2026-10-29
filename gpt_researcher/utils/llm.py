@@ -107,7 +107,7 @@ async def create_chat_completion(
     provider = get_llm(llm_provider, **provider_kwargs)
     response = ""
     # create response
-    max_attempts = 1 if (stream and websocket is not None) else 10
+    max_attempts = 3 if (stream and websocket is not None) else 10
     last_exception: Exception | None = None
     for attempt in range(1, max_attempts + 1):
         try:

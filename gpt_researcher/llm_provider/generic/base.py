@@ -421,7 +421,11 @@ class GenericLLMProvider:
 
     async def _send_output(self, content, websocket=None):
         if websocket is not None:
-            await websocket.send_json({"type": "report", "output": content})
+            try:
+                await websocket.send_json({"type": "report", "output": content})
+            except Exception:
+                # Client disconnected or socket closed; do not abort report generation
+                pass
         elif self.verbose:
             print(f"{Fore.GREEN}{content}{Style.RESET_ALL}", flush=True)
 
