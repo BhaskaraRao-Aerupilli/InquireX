@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=33.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=34.0" />
     <style>
         .avatar {
             width: 80px;
@@ -67,36 +67,20 @@
 
 <body data-view="home">
     <!-- Persistent Modern Top Navbar -->
-    <header class="app-top-navbar">
-        <button class="navbar-brand navbar-brand-btn" onclick="InquireXRouter.switchView('home')" title="Return to Home">
-            <div class="brand-icon-wrap"><i class="fa-solid fa-atom"></i></div>
-            <div class="brand-text">Inquire<strong>X</strong></div>
-            <span class="brand-core-badge">Autonomous Core</span>
-        </button>
-                <!-- Header Bar Export Suite (Fixed top bar export buttons) -->
-        <div class="nav-export-suite" id="navExportSuite" style="display: none;">
-            <div class="nav-export-label">
-                <i class="fa-solid fa-file-export"></i>
-                <span>Export</span>
-            </div>
-            <div class="nav-export-links">
-                <a id="navExportPdf" href="#" class="nav-export-btn btn-pdf disabled" target="_blank" rel="noopener noreferrer" title="Export PDF Document">
-                    <i class="fas fa-file-pdf"></i> <span>PDF</span>
-                </a>
-                <a id="navExportWord" href="#" class="nav-export-btn btn-word disabled" target="_blank" rel="noopener noreferrer" title="Export Microsoft Word (.docx)">
-                    <i class="fas fa-file-word"></i> <span>Word</span>
-                </a>
-                <a id="navExportMd" href="#" class="nav-export-btn btn-md disabled" target="_blank" rel="noopener noreferrer" title="Export Markdown (.md)">
-                    <i class="fas fa-file-lines"></i> <span>Markdown</span>
-                </a>
-                <a id="navExportJson" href="#" class="nav-export-btn btn-json disabled" target="_blank" rel="noopener noreferrer" title="Export Log (JSON)">
-                    <i class="fas fa-file-code"></i> <span>Log JSON</span>
-                </a>
-                <button type="button" id="navExportCopy" class="nav-export-btn btn-copy" title="Copy Report Markdown">
-                    <i class="fas fa-copy"></i>
-                </button>
-            </div>
+        <header class="app-top-navbar">
+        <div class="top-navbar-left">
+            <button type="button" class="top-menu-btn" id="topSidebarMenuBtn" onclick="toggleResearchSidebar()" title="Toggle Sidebar Navigation">
+                <i class="fa-solid fa-bars"></i>
+                <span>Menu</span>
+            </button>
+
+            <button class="navbar-brand navbar-brand-btn" onclick="InquireXRouter.switchView('home')" title="Return to Home">
+                <div class="brand-icon-wrap"><i class="fa-solid fa-atom"></i></div>
+                <div class="brand-text">Inquire<strong>X</strong></div>
+                <span class="brand-core-badge">AUTONOMOUS CORE</span>
+            </button>
         </div>
+
         <div class="nav-buttons">
             <div id="navUserBadge" class="nav-user-badge" style="display:none;">
                 <i class="fas fa-user-circle"></i>
@@ -770,7 +754,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=33.0"></script>
+    <script src="/site/scripts.js?v=34.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');

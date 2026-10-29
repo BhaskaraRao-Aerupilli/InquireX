@@ -6492,11 +6492,7 @@ const GPTResearcher = (() => {
       stickyDownloadsBar.classList.add('visible');
     }
 
-    // Show fixed top navbar export suite
-    const navExportSuite = document.getElementById('navExportSuite');
-    if (navExportSuite) {
-      navExportSuite.style.display = 'flex';
-    }
+    // Export suite consolidated inside research report view (navbar export removed)
 
     // Enable all export buttons across navbar, sidebar, and report
     const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn, .export-tool-btn, .dropdown-export-item');

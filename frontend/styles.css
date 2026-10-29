@@ -6125,3 +6125,99 @@ html, body {
         padding: 20px 16px !important;
     }
 }
+
+
+/* ==============================================================
+   INQUIREX V3.1: TOP NAVBAR OVERFLOW FIX & UNIFIED HEADER LAYOUT
+   ============================================================== */
+
+/* Top Navigation Bar Header Container */
+header.app-top-navbar,
+.app-top-navbar,
+.top-navbar {
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 1.5rem !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1090 !important;
+    background: rgba(8, 12, 28, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 2px 28px rgba(0, 0, 0, 0.40) !important;
+}
+
+/* Left Brand & Menu Toggle Group */
+.top-navbar-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Top Menu / Sidebar Toggle Button */
+.top-menu-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 6px 12px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 9px !important;
+    color: #e2e8f0 !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    line-height: 1 !important;
+}
+.top-menu-btn:hover {
+    background: rgba(99, 102, 241, 0.22) !important;
+    border-color: #818cf8 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Brand Badge Text */
+.brand-core-badge {
+    text-transform: uppercase !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    background: rgba(99, 102, 241, 0.18) !important;
+    border: 1px solid rgba(99, 102, 241, 0.35) !important;
+    border-radius: 20px !important;
+    padding: 3px 9px !important;
+    color: #a5b4fc !important;
+}
+
+/* Ensure Nav Buttons on Right Never Overflow */
+.nav-buttons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+}
+
+/* Global Overflow Safety */
+body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+#workspace-view,
+.workspace-dashboard,
+.workspace-main-panel {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+}
