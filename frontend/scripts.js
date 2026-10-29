@@ -1,3 +1,50 @@
+
+// ==============================================================
+// InquireX V2.0 -- View Router
+// Manages 'home' vs 'agent' view transitions via data-view attr
+// ==============================================================
+const InquireXRouter = (() => {
+    let _currentView = 'home';
+
+    function switchView(view) {
+        if (view !== 'home' && view !== 'agent') return;
+        _currentView = view;
+        document.body.setAttribute('data-view', view);
+
+        if (view === 'home') {
+            // Hide export sidebar when returning to landing
+            const sidebar = document.getElementById('exportSidebarPanel');
+            if (sidebar) {
+                sidebar.style.display = 'none';
+                sidebar.classList.remove('visible');
+            }
+            const navExport = document.getElementById('navExportSuite');
+            if (navExport) navExport.style.display = 'none';
+
+            // Smooth scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } else if (view === 'agent') {
+            // Scroll to top of workspace
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Auto-focus the research textarea after transition
+            setTimeout(() => {
+                const taskEl = document.getElementById('task');
+                if (taskEl) taskEl.focus();
+            }, 320);
+        }
+
+        console.log('[InquireXRouter] View switched to:', view);
+    }
+
+    function getCurrentView() { return _currentView; }
+
+    return { switchView, getCurrentView };
+})();
+
+window.InquireXRouter = InquireXRouter;
+
 const GPTResearcher = (() => {
 
   let isResearchActive = false;
@@ -1936,6 +1983,47 @@ const GPTResearcher = (() => {
 
     activeResearchImages = [];
     activeResearchImageUrls.clear();
+
+    // -- V2.0 Extended State Reset --
+    const _swotCont = document.getElementById('swotMatrixContainer');
+    if (_swotCont) _swotCont.style.display = 'none';
+    const _swotGrid = document.getElementById('swotGrid');
+    if (_swotGrid) _swotGrid.innerHTML = '';
+
+    const _deepDive = document.getElementById('deepDiveContainer');
+    if (_deepDive) _deepDive.style.display = 'none';
+    const _deepPills = document.getElementById('deepDivePills');
+    if (_deepPills) _deepPills.innerHTML = '';
+
+    const _mindMap = document.getElementById('mindMapContainer');
+    if (_mindMap) _mindMap.style.display = 'none';
+    const _hierView = document.getElementById('hierarchyMapView');
+    if (_hierView) _hierView.innerHTML = '';
+
+    const _reportActions = document.getElementById('reportActions');
+    if (_reportActions) _reportActions.style.display = 'none';
+    const _reportActionsTop = document.querySelector('.report-actions');
+    if (_reportActionsTop) _reportActionsTop.style.display = 'none';
+    const _copyBtnTop = document.getElementById('copyToClipboardTop');
+    if (_copyBtnTop) _copyBtnTop.style.display = 'none';
+
+    const _audioBrf = document.getElementById('audioBriefingContainer');
+    if (_audioBrf) _audioBrf.style.display = 'none';
+
+    const _metrics = document.getElementById('executiveMetricsContainer');
+    if (_metrics) _metrics.style.display = 'none';
+
+    // Reset pipeline tracker UI to Step 1 state
+    const _tracker = document.getElementById('agentPipelineTracker');
+    if (_tracker) {
+        _tracker.querySelectorAll('.pipeline-step').forEach(s => {
+            s.classList.remove('active', 'completed', 'error');
+        });
+        _tracker.querySelectorAll('.pipeline-connector').forEach(c => {
+            c.classList.remove('active', 'completed');
+        });
+    }
+
 
     seenImageSignatures.clear();
 

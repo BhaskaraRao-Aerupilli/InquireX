@@ -14,9 +14,10 @@ MAX_CONTENT_BYTES = 10 * 1024 * 1024  # Skip pages larger than 10MB
 
 class BeautifulSoupScraper:
 
-    def __init__(self, link, session=None):
+    def __init__(self, link, session=None, query: str = ""):
         self.link = link
         self.session = session
+        self.query = query
 
     def scrape(self):
         """Fetch the page and extract cleaned text, images and title.
@@ -44,7 +45,7 @@ class BeautifulSoupScraper:
 
             content = get_text_from_soup(soup)
 
-            image_urls = get_relevant_images(soup, self.link)
+            image_urls = get_relevant_images(soup, self.link, query=self.query)
 
             # Extract the title using the utility function
             title = extract_title(soup)

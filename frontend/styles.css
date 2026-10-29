@@ -4684,3 +4684,297 @@ footer a:hover {
     color: #64748b !important;
     font-size: 0.82rem !important;
 }
+
+
+/* ==============================================================
+   InquireX V2.0 VIEW ROUTING: HOME vs AGENT
+   ============================================================== */
+
+/* HOME VIEW: hide workspace, show landing */
+[data-view="home"] #workspace-view {
+    display: none !important;
+}
+[data-view="home"] #exportSidebarPanel {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+[data-view="home"] #navExportSuite {
+    display: none !important;
+}
+[data-view="home"] section.landing {
+    display: flex !important;
+}
+
+/* AGENT VIEW: hide landing, show workspace */
+[data-view="agent"] section.landing {
+    display: none !important;
+}
+[data-view="agent"] #workspace-view {
+    display: block !important;
+}
+
+/* NAVBAR BRAND as clickable button (reset button styles) */
+.navbar-brand-btn {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-decoration: none !important;
+    outline: none !important;
+    transition: opacity 0.18s ease !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+.navbar-brand-btn:hover {
+    opacity: 0.82 !important;
+}
+.navbar-brand-btn:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.55) !important;
+    outline-offset: 4px !important;
+    border-radius: 6px !important;
+}
+
+/* PROFESSIONAL NAVBAR */
+.app-top-navbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 2rem !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1090 !important;
+    background: rgba(8, 12, 28, 0.90) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 2px 28px rgba(0, 0, 0, 0.40) !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+}
+
+/* Nav right control bar */
+.nav-buttons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+}
+
+/* User badge pill */
+.nav-user-badge {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 5px 13px !important;
+    background: rgba(99, 102, 241, 0.12) !important;
+    border: 1px solid rgba(99, 102, 241, 0.32) !important;
+    border-radius: 20px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #c7d2fe !important;
+    white-space: nowrap !important;
+    cursor: default !important;
+    letter-spacing: 0.01em !important;
+}
+.nav-user-badge i {
+    font-size: 0.9rem !important;
+    color: #818cf8 !important;
+}
+
+/* Status / WebSocket pill */
+.top-websocket-button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 12px !important;
+    background: rgba(16, 185, 129, 0.09) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    border-radius: 20px !important;
+    font-size: 0.79rem !important;
+    font-weight: 600 !important;
+    color: #6ee7b7 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+.top-websocket-button::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.28) !important;
+    flex-shrink: 0 !important;
+}
+/* Hide the FA icon, rely on the ::before dot */
+.top-websocket-button .fa-network-wired {
+    display: none !important;
+}
+
+/* History pill */
+.top-history-button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 12px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 20px !important;
+    font-size: 0.79rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+}
+.top-history-button:hover {
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Logout link */
+.top-logout-button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 14px !important;
+    background: transparent !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    border-radius: 20px !important;
+    font-size: 0.79rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+}
+.top-logout-button:hover,
+.top-logout-button:focus {
+    background: rgba(239, 68, 68, 0.10) !important;
+    border-color: rgba(239, 68, 68, 0.42) !important;
+    color: #fca5a5 !important;
+    text-decoration: none !important;
+}
+
+/* Nav export suite center alignment */
+.nav-export-suite {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+    flex: 1 !important;
+    justify-content: center !important;
+}
+
+/* LANDING SECTION: full viewport height minus navbar */
+section.landing {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: calc(100vh - 64px) !important;
+    padding: 3rem 1.5rem !important;
+    text-align: center !important;
+    flex-direction: column !important;
+}
+
+/* LAUNCH BUTTON — hero CTA style */
+#launchResearchBtn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 14px 38px !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.025em !important;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    border: none !important;
+    border-radius: 50px !important;
+    color: #fff !important;
+    box-shadow: 0 6px 28px rgba(99, 102, 241, 0.48), 0 0 0 1px rgba(99, 102, 241, 0.3) !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    margin-top: 1.75rem !important;
+    text-decoration: none !important;
+}
+#launchResearchBtn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 38px rgba(99, 102, 241, 0.62), 0 0 0 1px rgba(99, 102, 241, 0.5) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+}
+#launchResearchBtn:active {
+    transform: translateY(-1px) !important;
+}
+
+/* EXPORT SIDEBAR: clean fixed positioning in agent view */
+.export-sidebar-panel {
+    position: fixed !important;
+    right: 1rem !important;
+    top: 80px !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: 1080 !important;
+    max-height: calc(100vh - 96px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* GLOBAL DESIGN SYSTEM — CSS custom property overrides */
+:root {
+    --bg-base: #020617;
+    --bg-card: rgba(15, 23, 42, 0.5);
+    --border-subtle: rgba(30, 41, 59, 0.8);
+    --text-muted-color: #94a3b8;
+    --accent-primary: #6366f1;
+    --accent-secondary: #8b5cf6;
+    --radius-card: 16px;
+    --radius-lg: 14px;
+    --radius-pill: 20px;
+}
+
+/* Horizontal overflow guard */
+body {
+    overflow-x: hidden !important;
+}
+
+/* Responsive: collapse nav pills on small screens */
+@media (max-width: 640px) {
+    .app-top-navbar {
+        padding: 0 1rem !important;
+        height: 56px !important;
+    }
+    .nav-buttons {
+        gap: 6px !important;
+    }
+    .top-history-button,
+    .top-logout-button {
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+    }
+    .nav-user-badge {
+        padding: 4px 9px !important;
+        font-size: 0.76rem !important;
+    }
+    section.landing {
+        min-height: calc(100vh - 56px) !important;
+    }
+    .export-sidebar-panel {
+        right: 0.5rem !important;
+        top: 66px !important;
+    }
+}

@@ -33,7 +33,7 @@ class Scraper:
     Scraper class to extract the content from the links
     """
 
-    def __init__(self, urls, user_agent, scraper, worker_pool: WorkerPool):
+    def __init__(self, urls, user_agent, scraper, worker_pool: WorkerPool, query: str = ""):
         """
         Initialize the Scraper class.
         Args:
@@ -47,6 +47,7 @@ class Scraper:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
         self.scraper = scraper
+        self.query = query  # forwarded to image-relevance filter
         if self.scraper == "tavily_extract":
             self._check_pkg(self.scraper)
         if self.scraper == "firecrawl":
@@ -113,7 +114,12 @@ class Scraper:
         async with self.worker_pool.throttle():
             try:
                 Scraper = self.get_scraper(link)
-                scraper = Scraper(link, session)
+                # Pass query for entity-aware image filtering (BeautifulSoup backend)
+                scraper_kwargs = {}
+                import inspect
+                if "query" in inspect.signature(Scraper.__init__).parameters:
+                    scraper_kwargs["query"] = self.query
+                scraper = Scraper(link, session, **scraper_kwargs)
 
                 # Get scraper name
                 scraper_name = scraper.__class__.__name__
