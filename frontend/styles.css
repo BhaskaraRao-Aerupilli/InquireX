@@ -301,7 +301,7 @@ div.nav-buttons,
 }
 
 .nav-user-badge {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 8px !important;
     background: rgba(99, 102, 241, 0.12) !important;
@@ -334,7 +334,7 @@ div.nav-buttons,
 }
 
 .top-logout-button {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     padding: 8px 14px !important;
@@ -387,7 +387,7 @@ section.hero-section {
 
 div.nav-buttons .top-websocket-button,
 div.nav-buttons .top-history-button {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     padding: 8px 14px !important;
@@ -923,7 +923,7 @@ input[type="submit"].btn {
     padding: 10px 24px !important;
     border: none !important;
     cursor: pointer !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
@@ -1029,7 +1029,7 @@ button.icon-button {
     margin-left: 6px !important;
     border-radius: var(--radius-sm) !important;
     transition: all var(--transition-fast) !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
 }
@@ -1053,7 +1053,7 @@ button.expand-button {
     min-width: 34px !important;
     border-radius: var(--radius-sm) !important;
     transition: all var(--transition-fast) !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
 }
@@ -1157,7 +1157,7 @@ div.history-panel.open {
     min-height: 38px !important;
     min-width: 38px !important;
     border-radius: 50% !important;
-    display: inline-flex !important;
+    display: inline-flex;
     justify-content: center !important;
     align-items: center !important;
     transition: all var(--transition-fast) !important;
@@ -1317,7 +1317,7 @@ div.history-panel.open {
     padding: 4px 8px !important;
     font-size: 0.76rem !important;
     color: var(--text-secondary) !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     transition: all var(--transition-fast) !important;
@@ -1462,7 +1462,7 @@ div.chat-container h2 {
 }
 
 .sub-question-pill {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     padding: 5px 14px !important;
     border-radius: var(--radius-pill) !important;
@@ -1660,7 +1660,7 @@ div.report-actions {
 
 .report-action-btn,
 a.report-action-btn {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     padding: 8px 16px !important;
@@ -1737,7 +1737,7 @@ a.report-action-btn {
 }
 
 .nav-export-btn {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 5px !important;
     padding: 5px 11px !important;
@@ -2174,7 +2174,7 @@ textarea.chat-input {
     height: 46px !important;
     min-width: 46px !important;
     min-height: 46px !important;
-    display: inline-flex !important;
+    display: inline-flex;
     justify-content: center !important;
     align-items: center !important;
     background: rgba(245, 158, 11, 0.2) !important;
@@ -2205,7 +2205,7 @@ textarea.chat-input {
 
 /* Chat Loading Dots */
 .chat-loading {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     padding: 12px 18px !important;
@@ -2456,7 +2456,7 @@ textarea.chat-input {
     }
 
     .feature-icon {
-        display: inline-flex !important;
+        display: inline-flex;
         align-items: center !important;
         justify-content: center !important;
         width: 48px !important;
@@ -3357,7 +3357,7 @@ footer a:hover {
     font-size: 0.88rem !important;
     cursor: pointer !important;
     transition: all var(--transition-fast) !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 8px !important;
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
@@ -4711,7 +4711,7 @@ footer a:hover {
     display: none !important;
 }
 [data-view="agent"] #workspace-view {
-    display: block !important;
+    display: flex !important;
 }
 
 /* NAVBAR BRAND as clickable button (reset button styles) */
@@ -4894,7 +4894,7 @@ section.landing {
 
 /* LAUNCH BUTTON — hero CTA style */
 #launchResearchBtn {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 10px !important;
     padding: 14px 38px !important;
@@ -4977,4 +4977,419 @@ body {
         right: 0.5rem !important;
         top: 66px !important;
     }
+}
+
+
+/* ==============================================================
+   INQUIREX V2.1: 2-COLUMN APP DASHBOARD & CONSOLIDATED TOOLBAR
+   ============================================================== */
+
+/* Dashboard Workspace Flexbox Layout */
+.workspace-dashboard {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 28px !important;
+    padding: 24px 32px 60px 32px !important;
+    width: 100% !important;
+    max-width: 1720px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    min-height: calc(100vh - 64px) !important;
+    position: relative !important;
+}
+
+/* LEFT SIDEBAR: Research Parameters */
+.workspace-sidebar {
+    width: 360px !important;
+    min-width: 330px !important;
+    max-width: 380px !important;
+    flex-shrink: 0 !important;
+    background: rgba(13, 19, 36, 0.88) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-xl, 20px) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+    position: sticky !important;
+    top: 80px !important;
+    max-height: calc(100vh - 100px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 100 !important;
+}
+
+/* Collapsed Sidebar State */
+.workspace-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateX(-30px) !important;
+}
+
+/* Sidebar Floating Expand Button (when collapsed) */
+.sidebar-floating-expand-btn {
+    position: fixed !important;
+    left: 20px !important;
+    top: 84px !important;
+    z-index: 1020 !important;
+    display: inline-flex;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 18px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(99, 102, 241, 0.4) !important;
+    border-radius: 30px !important;
+    color: #e2e8f0 !important;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(99, 102, 241, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+.sidebar-floating-expand-btn:hover {
+    background: rgba(99, 102, 241, 0.25) !important;
+    border-color: #818cf8 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.45) !important;
+}
+
+/* Sidebar Header Bar */
+.sidebar-header-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: rgba(10, 14, 28, 0.7) !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-title-badge {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    color: #f1f5f9 !important;
+    letter-spacing: 0.02em !important;
+}
+.sidebar-title-badge i {
+    color: #818cf8 !important;
+}
+
+.sidebar-header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.sidebar-collapse-btn {
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+.sidebar-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sidebar Scrollable Body */
+.sidebar-scrollable-content {
+    padding: 18px 20px 24px 20px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 !important;
+}
+
+.sidebar-agent-item {
+    margin-bottom: 18px !important;
+}
+.sidebar-agent-item .quantum-agent-orb {
+    width: 64px !important;
+    height: 64px !important;
+}
+
+/* Sidebar Submit Button */
+.sidebar-submit-btn {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 12px 20px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    border: none !important;
+    box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45) !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    margin-top: 18px !important;
+}
+.sidebar-submit-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6) !important;
+}
+
+/* MAIN CENTRAL CONTENT PANEL */
+.workspace-main-panel {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 28px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Override narrow container margins for main panel children */
+.workspace-main-panel .research-output-container,
+.workspace-main-panel .report-container,
+.workspace-main-panel .chat-container,
+.workspace-main-panel .images_div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* CONSOLIDATED STICKY EXPORT TOOLBAR */
+.report-sticky-toolbar {
+    position: sticky !important;
+    top: 72px !important;
+    z-index: 40 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding: 12px 20px !important;
+    background: rgba(10, 15, 30, 0.92) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: var(--radius-lg, 14px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    margin-bottom: 22px !important;
+}
+
+.report-title-badge {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: #f8fafc !important;
+    font-family: var(--font-heading, 'Montserrat', sans-serif) !important;
+}
+.report-title-badge i {
+    color: #818cf8 !important;
+}
+
+.consolidated-export-suite {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.export-tool-btn {
+    display: inline-flex;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    color: #cbd5e1 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    line-height: 1.4 !important;
+}
+.export-tool-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+}
+.export-tool-btn.disabled {
+    opacity: 0.45 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
+/* Specialized export button accent colors */
+.export-tool-btn.btn-pdf:hover:not(.disabled) {
+    background: rgba(239, 68, 68, 0.18) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #fca5a5 !important;
+}
+.export-tool-btn.btn-word:hover:not(.disabled) {
+    background: rgba(59, 130, 246, 0.18) !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    color: #93c5fd !important;
+}
+.export-tool-btn.btn-md:hover:not(.disabled) {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    color: #6ee7b7 !important;
+}
+.export-tool-btn.btn-json:hover:not(.disabled) {
+    background: rgba(245, 158, 11, 0.18) !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+    color: #fcd34d !important;
+}
+.export-tool-btn.btn-slides:hover:not(.disabled) {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    color: #c4b5fd !important;
+}
+.export-tool-btn.btn-copy:hover {
+    background: rgba(99, 102, 241, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.45) !important;
+    color: #a5b4fc !important;
+}
+
+/* FLOATING DRAWER OVERLAP FIX: Hide on smaller viewports and ensure clean docking */
+@media (max-width: 1240px) {
+    #exportSidebarPanel {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+@media (min-width: 1241px) {
+    .export-sidebar-panel {
+        right: 1.25rem !important;
+        top: 84px !important;
+        z-index: 90 !important;
+    }
+}
+
+/* Responsive Dashboard: Mobile & Tablet Viewports */
+@media (max-width: 1040px) {
+    .workspace-dashboard {
+        flex-direction: column !important;
+        padding: 16px !important;
+        gap: 20px !important;
+    }
+    .workspace-sidebar {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        position: static !important;
+        max-height: none !important;
+    }
+    .sidebar-floating-expand-btn {
+        display: none !important;
+    }
+}
+
+
+/* ==============================================================
+   SIDEBAR POLISH & FORM CONTROL OPTIMIZATION
+   ============================================================== */
+.sidebar-research-form .form-group {
+    margin-bottom: 16px !important;
+}
+
+.sidebar-research-form label.agent-question,
+.sidebar-research-form label.form-label {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #e2e8f0 !important;
+    margin-bottom: 6px !important;
+    line-height: 1.4 !important;
+    display: block !important;
+}
+
+.sidebar-research-form .form-control {
+    background: rgba(10, 15, 28, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+    border-radius: 10px !important;
+    font-size: 0.84rem !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-research-form .form-control:focus {
+    border-color: #818cf8 !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+}
+
+.sidebar-research-form textarea#task {
+    min-height: 84px !important;
+    resize: vertical !important;
+    line-height: 1.5 !important;
+}
+
+/* Sidebar Custom Scrollbar */
+.sidebar-scrollable-content::-webkit-scrollbar {
+    width: 6px !important;
+}
+.sidebar-scrollable-content::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+.sidebar-scrollable-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-radius: 4px !important;
+}
+.sidebar-scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Enhanced Main Panel Cards */
+.workspace-main-panel .research-output-container {
+    background: rgba(13, 19, 36, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-xl, 20px) !important;
+    padding: 26px 30px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+}
+
+.workspace-main-panel .report-container {
+    background: rgba(13, 19, 36, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-xl, 20px) !important;
+    padding: 26px 30px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Ensure sticky toolbar sits cleanly above cards without jitter */
+.report-sticky-toolbar {
+    top: 76px !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+}
+
+.sidebar-floating-expand-btn.hidden,
+#researchSidebar:not(.collapsed) ~ #sidebarFloatingExpandBtn {
+    display: none !important;
 }

@@ -45,6 +45,51 @@ const InquireXRouter = (() => {
 
 window.InquireXRouter = InquireXRouter;
 
+
+// Strip raw Markdown / unparsed symbols (*, ###, __) from UI text, badges, and labels
+const stripMarkdown = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/^#+\s+/gm, '')            // ### headings
+    .replace(/\*\*([^\*]+)\*\*/g, '$1')  // **bold**
+    .replace(/\*([^\*]+)\*/g, '$1')      // *italic*
+    .replace(/__([^_]+)__/g, '$1')        // __bold__
+    .replace(/_([^_]+)_/g, '$1')          // _italic_
+    .replace(/`([^`]+)`/g, '$1')          // `code`
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](link)
+    .replace(/<[^>]*>/g, '')            // html tags
+    .replace(/^\s*[-*+]\s+/gm, '')      // bullets
+    .trim();
+};
+window.stripMarkdown = stripMarkdown;
+
+// Collapsible Left Sidebar Controller
+function toggleResearchSidebar(open) {
+  const sidebar = document.getElementById('researchSidebar');
+  const floatBtn = document.getElementById('sidebarFloatingExpandBtn');
+  if (!sidebar) return;
+
+  if (open === undefined) {
+    open = sidebar.classList.contains('collapsed');
+  }
+
+  if (open) {
+    sidebar.classList.remove('collapsed');
+    if (floatBtn) {
+      floatBtn.style.setProperty('display', 'none', 'important');
+      floatBtn.classList.add('hidden');
+    }
+  } else {
+    sidebar.classList.add('collapsed');
+    if (floatBtn) {
+      floatBtn.style.setProperty('display', 'inline-flex', 'important');
+      floatBtn.classList.remove('hidden');
+    }
+  }
+}
+window.toggleResearchSidebar = toggleResearchSidebar;
+
+
 const GPTResearcher = (() => {
 
   let isResearchActive = false;
@@ -749,11 +794,9 @@ const GPTResearcher = (() => {
 
       const taskInput = document.getElementById('task');
 
-      currentTaskEl.textContent = isResearchActive && taskInput && taskInput.value ?
+      const rawTask = (taskInput && taskInput.value) ? (taskInput.value.length > 30 ? taskInput.value.substring(0, 27) + '...' : taskInput.value) : '-';
 
-        (taskInput.value.length > 30 ? taskInput.value.substring(0, 27) + '...' : taskInput.value) :
-
-        '-';
+      currentTaskEl.textContent = isResearchActive ? stripMarkdown(rawTask) : '-';
 
     }
 
@@ -3047,7 +3090,7 @@ const GPTResearcher = (() => {
 
         if (statusText && statusEl) {
 
-          statusEl.textContent = statusText;
+          statusEl.textContent = stripMarkdown(statusText);
 
         }
 
@@ -3684,7 +3727,7 @@ const GPTResearcher = (() => {
 
             <div class="hierarchy-pillar-badge">${idx + 1}</div>
 
-            <div class="hierarchy-pillar-title">📌 ${p.title}</div>
+            <div class="hierarchy-pillar-title">📌 ${stripMarkdown(p.title)}</div>
 
           </div>
 
@@ -3696,7 +3739,7 @@ const GPTResearcher = (() => {
 
                 <i class="fa-solid fa-angle-right"></i>
 
-                <span>${c}</span>
+                <span>${stripMarkdown(c)}</span>
 
               </div>
 
@@ -4591,11 +4634,11 @@ const GPTResearcher = (() => {
 
           if (low.includes(baseTopic.toLowerCase().slice(0, 8))) {
 
-            addVector(`Deep Dive: ${t}`);
+            addVector(`Deep Dive: ${stripMarkdown(t)}`);
 
           } else {
 
-            addVector(`${baseTopic}: Detailed Study of ${t}`);
+            addVector(`${stripMarkdown(baseTopic)}: Detailed Study of ${stripMarkdown(t)}`);
 
           }
 
@@ -4919,7 +4962,7 @@ const GPTResearcher = (() => {
 
     
 
-    if (topicEl) topicEl.textContent = topic;
+    if (topicEl) topicEl.textContent = stripMarkdown(topic);
 
     
 
@@ -6385,7 +6428,7 @@ const GPTResearcher = (() => {
     }
 
     // Enable all export buttons across navbar, sidebar, and report
-    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn');
+    const downloadButtons = document.querySelectorAll('.download-option-btn, .report-action-btn, .export-dock-item, .nav-export-btn, .export-tool-btn');
     downloadButtons.forEach(button => {
       button.classList.remove('disabled');
     });
@@ -8557,5 +8600,6 @@ const GPTResearcher = (() => {
 
 
 
-window.addEventListener('DOMContentLoaded', GPTResearcher.init)
+window.GPTResearcher = GPTResearcher;
+window.addEventListener('DOMContentLoaded', GPTResearcher.init);
 

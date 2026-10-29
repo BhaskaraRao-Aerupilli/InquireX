@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
     <title>InquireX — Autonomous Deep Research Engine</title>
     <meta name="description" content="InquireX — Agentic multi-source deep research and strategic synthesis framework">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=31.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=32.0" />
     <style>
         .avatar {
             width: 80px;
@@ -190,39 +191,57 @@
         </div>
     </section>
 
-    <div id="workspace-view">
-<main class="container" id="form">
-        <div class="agent-item">
-            <div class="quantum-agent-orb" id="quantumAgentOrb">
-                <div class="orb-pulse-glow"></div>
-                <div class="orb-outer-ring"></div>
-                <div class="orb-gyro-ring"></div>
-                <div class="orb-core">
-                    <i class="fa-solid fa-brain-circuit orb-icon" id="agentOrbIcon"><i class="fa-solid fa-atom"></i></i>
-                </div>
-                <div class="orb-particles">
-                    <span class="p-dot dot-1"></span>
-                    <span class="p-dot dot-2"></span>
-                    <span class="p-dot dot-3"></span>
-                    <span class="p-dot dot-4"></span>
-                </div>
-            </div>
-            <div class="agent-status-badge">
-                <span class="status-indicator-dot"></span>
-                <span class="status-text">INQUIREX AUTONOMOUS AGENT CORE</span>
-            </div>
-        </div>
-                <div class="form-studio-header-bar">
-            <div class="studio-badge-label">
+    <div id="workspace-view" class="workspace-dashboard">
+
+    <!-- Collapsible Sidebar Floating Trigger (Visible when sidebar is collapsed) -->
+    <button type="button" id="sidebarFloatingExpandBtn" class="sidebar-floating-expand-btn" title="Open Research Parameters" style="display: none;" onclick="toggleResearchSidebar(true)">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Parameters</span>
+    </button>
+
+    <!-- LEFT COLLAPSIBLE SIDEBAR: Research Parameters & System Controls -->
+    <aside class="workspace-sidebar" id="researchSidebar">
+        <div class="sidebar-header-bar">
+            <div class="sidebar-title-badge">
                 <i class="fa-solid fa-sliders"></i>
-                <span>Research Parameters</span>
+                <span>Parameters</span>
             </div>
-            <button type="button" id="optionsFullViewBtn" class="btn-options-fullview" title="Open Full View Studio">
-                <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                <span>Full View Options</span>
-            </button>
+            <div class="sidebar-header-actions">
+                <button type="button" id="optionsFullViewBtn" class="btn-options-fullview" title="Open Full View Studio">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    <span>Studio</span>
+                </button>
+                <button type="button" id="sidebarCollapseBtn" class="sidebar-collapse-btn" title="Collapse Sidebar" onclick="toggleResearchSidebar(false)">
+                    <i class="fa-solid fa-chevron-left" id="sidebarToggleIcon"></i>
+                </button>
+            </div>
         </div>
-        <form method="POST" class="mt-3" id="researchForm">
+
+        <div class="sidebar-scrollable-content" id="sidebarScrollableContent">
+            <!-- Quantum Agent Orb & Autonomous Status -->
+            <div class="agent-item sidebar-agent-item">
+                <div class="quantum-agent-orb" id="quantumAgentOrb">
+                    <div class="orb-pulse-glow"></div>
+                    <div class="orb-outer-ring"></div>
+                    <div class="orb-gyro-ring"></div>
+                    <div class="orb-core">
+                        <i class="fa-solid fa-atom orb-icon" id="agentOrbIcon"></i>
+                    </div>
+                    <div class="orb-particles">
+                        <span class="p-dot dot-1"></span>
+                        <span class="p-dot dot-2"></span>
+                        <span class="p-dot dot-3"></span>
+                        <span class="p-dot dot-4"></span>
+                    </div>
+                </div>
+                <div class="agent-status-badge">
+                    <span class="status-indicator-dot"></span>
+                    <span class="status-text">INQUIREX CORE</span>
+                </div>
+            </div>
+
+            <!-- Parameters Form -->
+            <form method="POST" class="mt-3" id="researchForm">
             <div class="form-group">
                 <label for="task" class="agent-question">What would you like me to research next?</label>
                 <textarea id="task" name="task" class="form-control highlight-connection" placeholder="Enter any topic, question, or idea..." required autocomplete="on"></textarea>
@@ -366,14 +385,15 @@
 
             <input type="submit" value="Begin Research" class="btn btn-primary button-padding" id="submitButton">
         </form>
-
-        <!-- Add JSON button above Research Progress section -->
-        <div id="jsonButtonContainer" style="display: none; text-align: right; margin-bottom: 10px;">
-            <a id="downloadLinkJsonTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-file-code"></i> JSON
-            </a>
         </div>
+    </aside>
 
+    <!-- MAIN CENTRAL CONTENT PANEL: Execution Progress, Visuals, and Report -->
+    <main class="workspace-main-panel" id="workspaceMainPanel">
+        <!-- Scroll anchor for backward compatibility -->
+        <div id="form" style="position:relative;top:-80px;"></div>
+
+        <!-- 1. Real-Time Research Execution & Progress -->
         <div class="margin-div research-output-container">
             <!-- Move spinner to the left side of the text -->
             <div class="research-output-header">
@@ -428,39 +448,53 @@
 
             <div id="output"></div>
         </div>
+
+        <!-- 2. Research Visuals Gallery -->
         <div class="images_div">
             <div id="selectedImagesContainer" style="display: none;"></div>
         </div>
-        <div class="margin-div report-container">
-            <h2>Research Report
-                <button id="copyToClipboardTop" class="icon-button" title="Copy" style="display: none;">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button id="expandReportBtn" class="expand-button" title="Expand">
-                    <i class="fas fa-expand-alt"></i>
-                </button>
-            </h2>
-            <!-- Add download and view buttons above the report container -->
-            <div class="report-actions" style="display: none;">
-                <a id="downloadLinkTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </a>
-                <a id="downloadLinkWordTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-file-word"></i> Word
-                </a>
-                <a id="downloadLinkMdTop" href="#" class="report-action-btn disabled" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-file-lines"></i> Markdown
-                </a>
-                <button id="downloadLatexBtnTop" class="report-action-btn" title="Download LaTeX (.tex) Academic Source">
-                    <i class="fas fa-file-code"></i> LaTeX
-                </button>
-                <button id="audioBriefingBtnTop" class="report-action-btn" title="Listen to AI Voice Audio Briefing">
-                    <i class="fas fa-headphones"></i> Audio Briefing
-                </button>
-                <button id="viewSlidesBtnTop" class="report-action-btn" title="Present as Presentation Slide Deck">
-                    <i class="fas fa-desktop"></i> Slide Deck
-                </button>
+
+        <!-- 3. Consolidated Generated Research Report Section -->
+        <div class="margin-div report-container" id="mainReportContainer">
+            <!-- STICKY CONSOLIDATED EXPORT TOOLBAR -->
+            <div class="report-sticky-toolbar" id="reportStickyToolbar">
+                <div class="report-toolbar-left">
+                    <div class="report-title-badge">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span>Research Report</span>
+                    </div>
+                </div>
+                <div class="consolidated-export-suite" id="consolidatedExportSuite">
+                    <a id="downloadLinkTop" href="#" class="export-tool-btn btn-pdf disabled" target="_blank" rel="noopener noreferrer" title="Export High-Res PDF">
+                        <i class="fas fa-file-pdf"></i> <span>PDF</span>
+                    </a>
+                    <a id="downloadLinkWordTop" href="#" class="export-tool-btn btn-word disabled" target="_blank" rel="noopener noreferrer" title="Export Microsoft Word (.docx)">
+                        <i class="fas fa-file-word"></i> <span>Word</span>
+                    </a>
+                    <a id="downloadLinkMdTop" href="#" class="export-tool-btn btn-md disabled" target="_blank" rel="noopener noreferrer" title="Export Markdown (.md)">
+                        <i class="fas fa-file-lines"></i> <span>Markdown</span>
+                    </a>
+                    <a id="downloadLinkJsonTop" href="#" class="export-tool-btn btn-json disabled" target="_blank" rel="noopener noreferrer" title="Export Structured Trace JSON">
+                        <i class="fas fa-file-code"></i> <span>JSON</span>
+                    </a>
+                    <button type="button" id="copyToClipboardTop" class="export-tool-btn btn-copy" title="Copy Markdown to Clipboard">
+                        <i class="fas fa-copy"></i> <span>Copy</span>
+                    </button>
+                    <button type="button" id="viewSlidesBtnTop" class="export-tool-btn btn-slides" title="Interactive Presentation Slide Deck">
+                        <i class="fa-solid fa-chalkboard-user"></i> <span>Slides</span>
+                    </button>
+                    <button type="button" id="downloadLatexBtnTop" class="export-tool-btn btn-latex" title="Download LaTeX (.tex) Academic Source">
+                        <i class="fas fa-file-code"></i> <span>LaTeX</span>
+                    </button>
+                    <button type="button" id="audioBriefingBtnTop" class="export-tool-btn btn-audio" title="Listen to AI Voice Audio Briefing">
+                        <i class="fas fa-headphones"></i> <span>Briefing</span>
+                    </button>
+                    <button type="button" id="expandReportBtn" class="export-tool-btn btn-expand" title="Expand Report View">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </div>
             </div>
+
             <!-- Executive Metrics Card Container -->
             <div id="executiveMetricsContainer" style="display: none;"></div>
 
@@ -552,6 +586,9 @@
         </div>
 
         <!-- Chat Container -->
+        </div>
+
+        <!-- 4. Interactive Chat Container -->
         <div class="margin-div chat-container" id="chatContainer" style="display: none;">
             <h2><i class="fas fa-comments"></i> Chat with AI about this research <button id="expandChatBtn" class="expand-button" title="Expand"><i class="fas fa-expand-alt"></i></button></h2>
             <p class="text-muted">Ask questions about the research report to get more insights</p>
@@ -566,9 +603,8 @@
                 </button>
             </div>
         </div>
-
-        <!-- Fixed bottom bar styled like the top credits bar -->
     </main>
+
 
 <!-- Full View Research Options Studio Modal -->
         <div id="optionsFullViewModal" class="options-fullview-modal" style="display: none;">
@@ -855,7 +891,7 @@
         <div class="slide-deck-overlay" id="slideDeckOverlay"></div>
         <div class="slide-deck-content">
             <div class="slide-deck-header">
-                <div class="slide-deck-title"><i class="fas fa-presentation"></i> <span id="slideDeckTopic">Research Presentation</span></div>
+                <div class="slide-deck-title"><i class="fas fa-chalkboard-user"></i> <span id="slideDeckTopic">Research Presentation</span></div>
                 <button class="slide-deck-close" id="closeSlideDeckBtn" title="Close Presentation"><i class="fas fa-times"></i></button>
             </div>
             <div class="slide-body" id="slideBody">
@@ -910,7 +946,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=31.0"></script>
+    <script src="/site/scripts.js?v=32.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');
