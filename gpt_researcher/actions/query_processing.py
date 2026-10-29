@@ -161,11 +161,11 @@ def identify_distinct_entities(query: str) -> List[str]:
 
     Recognizes bracketed notation (e.g., [Entity A: Goku], [Entity B: Saitama]),
     comparative conjunctions ('vs', 'versus', 'and', commas), and cleans leading/trailing
-    prompt framing and aspect keywords.
+    prompt framing, commands, and aspect/format keywords.
 
     Examples:
+    - "give me the strengths of goku and saitama in table form that's it" -> ['Goku', 'Saitama']
     - '[Entity A: Goku], [Entity B: Saitama]' -> ['Goku', 'Saitama']
-    - 'Goku and Saitama strengths' -> ['Goku', 'Saitama']
     - 'Compare React vs Vue vs Angular performance' -> ['React', 'Vue', 'Angular']
     - 'differences between Python and JavaScript' -> ['Python', 'JavaScript']
     """
@@ -174,59 +174,72 @@ def identify_distinct_entities(query: str) -> List[str]:
 
     clean_q = query.strip()
 
-    # 1. Bracketed entity notation
+    # 1. Bracketed entity notation: [Entity A: Goku], [Entity B: Saitama] or [Goku] vs [Saitama]
     bracketed = re.findall(r'\[(?:Entity\s+[A-Za-z0-9]+:\s*)?([^\]]+)\]', clean_q)
     if len(bracketed) >= 2:
         return [b.strip() for b in bracketed if b.strip()]
 
-    # 2. Topic/inquiry prefix check: If query starts with informational/exploratory phrase
-    # (e.g. 'Latest developments in...', 'Overview of...') and lacks an explicit comparative marker,
-    # it is not a comparative multi-entity query.
+    # 2. Informational prefix check without explicit comparison:
+    # If query starts with informational/exploratory phrase (e.g. 'Latest developments in...')
+    # and lacks an explicit comparative marker, it is not a comparative multi-entity query.
     has_explicit_comp = bool(re.search(
         r'\b(?:vs\.?|versus|v\.|compare|comparison|differences?\s+between|similarities\s+and\s+differences|pros\s+and\s+cons)\b',
         clean_q,
         re.IGNORECASE
     ))
-
     topic_prefix = bool(re.search(
-        r'^(?:latest\s+developments\s+in|developments\s+in|overview\s+of|summary\s+of|guide\s+to|impact\s+of|future\s+of|history\s+of|trends\s+in|state\s+of|what\s+are\s+the|tell\s+me\s+about)\s+',
+        r'^(?:latest\s+developments\s+in|developments\s+in|overview\s+of|summary\s+of|guide\s+to|impact\s+of|future\s+of|history\s+of|trends\s+in|state\s+of)\s+',
         clean_q,
         re.IGNORECASE
     ))
-
     if topic_prefix and not has_explicit_comp:
         return []
 
-    stripped = re.sub(
-        r'^(?:what\s+is\s+the\s+)?(?:please\s+)?(?:compare\s+(?:and\s+contrast\s+)?|differences?\s+between\s+|comparison\s+between\s+|similarities\s+and\s+differences\s+between\s+)',
+    # 3. Strip leading commands and conversational prefixes
+    clean_q = re.sub(
+        r'^(?:can\s+you\s+)?(?:please\s+)?(?:give\s+me|show\s+me|tell\s+me\s+about|tell\s+me|list|provide|generate|what\s+are|what\s+is\s+the|find|display|compare\s+(?:and\s+contrast\s+)?|compare)\s+(?:a\s+|an\s+|the\s+)?',
         '',
         clean_q,
-        flags=re.IGNORECASE,
+        flags=re.IGNORECASE
     ).strip()
 
-    # Strip aspect clauses like 'in terms of ...', 'regarding ...', 'with respect to ...'
-    stripped = re.sub(r'\s+(?:in\s+terms\s+of|regarding|with\s+respect\s+to|for|on)\s+.*$', '', stripped, flags=re.IGNORECASE).strip()
-    stripped = re.sub(r'\?+$', '', stripped).strip()
+    # 4. Strip trailing formatting and constraint markers repeatedly
+    trailing_pattern = r'\s+(?:in\s+(?:a\s+)?table(?:\s+(?:form|format))?|as\s+(?:a\s+)?table|in\s+markdown\s+table|table\s+form(?:at)?|that\'?s\s+it|that\s+is\s+it|that\s+is\s+all|only|just|thanks?|please|\.)+$'
+    while True:
+        m = re.search(trailing_pattern, clean_q, flags=re.IGNORECASE)
+        if m:
+            clean_q = clean_q[:m.start()].strip()
+        else:
+            break
 
+    # 5. Strip leading aspect prepositions: 'the strengths of', 'differences between', 'comparison of'
+    clean_q = re.sub(
+        r'^(?:the\s+)?(?:strengths|weaknesses|powers|abilities|feats|features|differences|similarities|comparison|pros\s+and\s+cons|overview)\s+(?:of|between|in|for)\s+',
+        '',
+        clean_q,
+        flags=re.IGNORECASE
+    ).strip()
+
+    # 6. Strip trailing aspect words and connectors
     aspect_words = [
         'strengths and weaknesses', 'pros and cons', 'strengths', 'weaknesses', 'powers', 'abilities',
         'feats', 'features', 'performance', 'stats', 'specs', 'camera', 'architecture',
         'speed', 'comparison', 'overview', 'market share', 'battery life', 'differences', 'similarities'
     ]
-
     while True:
         matched = False
-        lower_stripped = stripped.lower()
+        lower_q = clean_q.lower()
         for aw in aspect_words:
-            if lower_stripped.endswith(aw):
-                stripped = stripped[:-len(aw)].strip()
-                stripped = re.sub(r'\s+(?:in|of|for|on|with|regarding|and|or|&)$', '', stripped, flags=re.IGNORECASE).strip()
+            if lower_q.endswith(aw):
+                clean_q = clean_q[:-len(aw)].strip()
+                clean_q = re.sub(r'\s+(?:in|of|for|on|with|regarding|and|or|&)$', '', clean_q, flags=re.IGNORECASE).strip()
                 matched = True
                 break
         if not matched:
             break
 
-    parts = re.split(r'\s+(?:vs\.?|versus|v\.)\s+|\s*,\s*(?:and\s+)?|\s+and\s+', stripped, flags=re.IGNORECASE)
+    # 7. Split on vs, and, comma
+    parts = re.split(r'\s+(?:vs\.?|versus|v\.)\s+|\s*,\s*(?:and\s+)?|\s+and\s+', clean_q, flags=re.IGNORECASE)
     parts = [p.strip() for p in parts if p.strip()]
 
     cleaned = []
@@ -236,7 +249,8 @@ def identify_distinct_entities(query: str) -> List[str]:
             if p_clean.lower().endswith(' ' + aw):
                 p_clean = p_clean[:-len(aw)-1].strip()
         if p_clean and len(p_clean.split()) <= 4 and p_clean.lower() not in {'both', 'each', 'all', 'comparison'}:
-            cleaned.append(p_clean)
+            cleaned_entity = p_clean.title() if p_clean.islower() else p_clean
+            cleaned.append(cleaned_entity)
 
     if len(cleaned) >= 2:
         return cleaned
@@ -247,7 +261,8 @@ def identify_distinct_entities(query: str) -> List[str]:
 def balance_multi_entity_context(
     context: Union[str, List[Any]],
     entities: List[str],
-    max_ratio: float = 0.60
+    max_ratio: float = 0.60,
+    max_chars: int = None,
 ) -> Union[str, List[Any]]:
     """Enforce entity balancing and ceiling guard on synthesized context window.
 
@@ -255,9 +270,16 @@ def balance_multi_entity_context(
        Allocates equal dedicated context chunks/tokens for each identified entity.
     2. 60% Context Ceiling:
        Ensures no single entity exceeds max_ratio (default 60%) of the total context window.
+    3. TPM & Length Budgeting:
+       Budgets allocations so all entities fit proportionally within max_chars without
+       starving comparative entities when downstream truncation occurs.
     """
+    import os
     if not entities or len(entities) < 2 or not context:
         return context
+
+    if max_chars is None:
+        max_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "8000"))
 
     is_str_input = isinstance(context, str)
     if is_str_input:
@@ -286,6 +308,20 @@ def balance_multi_entity_context(
         else:
             neutral.append(chunk)
 
+    # Budget allocation: reserve up to 25% for shared comparison chunks, divide remainder equally
+    shared_budget = int(max_chars * 0.25)
+    selected_shared = []
+    shared_len = 0
+    for sc in shared:
+        if shared_len + len(sc) <= shared_budget or not selected_shared:
+            selected_shared.append(sc)
+            shared_len += len(sc)
+        else:
+            break
+
+    remaining_budget = max(max_chars - shared_len, 1000)
+    per_entity_budget = int(remaining_budget / len(entities))
+
     # Calculate dedicated length per entity
     ent_lengths = {ent: sum(len(c) for c in dedicated[ent]) for ent in entities}
     active_lengths = [l for l in ent_lengths.values() if l > 0]
@@ -293,9 +329,10 @@ def balance_multi_entity_context(
     # Equal allocation target: balance dedicated allocations across all active entities
     if active_lengths:
         min_len = min(active_lengths)
-        target_allocation = max(min_len, 400)
+        target_allocation = min(min_len, per_entity_budget)
+        target_allocation = max(target_allocation, 400)
     else:
-        target_allocation = 1000
+        target_allocation = per_entity_budget
 
     balanced_dedicated = {ent: [] for ent in entities}
     for ent in entities:
@@ -310,7 +347,7 @@ def balance_multi_entity_context(
 
     # Recombine: shared comparison chunks first (highest comparative value),
     # then dedicated chunks interleaved symmetrically, then neutral/background chunks
-    final_chunks = list(shared)
+    final_chunks = list(selected_shared)
     max_chunks = max((len(balanced_dedicated[ent]) for ent in entities), default=0)
     for idx in range(max_chunks):
         for ent in entities:

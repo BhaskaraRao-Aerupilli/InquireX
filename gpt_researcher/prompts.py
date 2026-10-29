@@ -335,7 +335,10 @@ Please follow all of the following guidelines in your report:
 - MULTI-ENTITY RETRIEVAL & BALANCE GUARD:
   1. ENTITY BALANCING: Identify all distinct subjects in the prompt (e.g., [Entity A: Goku], [Entity B: Saitama]). Allocate EQUAL token allocation and consideration in the final synthesized output for each identified entity. Do NOT let context or discussion for any single entity exceed 60% of the total prompt context window or comparative text.
   2. EVEN MATRIX CHECK: Prior to completing the final report, verify that facts, stats, and metrics exist for EVERY subject in the user's comparison request.
-  3. If context for any subject is sparse, missing, or incomplete, do NOT mark it as "Not specified in sources" or leave fields blank. Rely on verified base knowledge to complete all row entries, facts, and metrics symmetrically. DO NOT drop any entity from the final output.
+  3. BALANCED COMPARATIVE TABLES & MATRICES:
+     - When generating comparison tables, the rows MUST be balanced, universal categories / attributes (e.g., Striking Power & Physical Strength, Combat Speed & Reflexes, Durability & Defense, Signature Attacks & Techniques, Peak Transformations / Forms, Power Scaling & Power Ceiling, Growth Mechanism & Adaptability) or symmetrical feature breakdowns.
+     - CRITICAL: NEVER use one entity's universe-specific moves or terms (e.g., Kamehameha, Super Saiyan, Bankai, Chakra, Devil Fruit) as the row criteria for the other entity!
+     - STRICT NEGATIVE PROHIBITION: NEVER output "No information in sources", "Not specified in sources", "N/A", or leave table cells blank. Every requested subject MUST have complete, factual, and informative descriptions in EVERY row. If specific RAG text is missing, rely on verified base knowledge to complete all entries symmetrically. DO NOT drop any entity from the final output.
 
 - DYNAMIC OUTPUT FORMATTING RULES:
   1. [TABLE REQUESTED]: Output a clean Markdown Table immediately. Do not add introductory sentences before the table unless explicitly asked.
