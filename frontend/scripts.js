@@ -30,53 +30,102 @@ function setQuickReportType(typeVal, btnElement) {
 }
 window.setQuickReportType = setQuickReportType;
 
+// State variables for conditional research report rendering & dropdown management
+let isReportReady = false;
+let researchStatus = 'initial'; // 'initial' | 'in_progress' | 'completed' | 'error'
+
+function setReportReady(ready) {
+  isReportReady = !!ready;
+  const active = (typeof isResearchActive !== 'undefined') ? isResearchActive : false;
+  researchStatus = isReportReady ? 'completed' : (active ? 'in_progress' : 'initial');
+
+  const mainReport = document.getElementById('mainReportContainer');
+  if (mainReport) {
+    if (isReportReady) {
+      mainReport.style.setProperty('display', 'block', 'important');
+      mainReport.setAttribute('data-ready', 'true');
+      mainReport.classList.remove('report-hidden');
+    } else {
+      mainReport.style.setProperty('display', 'none', 'important');
+      mainReport.setAttribute('data-ready', 'false');
+      mainReport.classList.add('report-hidden');
+    }
+  }
+
+  const reportToolbar = document.getElementById('reportStickyToolbar');
+  if (reportToolbar) {
+    if (isReportReady) {
+      reportToolbar.classList.remove('toolbar-hidden');
+      reportToolbar.style.setProperty('display', 'flex', 'important');
+    } else {
+      reportToolbar.classList.add('toolbar-hidden');
+      reportToolbar.style.setProperty('display', 'none', 'important');
+    }
+  }
+
+  if (!isReportReady) {
+    toggleExportDropdown(false);
+  }
+}
+window.setReportReady = setReportReady;
+window.isReportReady = () => isReportReady;
+window.getResearchStatus = () => researchStatus;
+
 // Toggle Consolidated Export Dropdown Menu
 function toggleExportDropdown(open) {
   const menu = document.getElementById('exportDropdownMenu');
   const wrapper = document.getElementById('exportDropdownWrapper');
   if (!menu) return;
 
+  const isOpen = menu.classList.contains('show') || (wrapper && wrapper.classList.contains('open')) || menu.style.display === 'flex';
+
   if (open === undefined) {
-    open = menu.style.display === 'none' || !menu.style.display;
+    open = !isOpen;
   }
 
   if (open) {
-    menu.style.display = 'flex';
+    menu.classList.add('show');
     if (wrapper) wrapper.classList.add('open');
+    menu.style.setProperty('display', 'flex', 'important');
   } else {
-    menu.style.display = 'none';
+    menu.classList.remove('show');
     if (wrapper) wrapper.classList.remove('open');
+    menu.style.setProperty('display', 'none', 'important');
   }
 }
 window.toggleExportDropdown = toggleExportDropdown;
 
-// Click-outside listener & option selection closer
+// Click-outside listener & option selection closer (Capture phase to guarantee closure)
 document.addEventListener('click', (e) => {
   const wrapper = document.getElementById('exportDropdownWrapper');
   const menu = document.getElementById('exportDropdownMenu');
-  if (!wrapper || !menu || menu.style.display === 'none') return;
+  if (!wrapper || !menu) return;
 
-  // 1. Click outside the wrapper -> close dropdown
+  const isMenuOpen = menu.classList.contains('show') || wrapper.classList.contains('open') || menu.style.display === 'flex';
+  if (!isMenuOpen) return;
+
+  // 1. Click outside the wrapper -> close dropdown immediately
   if (!wrapper.contains(e.target)) {
     toggleExportDropdown(false);
     return;
   }
 
-  // 2. Click on an option inside the dropdown menu (e.g. PDF, Word, Markdown) -> close menu immediately
+  // 2. Click on an option inside the dropdown menu (PDF, Word, Markdown, JSON, LaTeX, Audio) -> close immediately
   if (e.target.closest('.dropdown-export-item') || (menu.contains(e.target) && e.target !== menu)) {
-    setTimeout(() => {
-      toggleExportDropdown(false);
-    }, 50);
-  }
-});
-
-// Close dropdown automatically on window scroll to prevent floating artifacts
-window.addEventListener('scroll', () => {
-  const menu = document.getElementById('exportDropdownMenu');
-  if (menu && menu.style.display !== 'none') {
     toggleExportDropdown(false);
   }
-}, { passive: true });
+}, true);
+
+// Close dropdown automatically on window & document scroll to prevent floating artifacts
+const handleExportScrollClose = () => {
+  const menu = document.getElementById('exportDropdownMenu');
+  const wrapper = document.getElementById('exportDropdownWrapper');
+  if (menu && (menu.classList.contains('show') || menu.style.display === 'flex' || (wrapper && wrapper.classList.contains('open')))) {
+    toggleExportDropdown(false);
+  }
+};
+window.addEventListener('scroll', handleExportScrollClose, { passive: true, capture: true });
+document.addEventListener('scroll', handleExportScrollClose, { passive: true, capture: true });
 
 // Close dropdown on Escape key
 document.addEventListener('keydown', (e) => {
@@ -87,6 +136,8 @@ document.addEventListener('keydown', (e) => {
 
 // New Research Action
 function createNewResearch() {
+  setReportReady(false);
+  toggleExportDropdown(false);
   const taskInput = document.getElementById('task');
   if (taskInput) {
     taskInput.value = '';
@@ -226,6 +277,7 @@ const GPTResearcher = (() => {
 
 
   const init = () => {
+    setReportReady(false);
 
     // Check if cookies are enabled
 
@@ -1603,6 +1655,7 @@ const GPTResearcher = (() => {
 
     // If we have saved report HTML, display it
     if (safeHtml) {
+      setReportReady(true);
       // Restore the report content
       document.getElementById('reportContainer').innerHTML = safeHtml;
       document.getElementById('output').innerHTML = '';
@@ -2069,8 +2122,11 @@ const GPTResearcher = (() => {
 
 
 
-    // Reset report variables
+    // Explicitly reset report ready state & close any open dropdowns
+    setReportReady(false);
+    toggleExportDropdown(false);
 
+    // Reset report variables
     allReports = '';
 
     currentReport = '';
@@ -5235,6 +5291,10 @@ const GPTResearcher = (() => {
 
         status = 'Research in progress...'
 
+        setReportReady(false);
+
+        toggleExportDropdown(false);
+
         setReportActionsStatus('disabled')
 
         isResearchActive = true;
@@ -5278,6 +5338,8 @@ const GPTResearcher = (() => {
       case 'finished':
 
         status = 'Research finished!'
+
+        setReportReady(true);
 
         setReportActionsStatus('enabled')
 
@@ -5432,6 +5494,10 @@ const GPTResearcher = (() => {
       case 'initial':
 
         status = ''
+
+        setReportReady(false);
+
+        toggleExportDropdown(false);
 
         setReportActionsStatus('hidden')
 
