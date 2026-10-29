@@ -12,7 +12,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/site/styles.css?v=36.0" />
+        <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('inquirex_theme');
+                var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+                if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="/site/styles.css?v=37.0" />
     <style>
         .avatar {
             width: 80px;
@@ -82,6 +93,10 @@
         </div>
 
         <div class="nav-buttons">
+            <button type="button" id="themeToggleBtn" class="top-theme-toggle-button" onclick="toggleTheme()" title="Switch Light / Dark Theme">
+                <i id="themeToggleIcon" class="fa-solid fa-sun"></i>
+                <span id="themeToggleText">Light</span>
+            </button>
             <div id="navUserBadge" class="nav-user-badge" style="display:none;">
                 <i class="fas fa-user-circle"></i>
                 <span id="navUserName">User</span>
@@ -244,6 +259,14 @@
                     <div class="nav-item-text">
                         <span class="nav-item-label">Research History</span>
                         <span class="nav-item-sub">Past Sessions</span>
+                    </div>
+                </button>
+
+                <button type="button" class="sidebar-nav-item" id="sidebarThemeToggleBtn" onclick="toggleTheme()" title="Switch Appearance Mode">
+                    <i class="fa-solid fa-sun" id="sidebarThemeIcon"></i>
+                    <div class="nav-item-text">
+                        <span class="nav-item-label" id="sidebarThemeLabel">Light Mode</span>
+                        <span class="nav-item-sub">Appearance</span>
                     </div>
                 </button>
 
@@ -924,7 +947,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=36.0"></script>
+    <script src="/site/scripts.js?v=37.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');
