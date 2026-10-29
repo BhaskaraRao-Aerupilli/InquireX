@@ -23,7 +23,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="/site/styles.css?v=37.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=38.0" />
     <style>
         .avatar {
             width: 80px;
@@ -93,22 +93,25 @@
         </div>
 
         <div class="nav-buttons">
-            <button type="button" id="themeToggleBtn" class="top-theme-toggle-button" onclick="toggleTheme()" title="Switch Light / Dark Theme">
-                <i id="themeToggleIcon" class="fa-solid fa-sun"></i>
-                <span id="themeToggleText">Light</span>
+            <button type="button" id="themeToggleBtn" class="top-action-pill theme-toggle-pill" onclick="toggleTheme()" title="Switch Light / Dark Theme">
+                <i id="themeToggleIcon" class="fa-solid fa-sun text-amber-500"></i>
+                <span id="themeToggleText">Light / Dark</span>
             </button>
-            <div id="navUserBadge" class="nav-user-badge" style="display:none;">
-                <i class="fas fa-user-circle"></i>
-                <span id="navUserName">User</span>
+            <div id="navUserBadge" class="top-action-pill user-profile-pill" style="display:flex;">
+                <i class="fa-solid fa-circle-user text-indigo-500"></i>
+                <span id="navUserName">Bhaskara Rao</span>
             </div>
-            <div id="websocketPanelOpenBtn" class="top-websocket-button">
-                <i class="fas fa-network-wired"></i> Status
-            </div>
-            <div id="historyPanelOpenBtn" class="top-history-button">
-                <i class="fas fa-history"></i> History
-            </div>
-            <a href="/auth/logout" class="top-logout-button" title="Sign out">
-                <i class="fas fa-sign-out-alt"></i> Logout
+            <button type="button" id="websocketPanelOpenBtn" class="top-action-pill status-indicator-pill" title="Live System Connection Status">
+                <span class="live-pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                <span>Live Status</span>
+            </button>
+            <button type="button" id="historyPanelOpenBtn" class="top-action-pill history-pill" title="Research History">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </button>
+            <a href="/auth/logout" class="top-action-pill logout-pill" title="Sign out">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Logout</span>
             </a>
         </div>
     </header>
@@ -195,28 +198,27 @@
     <section class="landing">
         <div class="max-w-5xl mx-auto text-center">
             <div class="project-pill-badge">
-                <i class="fas fa-microchip"></i> InquireX — Agentic Research Engine v2.0
+                <i class="fa-solid fa-microchip"></i> INQUIREX — AGENTIC RESEARCH ENGINE V2.0
             </div>
-            <h1 class="text-4xl font-extrabold mx-auto lg:text-7xl">
+            <h1 class="landing-main-title">
                 An Agentic AI-Driven <br>
-                <span
-                    style="background-image:linear-gradient(to right, #9867F0, #6366F1, #ED4E50); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RAG Framework</span>
+                <span class="rag-gradient-text">RAG Framework</span>
             </h1>
-            <h3 class="text-xl font-bold text-gray-300 mt-2">for Automated Deep Web Research and Analytical Reporting</h3>
-            <p class="max-w-6xl mx-auto text-gray-400 mt-4" style="font-size:17px">
+            <h2 class="landing-sub-headline">for Automated Deep Web Research and Analytical Reporting</h2>
+            <p class="landing-description">
                 Autonomous multi-agent architecture for query decomposition, parallel deep-web scraping, vector context compression, verified citation synthesis, and auto-generated presentation slide decks.
             </p>
             
-            <!-- Hero Feature Badges Grid -->
+            <!-- 3. Interactive Feature Chips Grid -->
             <div class="hero-feature-badges">
-                <div class="hero-badge"><i class="fas fa-sitemap"></i> <span>Multi-Hop Planning</span></div>
-                <div class="hero-badge"><i class="fas fa-globe"></i> <span>Deep Web Retrieval</span></div>
-                <div class="hero-badge"><i class="fas fa-filter"></i> <span>Semantic Vector RAG</span></div>
-                <div class="hero-badge"><i class="fas fa-shield-alt"></i> <span>Citation Grounding</span></div>
-                <div class="hero-badge"><i class="fas fa-desktop"></i> <span>Presentation Slide Deck</span></div>
+                <div class="hero-badge"><i class="fa-solid fa-sitemap"></i> <span>Multi-Hop Planning</span></div>
+                <div class="hero-badge"><i class="fa-solid fa-globe"></i> <span>Deep Web Retrieval</span></div>
+                <div class="hero-badge"><i class="fa-solid fa-filter"></i> <span>Semantic Vector RAG</span></div>
+                <div class="hero-badge"><i class="fa-solid fa-shield-halved"></i> <span>Citation Grounding</span></div>
+                <div class="hero-badge"><i class="fa-solid fa-chalkboard-user"></i> <span>Presentation Slide Deck</span></div>
             </div>
 
-            <button type="button" id="launchResearchBtn" class="btn btn-primary mt-4" onclick="InquireXRouter.switchView('agent')"><i class="fas fa-bolt"></i> Launch Research Agent</button>
+            <button type="button" id="launchResearchBtn" class="btn-launch-hero" onclick="InquireXRouter.switchView('agent')"><i class="fa-solid fa-bolt"></i> Launch Research Agent</button>
         </div>
     </section>
 
@@ -906,13 +908,15 @@
         </div>
     </div>
 
-<footer>
-        <p>
-            <a href="javascript:void(0)" onclick="InquireXRouter.switchView('agent')">Research Console</a> |
-            <a target="_blank" href="https://github.com/assafelovic/gpt-researcher">Documentation</a> |
+<footer class="app-landing-footer">
+        <div class="footer-links">
+            <a href="javascript:void(0)" onclick="InquireXRouter.switchView('agent')">Research Console</a>
+            <span class="footer-sep">|</span>
+            <a target="_blank" href="https://github.com/assafelovic/gpt-researcher" rel="noopener noreferrer">Documentation</a>
+            <span class="footer-sep">|</span>
             <a href="javascript:void(0)" onclick="document.getElementById('websocketPanelOpenBtn')?.click()">System Status</a>
-        </p>
-        <p>An Agentic AI-Driven RAG Framework &copy; 2026</p>
+        </div>
+        <p class="footer-copyright">An Agentic AI-Driven RAG Framework &copy; 2026</p>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js"
@@ -947,7 +951,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=37.0"></script>
+    <script src="/site/scripts.js?v=38.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');
