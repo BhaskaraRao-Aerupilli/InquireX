@@ -9491,3 +9491,38 @@ form select,
     overflow-wrap: break-word !important;
     hyphens: none !important;
 }
+
+
+/* 2-Column Balanced Spacious Accordion Grid */
+.accordion-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .accordion-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+}
+
+.accordion-grid .form-group {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.accordion-grid .form-control {
+    font-size: 0.92rem !important;
+    padding: 10px 14px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+}
+
+.search-hero-canvas {
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+}

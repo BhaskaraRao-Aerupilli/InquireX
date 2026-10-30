@@ -22,7 +22,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="/site/styles.css?v=48.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=49.0" />
     <style>
         .avatar {
             width: 80px;
@@ -350,56 +350,54 @@
 
                             <div class="accordion-grid">
                                 <div class="form-group">
-                <label for="report_type" class="agent-question">What type of report would you like me to
-                    generate?</label>
-                <select name="report_type" id="report_type" class="form-control highlight-connection" required>
-                    <option value="research_report">Summary - Short and fast (~2 min)</option>
-                    <option value="detailed_report">Detailed - In depth and longer (~5 min)</option>
-                    <option value="resource_report">Resource Report</option>
-                    <option value="deep">Deep Research</option>
-                </select>
-            </div>
+                                    <label for="report_type" class="agent-question">Report Type</label>
+                                    <select name="report_type" id="report_type" class="form-control highlight-connection" required>
+                                        <option value="research_report">Summary — Fast & concise overview (~2 min)</option>
+                                        <option value="detailed_report">Detailed — Comprehensive deep analysis (~5 min)</option>
+                                        <option value="deep">Deep Research — Iterative multi-hop search</option>
+                                        <option value="resource_report">Resource Report — Sources, links & references</option>
+                                    </select>
+                                    <small class="text-muted">Depth and format of the synthesized research</small>
+                                </div>
+
                                 <div class="form-group">
-                <label for="tone" class="agent-question">In which tone would you like the report to be generated?</label>
-                <select name="tone" id="tone" class="form-control highlight-connection" required>
-                    <option value="Objective">Objective - Impartial and unbiased facts</option>
-                    <option value="Formal">Formal - Academic standard and structure</option>
-                    <option value="Analytical">Analytical - Critical evaluation of data</option>
-                    <option value="Persuasive">Persuasive - Convincing viewpoint and argument</option>
-                    <option value="Informative">Informative - Comprehensive information</option>
-                    <option value="Explanatory">Explanatory - Clarifying complex concepts</option>
-                    <option value="Descriptive">Descriptive - Detailed depiction of studies</option>
-                    <option value="Critical">Critical - Judging validity and relevance</option>
-                    <option value="Comparative">Comparative - Juxtaposing theories & data</option>
-                    <option value="Speculative">Speculative - Exploring implications</option>
-                    <option value="Reflective">Reflective - Process & insights</option>
-                    <option value="Narrative">Narrative - Story-driven illustration</option>
-                    <option value="Humorous">Humorous - Engaging & relatable</option>
-                    <option value="Optimistic">Optimistic - Highlighting benefits</option>
-                    <option value="Pessimistic">Pessimistic - Focusing on challenges</option>
-                </select>
-                <small class="text-muted">Style and phrasing of the generated analysis</small>
-            </div>
+                                    <label for="tone" class="agent-question">Tone & Synthesis Style</label>
+                                    <select name="tone" id="tone" class="form-control highlight-connection" required>
+                                        <option value="Objective">Objective — Impartial facts & findings</option>
+                                        <option value="Formal">Formal — Academic structure & terminology</option>
+                                        <option value="Analytical">Analytical — Critical breakdown of data</option>
+                                        <option value="Persuasive">Persuasive — Structured arguments & viewpoint</option>
+                                        <option value="Informative">Informative — Clear & comprehensive explanation</option>
+                                        <option value="Explanatory">Explanatory — Step-by-step conceptual clarity</option>
+                                        <option value="Critical">Critical — Evaluating validity & limitations</option>
+                                        <option value="Comparative">Comparative — Contrasting theories & datasets</option>
+                                        <option value="Optimistic">Optimistic — Highlighting opportunities</option>
+                                    </select>
+                                    <small class="text-muted">Writing tone and analytical perspective</small>
+                                </div>
+
                                 <div class="form-group">
-                <label for="report_source" class="agent-question">What sources would you like me to research from?</label>
-                <select name="report_source" id="report_source" class="form-control highlight-connection" required>
-                    <option value="web">The Web</option>
-                    <option value="local">My Documents (Private RAG)</option>
-                    <option value="hybrid">Hybrid (Web + My Documents)</option>
-                    <option value="azure">Azure Storage</option>
-                </select>
-                <small class="text-muted">Local documents require DOC_PATH env variable</small>
-            </div>
+                                    <label for="report_source" class="agent-question">Research Source</label>
+                                    <select name="report_source" id="report_source" class="form-control highlight-connection" required>
+                                        <option value="web">The Web — Live internet retrieval</option>
+                                        <option value="local">My Documents — Private RAG vector store</option>
+                                        <option value="hybrid">Hybrid — Web + Local private documents</option>
+                                        <option value="azure">Azure Storage — Cloud blob repository</option>
+                                    </select>
+                                    <small class="text-muted">Data origins for ingestion and grounding</small>
+                                </div>
+
                                 <div class="form-group">
-                <label for="maxSearchResults" class="agent-question">How many websites should be scraped per query?</label>
-                <input type="number" class="form-control highlight-connection" id="maxSearchResults" name="max_search_results" min="1" max="20" value="5">
-                <small class="text-muted">Controls the number of websites scraped per search query (default: 5)</small>
-            </div>
-                                <div class="form-group">
-                <label for="queryDomains" class="form-label">Query Domains (Optional)</label>
-                <input type="text" class="form-control highlight-connection" id="queryDomains" name="query_domains" placeholder="Enter domains separated by commas" autocomplete="on">
-                <small class="text-muted">Example: techcrunch.com, forbes.com</small>
-            </div>
+                                    <label for="maxSearchResults" class="agent-question">Search Depth</label>
+                                    <input type="number" class="form-control highlight-connection" id="maxSearchResults" name="max_search_results" min="1" max="20" value="5">
+                                    <small class="text-muted">Websites scraped per sub-query (default: 5)</small>
+                                </div>
+
+                                <div class="form-group query-domains-group" style="grid-column: 1 / -1;">
+                                    <label for="queryDomains" class="form-label">Query Domains (Optional)</label>
+                                    <input type="text" class="form-control highlight-connection" id="queryDomains" name="query_domains" placeholder="Filter specific domains (e.g. arxiv.org, reuters.com, github.com)" autocomplete="on">
+                                    <small class="text-muted">Comma-separated domains to prioritize during retrieval</small>
+                                </div>
                             </div>
 
                             <div class="form-group" id="documentUploadSection" style="display: none;">

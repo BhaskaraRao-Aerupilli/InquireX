@@ -475,7 +475,7 @@ const InquireXRouter = (() => {
 
                 const taskEl = document.getElementById('task');
 
-                if (taskEl) taskEl.focus();
+                if (taskEl) taskEl.focus({ preventScroll: true });
 
             }, 320);
 
