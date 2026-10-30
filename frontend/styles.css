@@ -8301,3 +8301,353 @@ body[data-theme="light"] {
 [data-theme="light"] .footer-sep {
     color: #cbd5e1 !important;
 }
+
+
+
+
+/* ==========================================================================
+   UNIVERSAL RESPONSIVE SYSTEM & ZERO-NEGATIVE-EFFECT FIDELITY
+   Adapts flawlessly to Mobile (320px+), Tablets (768px+), and Desktops (1024px+)
+   ========================================================================== */
+
+/* 1. Global Box-Sizing & Viewport Integrity */
+*, *::before, *::after {
+    box-sizing: border-box !important;
+}
+
+html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+/* Ensure data tables in reports never stretch viewport horizontally */
+.report-document-body table,
+#reportContainer table,
+.research-report table,
+.report-content-body table {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-collapse: collapse !important;
+    margin: 1.5rem 0 !important;
+}
+
+.report-document-body th,
+.report-document-body td,
+#reportContainer th,
+#reportContainer td,
+.research-report th,
+.research-report td {
+    min-width: 120px !important;
+    padding: 10px 14px !important;
+}
+
+/* 2. Top Navigation Bar Responsiveness */
+@media (max-width: 768px) {
+    header.app-top-navbar,
+    .app-top-navbar {
+        padding: 0 12px !important;
+        height: 58px !important;
+        min-height: 58px !important;
+    }
+
+    .brand-core-badge {
+        display: none !important;
+    }
+
+    .top-action-pill {
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        gap: 5px !important;
+    }
+
+    .top-action-pill span:not(.live-pulse-dot) {
+        display: none !important;
+    }
+
+    .nav-buttons {
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-text {
+        font-size: 1.15rem !important;
+    }
+
+    .brand-icon-wrap {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .top-menu-btn {
+        padding: 6px 9px !important;
+    }
+}
+
+/* 3. Mobile & Tablet Sidebar Collapsible Drawer Behavior */
+@media (max-width: 960px) {
+    .workspace-dashboard {
+        flex-direction: column !important;
+        padding: 14px 12px 60px 12px !important;
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+
+    .workspace-sidebar {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        position: static !important;
+        max-height: none !important;
+        border-radius: 16px !important;
+        margin-bottom: 8px !important;
+        transition: max-height 0.3s ease, opacity 0.25s ease !important;
+    }
+
+    /* When collapsed on mobile/tablet, hide completely so search hero is immediate */
+    .workspace-sidebar.collapsed {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .workspace-main-panel {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+}
+
+/* 4. Search Hero Canvas & Form Responsiveness */
+@media (max-width: 640px) {
+    .search-hero-canvas {
+        padding: 16px 4px !important;
+    }
+
+    .search-hero-title {
+        font-size: 1.65rem !important;
+        line-height: 1.25 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .search-hero-sub {
+        font-size: 0.88rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .search-hero-input-container {
+        padding: 12px 14px !important;
+        border-radius: 18px !important;
+    }
+
+    .search-input-top-bar {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .search-chips-row {
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+
+    .preset-chip {
+        padding: 3px 8px !important;
+        font-size: 0.72rem !important;
+    }
+
+    .search-hero-textarea {
+        font-size: 0.95rem !important;
+        min-height: 52px !important;
+    }
+
+    .search-input-bottom-bar {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        padding-top: 8px !important;
+    }
+
+    .btn-advanced-toggle {
+        font-size: 0.78rem !important;
+        padding: 6px 8px !important;
+    }
+
+    .btn-search-hero-submit {
+        padding: 8px 14px !important;
+        font-size: 0.82rem !important;
+        border-radius: 10px !important;
+    }
+
+    .accordion-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .doc-upload-dropzone {
+        padding: 16px 12px !important;
+    }
+}
+
+/* 5. Pipeline Step Tracker Mobile Layout */
+@media (max-width: 768px) {
+    .agent-pipeline-tracker {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 12px !important;
+    }
+
+    .pipeline-connector {
+        width: 2px !important;
+        height: 10px !important;
+        margin: 0 auto !important;
+    }
+
+    .pipeline-step {
+        padding: 8px 12px !important;
+        width: 100% !important;
+    }
+}
+
+/* 6. Sticky Report Toolbar & Floating Export Menu on Mobile */
+@media (max-width: 640px) {
+    .report-sticky-toolbar {
+        top: 60px !important;
+        padding: 8px 10px !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .report-title-badge span {
+        font-size: 0.78rem !important;
+    }
+
+    .export-tool-btn {
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .export-dropdown-trigger {
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .export-dropdown-menu {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 20px !important;
+        left: 12px !important;
+        right: 12px !important;
+        min-width: 0 !important;
+        width: calc(100vw - 24px) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .report-document-viewer {
+        padding: 18px 14px !important;
+        border-radius: 16px !important;
+    }
+
+    .report-document-body {
+        font-size: 0.95rem !important;
+        line-height: 1.7 !important;
+    }
+}
+
+/* 7. Drawers on Mobile (WebSocket & History) */
+@media (max-width: 480px) {
+    div.websocket-panel,
+    div.history-panel {
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+
+    .history-panel-search input {
+        font-size: 0.88rem !important;
+        padding: 8px 10px !important;
+    }
+}
+
+/* 8. Studio Mode Modal on Mobile / Tablet */
+@media (max-width: 768px) {
+    .options-fullview-container {
+        width: 96vw !important;
+        max-height: 94vh !important;
+        border-radius: 16px !important;
+        margin: 10px auto !important;
+    }
+
+    .options-fullview-header {
+        padding: 14px 16px !important;
+    }
+
+    .options-fullview-header h2 {
+        font-size: 1.15rem !important;
+    }
+
+    .options-fullview-grid {
+        grid-template-columns: 1fr !important;
+        padding: 12px !important;
+        gap: 12px !important;
+    }
+
+    .agent-persona-selector {
+        grid-template-columns: 1fr !important;
+    }
+
+    .options-fullview-footer {
+        padding: 12px 14px !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .options-fullview-footer .footer-actions {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+    }
+}
+
+/* 9. Landing Hero Section Responsive Text */
+@media (max-width: 640px) {
+    .landing-main-title {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .landing-sub-headline {
+        font-size: 1.15rem !important;
+    }
+
+    .landing-description {
+        font-size: 0.92rem !important;
+    }
+
+    .hero-feature-badges {
+        gap: 8px !important;
+    }
+
+    .hero-badge {
+        padding: 7px 12px !important;
+        font-size: 0.78rem !important;
+    }
+
+    .btn-launch-hero {
+        width: 100% !important;
+        padding: 12px 20px !important;
+        font-size: 0.95rem !important;
+    }
+}

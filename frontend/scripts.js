@@ -457,11 +457,15 @@ const InquireXRouter = (() => {
 
 
 
-        } else if (view === 'agent') {
-
+                } else if (view === 'agent') {
             // Scroll to top of workspace
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // On mobile / tablet, start with sidebar collapsed for immediate search access
+            if (window.innerWidth <= 960) {
+                const sidebar = document.getElementById('researchSidebar');
+                if (sidebar) sidebar.classList.add('collapsed');
+            }
 
 
 
