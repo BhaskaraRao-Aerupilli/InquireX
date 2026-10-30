@@ -1,14 +1,6 @@
 // --- InquireX Theme Management (Light & Dark Theme) ---
 function initTheme() {
-  let initialTheme = 'dark';
-  try {
-    const savedTheme = localStorage.getItem('inquirex_theme');
-    if (savedTheme) {
-      initialTheme = savedTheme;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      initialTheme = 'light';
-    }
-  } catch (e) {}
+  let initialTheme = 'light'; try { const savedTheme = localStorage.getItem('inquirex_theme'); if (savedTheme) { initialTheme = savedTheme; } } catch (e) {}
   applyTheme(initialTheme);
 }
 
@@ -17618,6 +17610,7 @@ const GPTResearcher = (() => {
 window.GPTResearcher = GPTResearcher;
 
 window.addEventListener('DOMContentLoaded', GPTResearcher.init);
+
 
 
 
