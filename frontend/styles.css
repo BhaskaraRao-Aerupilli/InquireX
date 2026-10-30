@@ -4963,7 +4963,7 @@ footer a:hover {
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    background: rgba(4, 7, 14, 0.88) !important;
+    background: rgba(4, 7, 14, 0.88);
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
     z-index: 1 !important;
@@ -5577,7 +5577,7 @@ section.landing {
 }
 
 /* GLOBAL DESIGN SYSTEM — CSS custom property overrides */
-:root {
+:root[data-theme="dark"] {
     --bg-base: #020617;
     --bg-card: rgba(15, 23, 42, 0.5);
     --border-subtle: rgba(30, 41, 59, 0.8);
@@ -5983,7 +5983,7 @@ body {
 }
 
 /* Enhanced Main Panel Cards */
-.workspace-main-panel .research-output-container {
+[data-theme="dark"] .workspace-main-panel .research-output-container {
     background: rgba(13, 19, 36, 0.75) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -5992,7 +5992,7 @@ body {
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
 }
 
-.workspace-main-panel .report-container {
+[data-theme="dark"] .workspace-main-panel .report-container {
     background: rgba(13, 19, 36, 0.75) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -6028,8 +6028,8 @@ html, body {
     overflow-x: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
-    background-color: #020617 !important;
-    color: #f1f5f9 !important;
+    background-color: var(--bg-base) !important;
+    color: var(--text-primary) !important;
     font-family: var(--font-body, 'Montserrat', sans-serif) !important;
     -webkit-font-smoothing: antialiased !important;
 }
@@ -6071,7 +6071,7 @@ html, body {
     min-width: 260px !important;
     max-width: 300px !important;
     flex-shrink: 0 !important;
-    background: rgba(10, 15, 30, 0.7) !important;
+    background: var(--bg-surface) !important;
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
@@ -6341,7 +6341,7 @@ html, body {
     margin: 0 auto !important;
 }
 
-.search-hero-input-container {
+[data-theme="dark"] .search-hero-input-container {
     background: rgba(15, 23, 42, 0.8) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
@@ -6465,7 +6465,7 @@ html, body {
     margin-top: 14px !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
-.accordion-inner-card {
+[data-theme="dark"] .accordion-inner-card {
     background: rgba(15, 23, 42, 0.65) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
@@ -6505,7 +6505,7 @@ html, body {
     color: #cbd5e1 !important;
     margin-bottom: 6px !important;
 }
-.accordion-grid .form-control {
+[data-theme="dark"] .accordion-grid .form-control {
     background: rgba(10, 15, 30, 0.8) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 10px !important;
@@ -6515,7 +6515,7 @@ html, body {
 }
 
 /* 7. PROGRESS LOGS & TERMINAL CONTAINMENT */
-.research-output-container {
+[data-theme="dark"] .research-output-container {
     width: 100% !important;
     max-width: 900px !important;
     margin: 0 auto !important;
@@ -6539,7 +6539,7 @@ html, body {
 }
 
 /* 8. STREAMLINED REPORT DOCUMENT VIEWER */
-.report-document-viewer {
+[data-theme="dark"] .report-document-viewer {
     width: 100% !important;
     max-width: 900px !important;
     margin: 0 auto !important;
@@ -6579,7 +6579,7 @@ html, body {
 }
 
 /* 9. CONSOLIDATED TOP-RIGHT EXPORT DROPDOWN MENU */
-.report-sticky-toolbar {
+[data-theme="dark"] .report-sticky-toolbar {
     position: sticky !important;
     top: 76px !important;
     z-index: 40 !important;
@@ -6636,7 +6636,7 @@ html, body {
     transform: rotate(180deg) !important;
 }
 
-.export-dropdown-menu {
+[data-theme="dark"] .export-dropdown-menu {
     position: absolute !important;
     top: calc(100% + 8px) !important;
     right: 0 !important;
@@ -6973,7 +6973,7 @@ body {
     z-index: 9999 !important;
 }
 
-.export-dropdown-menu {
+[data-theme="dark"] .export-dropdown-menu {
     position: absolute !important;
     top: calc(100% + 8px) !important;
     right: 0 !important;
@@ -8985,4 +8985,419 @@ div.websocket-panel.open {
         padding: 12px !important;
         gap: 12px !important;
     }
+}
+
+
+/* ==========================================================================
+   FINAL HIGH-CONTRAST LIGHT MODE TOTAL RESET & OVERFLOW PERFECTION
+   Guarantees 100% pure slate/white theme with zero dark smudges,
+   zero negative shadow insets, and crystal clear typography.
+   ========================================================================== */
+
+/* 1. Root & HTML/Body Surface Reset */
+html[data-theme="light"],
+body[data-theme="light"],
+[data-theme="light"] {
+    background-color: #f8fafc !important;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 60%),
+        radial-gradient(circle at 90% 20%, rgba(124, 58, 237, 0.03) 0%, transparent 45%),
+        radial-gradient(circle at 10% 40%, rgba(59, 130, 246, 0.03) 0%, transparent 50%) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] * {
+    text-shadow: none !important;
+}
+
+/* 2. Top Navigation Bar */
+[data-theme="light"] header.app-top-navbar,
+[data-theme="light"] .app-top-navbar,
+[data-theme="light"] .top-navbar {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .top-action-pill,
+[data-theme="light"] .nav-action-pill,
+[data-theme="light"] .top-theme-toggle-button,
+[data-theme="light"] .top-history-button,
+[data-theme="light"] .top-websocket-button,
+[data-theme="light"] .top-logout-button,
+[data-theme="light"] .nav-user-badge,
+[data-theme="light"] .top-menu-btn {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .top-action-pill:hover,
+[data-theme="light"] .top-theme-toggle-button:hover,
+[data-theme="light"] .top-history-button:hover,
+[data-theme="light"] .top-websocket-button:hover,
+[data-theme="light"] .top-logout-button:hover,
+[data-theme="light"] .top-menu-btn:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+}
+
+/* 3. Search Hero Input Box — Eliminates All Dark/Negative Shades */
+[data-theme="light"] .search-hero-input-container {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 22px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .search-hero-input-container:focus-within {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 12px 30px -5px rgba(79, 70, 229, 0.15), 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
+}
+
+[data-theme="light"] .search-hero-textarea,
+[data-theme="light"] #task {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .search-hero-textarea:focus,
+[data-theme="light"] #task:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+[data-theme="light"] .search-hero-textarea::placeholder,
+[data-theme="light"] #task::placeholder {
+    color: #94a3b8 !important;
+}
+
+[data-theme="light"] .search-input-top-bar {
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .search-input-bottom-bar {
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .preset-chip {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .preset-chip:hover,
+[data-theme="light"] .preset-chip.active {
+    background: #eef2ff !important;
+    border-color: #4f46e5 !important;
+    color: #4f46e5 !important;
+}
+
+[data-theme="light"] .btn-advanced-toggle {
+    background: transparent !important;
+    color: #475569 !important;
+}
+
+[data-theme="light"] .btn-advanced-toggle:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] #submitButton,
+[data-theme="light"] .btn-search-hero-submit,
+[data-theme="light"] .btn-primary,
+[data-theme="light"] button.btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+    border: 1px solid rgba(79, 70, 229, 0.2) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+    text-shadow: none !important;
+}
+
+[data-theme="light"] #submitButton:hover,
+[data-theme="light"] .btn-search-hero-submit:hover,
+[data-theme="light"] .btn-primary:hover {
+    background: linear-gradient(135deg, #4338ca, #6d28d9) !important;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+    transform: translateY(-2px) !important;
+    filter: none !important;
+}
+
+/* 4. General Form Inputs, Selects, and Textareas */
+[data-theme="light"] form .form-control,
+[data-theme="light"] form textarea.form-control,
+[data-theme="light"] form select.form-control,
+[data-theme="light"] form input.form-control,
+[data-theme="light"] input[type="text"]:not(.search-hero-textarea),
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] input[type="email"],
+[data-theme="light"] textarea:not(.search-hero-textarea),
+[data-theme="light"] select,
+[data-theme="light"] .form-control,
+[data-theme="light"] .studio-textarea,
+[data-theme="light"] .studio-select,
+[data-theme="light"] .studio-input {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] input:focus:not(.search-hero-textarea),
+[data-theme="light"] textarea:focus:not(.search-hero-textarea),
+[data-theme="light"] select:focus,
+[data-theme="light"] .form-control:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+    outline: none !important;
+}
+
+/* 5. Left Workspace Sidebar */
+[data-theme="light"] .workspace-sidebar,
+[data-theme="light"] aside.workspace-sidebar,
+[data-theme="light"] #researchSidebar {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-header-bar,
+[data-theme="light"] .sidebar-footer {
+    border-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] .sidebar-brand-name {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-collapse-btn {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+}
+
+[data-theme="light"] .sidebar-collapse-btn:hover {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-nav-item {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .sidebar-nav-item:hover {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-nav-item.btn-new-research {
+    background: #eef2ff !important;
+    border-color: #c7d2fe !important;
+    color: #4338ca !important;
+}
+
+[data-theme="light"] .nav-item-label {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .nav-item-sub {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .user-display-name {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .status-indicator-dot.mini {
+    box-shadow: 0 0 0 1.5px #ffffff !important;
+}
+
+/* 6. Advanced Settings Accordion */
+[data-theme="light"] .accordion-inner-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .acc-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .acc-subtitle {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .accordion-grid label {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .accordion-grid .form-control {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* 7. Research Progress & Terminal Console */
+[data-theme="light"] .research-output-container,
+[data-theme="light"] .workspace-main-panel .research-output-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] #output {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+}
+
+[data-theme="light"] .agent_response {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #4f46e5 !important;
+    color: #0f172a !important;
+}
+
+/* 8. Report Viewer & Sticky Toolbar */
+[data-theme="light"] .report-document-viewer,
+[data-theme="light"] .workspace-main-panel .report-container,
+[data-theme="light"] .report-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .report-document-body {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .report-document-body h1,
+[data-theme="light"] .report-document-body h2,
+[data-theme="light"] .report-document-body h3,
+[data-theme="light"] .report-document-body h4 {
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .report-document-body p,
+[data-theme="light"] .report-document-body li,
+[data-theme="light"] .report-document-body td {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .report-sticky-toolbar {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.06) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .export-dropdown-trigger {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .export-dropdown-trigger:hover {
+    background: #eef2ff !important;
+    border-color: #4f46e5 !important;
+    color: #4f46e5 !important;
+}
+
+[data-theme="light"] .export-dropdown-menu {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.03) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .dropdown-export-item {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .dropdown-export-item:hover {
+    background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .dropdown-export-item .item-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .dropdown-export-item .item-desc {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .dropdown-divider {
+    background: #e2e8f0 !important;
+}
+
+/* 9. Options Fullview Modal & Backdrops */
+[data-theme="light"] .options-fullview-backdrop {
+    background: rgba(15, 23, 42, 0.35) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+[data-theme="light"] .options-fullview-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.15) !important;
+    color: #0f172a !important;
+}
+
+/* 10. History and WebSocket Slideout Drawers */
+[data-theme="light"] div.history-panel,
+[data-theme="light"] div.websocket-panel {
+    background: #ffffff !important;
+    border-left: 1px solid #e2e8f0 !important;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08) !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .history-header-modern,
+[data-theme="light"] .websocket-header-modern {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .history-title,
+[data-theme="light"] .websocket-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .history-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .history-item:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .history-query {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .history-date {
+    color: #64748b !important;
 }
