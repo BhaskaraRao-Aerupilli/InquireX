@@ -22,7 +22,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="/site/styles.css?v=47.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=48.0" />
     <style>
         .avatar {
             width: 80px;
@@ -360,51 +360,35 @@
                 </select>
             </div>
                                 <div class="form-group">
-                <label for="tone" class="agent-question">In which tone would you like the report to be
-                    generated?</label>
+                <label for="tone" class="agent-question">In which tone would you like the report to be generated?</label>
                 <select name="tone" id="tone" class="form-control highlight-connection" required>
-                    <option value="Objective">Objective - Impartial and unbiased presentation of facts and findings
-                    </option>
-                    <option value="Formal">Formal - Adheres to academic standards with sophisticated language and
-                        structure</option>
-                    <option value="Analytical">Analytical - Critical evaluation and detailed examination of data and
-                        theories</option>
-                    <option value="Persuasive">Persuasive - Convincing the audience of a particular viewpoint or
-                        argument</option>
-                    <option value="Informative">Informative - Providing clear and comprehensive information on a topic
-                    </option>
-                    <option value="Explanatory">Explanatory - Clarifying complex concepts and processes</option>
-                    <option value="Descriptive">Descriptive - Detailed depiction of phenomena, experiments, or case
-                        studies</option>
-                    <option value="Critical">Critical - Judging the validity and relevance of the research and its
-                        conclusions</option>
-                    <option value="Comparative">Comparative - Juxtaposing different theories, data, or methods to
-                        highlight differences and similarities</option>
-                    <option value="Speculative">Speculative - Exploring hypotheses and potential implications or future
-                        research directions</option>
-                    <option value="Reflective">Reflective - Considering the research process and personal insights or
-                        experiences</option>
-                    <option value="Narrative">Narrative - Telling a story to illustrate research findings or
-                        methodologies</option>
-                    <option value="Humorous">Humorous - Light-hearted and engaging, usually to make the content more
-                        relatable</option>
-                    <option value="Optimistic">Optimistic - Highlighting positive findings and potential benefits
-                    </option>
-                    <option value="Pessimistic">Pessimistic - Focusing on limitations, challenges, or negative outcomes
-                    </option>
+                    <option value="Objective">Objective - Impartial and unbiased facts</option>
+                    <option value="Formal">Formal - Academic standard and structure</option>
+                    <option value="Analytical">Analytical - Critical evaluation of data</option>
+                    <option value="Persuasive">Persuasive - Convincing viewpoint and argument</option>
+                    <option value="Informative">Informative - Comprehensive information</option>
+                    <option value="Explanatory">Explanatory - Clarifying complex concepts</option>
+                    <option value="Descriptive">Descriptive - Detailed depiction of studies</option>
+                    <option value="Critical">Critical - Judging validity and relevance</option>
+                    <option value="Comparative">Comparative - Juxtaposing theories & data</option>
+                    <option value="Speculative">Speculative - Exploring implications</option>
+                    <option value="Reflective">Reflective - Process & insights</option>
+                    <option value="Narrative">Narrative - Story-driven illustration</option>
+                    <option value="Humorous">Humorous - Engaging & relatable</option>
+                    <option value="Optimistic">Optimistic - Highlighting benefits</option>
+                    <option value="Pessimistic">Pessimistic - Focusing on challenges</option>
                 </select>
+                <small class="text-muted">Style and phrasing of the generated analysis</small>
             </div>
                                 <div class="form-group">
-                <label for="report_source" class="agent-question">What sources would you like me to research
-                    from?</label>
-                <p class="text-left mt-0 pt-0" style="font-size: 0.7rem;">You can now do research on local documents as
-                    well. Please make sure to add the DOC_PATH env variable pointing to your documents folder.</p>
+                <label for="report_source" class="agent-question">What sources would you like me to research from?</label>
                 <select name="report_source" id="report_source" class="form-control highlight-connection" required>
                     <option value="web">The Web</option>
                     <option value="local">My Documents (Private RAG)</option>
                     <option value="hybrid">Hybrid (Web + My Documents)</option>
-                    <option value="azure">Azure storage</option>
+                    <option value="azure">Azure Storage</option>
                 </select>
+                <small class="text-muted">Local documents require DOC_PATH env variable</small>
             </div>
                                 <div class="form-group">
                 <label for="maxSearchResults" class="agent-question">How many websites should be scraped per query?</label>

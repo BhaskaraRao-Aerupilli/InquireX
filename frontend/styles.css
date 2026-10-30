@@ -9403,3 +9403,91 @@ body[data-theme="light"],
 [data-theme="light"] .history-date {
     color: #64748b !important;
 }
+
+
+/* ==========================================================================
+   STRICT TEXT & FORM BOUNDARY OVERFLOW PREVENTION
+   Prevents text and select labels from overflowing their parent containers
+   ========================================================================== */
+
+/* 1. Global Form & Select Containment */
+select.form-control,
+form select,
+.form-control,
+.studio-select {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    word-break: normal !important;
+}
+
+[data-theme="light"] select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+/* 2. Grid & Form Group Boundary Lock */
+.accordion-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.accordion-grid .form-group {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+.accordion-grid label,
+.form-label,
+.agent-question {
+    display: block !important;
+    max-width: 100% !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    line-height: 1.35 !important;
+    margin-bottom: 6px !important;
+}
+
+/* 3. Search Hero Top and Bottom Bars Wrapping */
+.search-input-top-bar,
+.search-input-bottom-bar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.search-chips-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* 4. Hero Title & Subtitle Word Wrapping */
+.search-hero-title,
+.search-hero-sub,
+.landing-main-title,
+.landing-sub-headline,
+.landing-description {
+    max-width: 100% !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
+}
