@@ -4653,13 +4653,13 @@ const GPTResearcher = (() => {
 
 
 
-    const researchOutputContainer = document.querySelector('.research-output-container');
+    const researchOutputContainer = document.getElementById('researchOutputContainer') || document.querySelector('.research-output-container');
 
 
 
     if (researchOutputContainer) {
 
-
+        researchOutputContainer.style.display = 'block';
 
         researchOutputContainer.scrollIntoView({
 

@@ -5780,14 +5780,16 @@ body {
     box-sizing: border-box !important;
 }
 
-/* Override narrow container margins for main panel children */
+/* Override container margins for main panel children to maintain unified 900px width */
 .workspace-main-panel .research-output-container,
 .workspace-main-panel .report-container,
 .workspace-main-panel .chat-container,
-.workspace-main-panel .images_div {
+.workspace-main-panel .images_div,
+.research-output-container,
+.report-document-viewer {
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    max-width: 900px !important;
+    margin: 0 auto !important;
     box-sizing: border-box !important;
 }
 
