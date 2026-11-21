@@ -14,10 +14,49 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <p align="center">
-  <b>InquireX</b> is a production-grade autonomous agentic deep research engine designed to eliminate hallucinations, automate multi-source intelligence gathering, filter and compress context vectors, and synthesize publication-ready analytical reports with strict provenance verification.
+  <b>InquireX</b> is a production-grade autonomous deep research platform powered by multi-agent decomposition, parallel web & academic retrieval, anti-hallucination vector compression, dynamic Mermaid.js concept graphs, interactive presentation slide generation, and AI voice audio briefings.
 </p>
 
-[Key Features](#-key-features) • [System Architecture](#-system-architecture) • [UML & Design Diagrams](#-system-design--uml-diagrams) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [Environment Variables](#-environment-variables) • [Project Structure](#-project-structure) • [API & WebSocket Protocol](#-api--websocket-protocol) • [License](#-license)
+<!-- Live Preview Demo Above the Fold -->
+<p align="center">
+  <img src="inquirex_demo.png" alt="InquireX Autonomous Deep Research Engine in Action" width="100%">
+</p>
+
+</div>
+
+---
+
+### ⚡ 30-Second Quickstart
+
+Get InquireX running locally in 4 simple commands:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/BhaskaraRao-Aerupilli/InquireX.git
+cd InquireX
+
+# 2. Create and activate virtual environment
+python -m venv venv
+# Linux / macOS:
+source venv/bin/activate
+# Windows PowerShell:
+.\venv\Scripts\Activate.ps1
+
+# 3. Install dependencies & configure keys
+pip install -r requirements.txt
+cp .env.example .env    # Add your OPENAI_API_KEY and TAVILY_API_KEY
+
+# 4. Start the engine
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Open [http://localhost:8000](http://localhost:8000) in your browser and enter any research question or hypothesis.
+
+---
+
+<div align="center">
+
+[⚡ Quickstart](#-30-second-quickstart) • [🌟 Key Features](#-key-features) • [🏛️ System Architecture](#️-system-architecture) • [📐 UML Diagrams](#-system-design--uml-diagrams) • [💻 Tech Stack](#-tech-stack) • [🚀 Detailed Setup](#-detailed-installation--configuration) • [⚙️ Configuration](#️-environment-variables-reference) • [📁 Structure](#-project-structure) • [🔌 API Protocol](#-api--websocket-protocol) • [📄 License](#-license)
 
 ---
 
@@ -210,7 +249,7 @@ Comprehensive actor-to-system interactions capturing user capabilities (running 
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Detailed Installation & Configuration
 
 ### 1. Prerequisites
 - **Python 3.11+** installed on your system.

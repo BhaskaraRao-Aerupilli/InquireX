@@ -1,65 +1,44 @@
 # Security Policy
 
-## Reporting a vulnerability
+## Reporting a Vulnerability
 
-If you believe you've found a security issue that falls within the threat model
-described below, please report it privately rather than opening a public issue:
+If you believe you have discovered a security vulnerability or security-sensitive issue within InquireX, please report it privately rather than opening a public issue:
 
-- Use GitHub's [private vulnerability reporting](https://github.com/assafelovic/gpt-researcher/security/advisories/new), **or**
-- Email the maintainer at **assaf.elovic@gmail.com** with details and, ideally, a proof of concept.
+- Use GitHub's [Private Vulnerability Reporting](https://github.com/BhaskaraRao-Aerupilli/InquireX/security/advisories/new), **or**
+- Email the maintainer at **bhaskararao1012005@gmail.com** with details and, if possible, a reproducible proof-of-concept.
 
-We aim to acknowledge reports within a few business days. Please give us a
-reasonable window to investigate and ship a fix before any public disclosure.
+We aim to acknowledge reports within 48 hours and work with you on a resolution before any public disclosure.
 
-## Threat model — please read before reporting
+## Threat Model & Deployment Architecture
 
-GPT-Researcher is **open-source software that you, the operator, run in your own
-environment.** Understanding the intended deployment model avoids duplicate
-reports for behavior that is by design.
+InquireX is an **autonomous agentic deep research engine and intelligence platform that operators run in their chosen environment (local or cloud).** Understanding the intended deployment model avoids duplicate reports for behavior that is by design.
 
-### The backend is not a hardened, multi-tenant service
+### Backend & Endpoint Security
 
-The backend server (FastAPI + WebSocket, `/ws` and the REST endpoints) ships
-**without built-in authentication or network access controls, by design.** It is
-intended to be run locally or behind infrastructure that the operator controls.
+The InquireX backend server (FastAPI, WebSocket `/ws`, and REST endpoints) includes built-in authentication and session guards using Supabase PostgreSQL, Bcrypt salted password hashing, and stateless JWT tokens.
 
-If you expose the server directly to untrusted clients, you are responsible for
-placing it behind your own authentication, reverse proxy, and network
-boundaries. Accordingly, the following are considered **operator-configuration
-concerns and out of scope** as project vulnerabilities:
+When deploying InquireX in public or multi-user environments:
+- Operators must configure secure JWT secrets (`JWT_SECRET`) and Supabase service credentials in `.env`.
+- Production deployments should sit behind a TLS reverse proxy (e.g. Nginx, Caddy, Cloudflare) with rate limiting and strict CORS origins.
+- Endpoint exposure for MCP tool servers: MCP server commands and configurations are intended for trusted administrative operators. Do not expose MCP server configuration endpoints to unauthenticated users.
 
-- Lack of authentication/authorization on REST or WebSocket endpoints.
-- Actions that an authorized operator can already perform being reachable by an
-  *unauthenticated* client (e.g. supplying `source_urls`/`document_urls`,
-  configuring MCP servers/commands, uploading files). These are intended
-  capabilities for a trusted user; restricting who can reach them is the
-  operator's responsibility.
-- Server-side request forgery (SSRF) or local file access via user-supplied
-  URLs/paths on an endpoint you have chosen to expose without auth.
-- Remote code execution via user-supplied MCP `command`/`args`: configuring MCP
-  servers is an intended feature for the trusted operator; do not expose the
-  endpoint that accepts MCP configs to untrusted clients.
+The following are considered **operator configuration responsibilities**:
+- Running the application with default/insecure environment secrets in a public network.
+- Granting arbitrary MCP command execution access to untrusted external callers.
+- Unrestricted outbound network access in sensitive sandboxed environments where SSRF controls are required at the firewall/gateway level.
 
-If you want to run GPT-Researcher in a shared or public setting, add an
-authentication/authorization layer in front of it. Contributions of an
-**optional** hardening layer (e.g. opt-in API-key auth) are welcome via PR.
+### In-Scope Vulnerabilities
 
-### What we DO treat as in-scope vulnerabilities
+We treat the following as high-priority, in-scope security vulnerabilities:
 
-Issues that affect a user running the tool as intended — independent of who can
-reach the endpoint — are in scope, for example:
+- **Cross-site scripting (XSS) / Unsafe rendering** of untrusted web content (e.g. scraped website content, academic paper PDFs, or LLM-synthesized tokens) in the InquireX frontend.
+- **Denial of Service (DoS)** or resource exhaustion triggered by untrusted web payloads (e.g. decompression bombs or malicious HTML structures during scraping).
+- **Authentication / Session bypass** in the JWT verification, cookie handling, or Supabase auth workflows.
+- **Path traversal, arbitrary file disclosure, or remote code execution** triggered by user research inputs.
+- **Vulnerabilities in pinned core dependencies** that can be triggered through normal research execution.
 
-- **Cross-site scripting / unsafe rendering** of untrusted *content* (web pages
-  the tool scrapes, or LLM output) in the frontends.
-- **Denial of service from processing untrusted content**, e.g. decompression
-  bombs from scraped responses.
-- Vulnerabilities in dependencies that are reachable through normal use.
-- Path traversal, injection, or memory-safety issues triggered by normal
-  research inputs.
+Reports in these categories are highly valued — please submit them via the private reporting channels above.
 
-Reports in this category are very welcome — please use the private channel above.
+## Supported Versions
 
-## Supported versions
-
-Security fixes are applied to the latest release on the `master` branch. Please
-make sure you can reproduce an issue on the latest version before reporting.
+Security updates and patches are actively applied to the latest release on the `main` branch. Please ensure your report is reproducible on the latest `main` commit.
