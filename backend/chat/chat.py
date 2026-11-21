@@ -7,10 +7,10 @@ from typing import List, Dict, Any
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import InMemoryVectorStore
-from gpt_researcher.memory import Memory
-from gpt_researcher.config.config import Config
-from gpt_researcher.utils.llm import create_chat_completion
-from gpt_researcher.utils.tools import create_chat_completion_with_tools, create_search_tool
+from inquirex.memory import Memory
+from inquirex.config.config import Config
+from inquirex.utils.llm import create_chat_completion
+from inquirex.utils.tools import create_chat_completion_with_tools, create_search_tool
 from tavily import TavilyClient
 from datetime import datetime
 

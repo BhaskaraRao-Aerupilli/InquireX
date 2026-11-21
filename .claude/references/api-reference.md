@@ -161,11 +161,11 @@ ws.onmessage = (event) => {
 ### Basic Usage
 
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 async def main():
-    researcher = GPTResearcher(
+    researcher = InquireXResearcher(
         query="What are the latest AI developments?",
         report_type="research_report",
     )
@@ -182,7 +182,7 @@ asyncio.run(main())
 ### With MCP
 
 ```python
-researcher = GPTResearcher(
+researcher = InquireXResearcher(
     query="Research topic",
     mcp_configs=[{
         "name": "github",
@@ -201,13 +201,13 @@ class MockWebSocket:
     async def send_json(self, data):
         print(f"[{data['type']}] {data.get('output', '')}")
 
-researcher = GPTResearcher(
+researcher = InquireXResearcher(
     query="Research topic",
     websocket=MockWebSocket(),
 )
 ```
 
-### GPTResearcher Parameters
+### InquireXResearcher Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|

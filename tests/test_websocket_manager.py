@@ -21,8 +21,8 @@ def _load_websocket_manager_module():
         "backend.server.websocket_manager",
         "backend.server.multi_agent_runner",
         "backend.server.server_utils",
-        "gpt_researcher.actions",
-        "gpt_researcher.utils.enum",
+        "inquirex.actions",
+        "inquirex.utils.enum",
         "report_type",
         "backend.report_type",
         "fastapi",
@@ -36,7 +36,7 @@ def _load_websocket_manager_module():
     report_type_module.BasicReport = type("BasicReport", (), {})
     report_type_module.DetailedReport = type("DetailedReport", (), {})
 
-    enum_module = types.ModuleType("gpt_researcher.utils.enum")
+    enum_module = types.ModuleType("inquirex.utils.enum")
 
     class ReportType(Enum):
         DetailedReport = "detailed_report"
@@ -47,7 +47,7 @@ def _load_websocket_manager_module():
     enum_module.ReportType = ReportType
     enum_module.Tone = Tone
 
-    actions_module = types.ModuleType("gpt_researcher.actions")
+    actions_module = types.ModuleType("inquirex.actions")
     actions_module.stream_output = lambda *args, **kwargs: None
 
     multi_agent_runner_module = types.ModuleType("backend.server.multi_agent_runner")
@@ -66,8 +66,8 @@ def _load_websocket_manager_module():
             "fastapi": fastapi_module,
             "report_type": report_type_module,
             "backend.report_type": report_type_module,
-            "gpt_researcher.utils.enum": enum_module,
-            "gpt_researcher.actions": actions_module,
+            "inquirex.utils.enum": enum_module,
+            "inquirex.actions": actions_module,
             "backend.server.multi_agent_runner": multi_agent_runner_module,
             "backend.server.server_utils": server_utils_module,
         },

@@ -10,7 +10,7 @@
 
 ## Overview
 
-**Directory:** `multi_agents/`
+**Directory:** `agent_teams/`
 
 LangGraph-based system inspired by [STORM paper](https://arxiv.org/abs/2402.14207). Generates 5-6 page reports with multiple agents collaborating.
 
@@ -22,7 +22,7 @@ LangGraph-based system inspired by [STORM paper](https://arxiv.org/abs/2402.1420
 |-------|------|------|
 | Human | - | Oversees and provides feedback |
 | Chief Editor | `agents/orchestrator.py` | Master coordinator via LangGraph |
-| Researcher | Uses GPTResearcher | Deep research on topics |
+| Researcher | Uses InquireXResearcher | Deep research on topics |
 | Editor | `agents/editor.py` | Plans outline and structure |
 | Reviewer | `agents/reviewer.py` | Validates research correctness |
 | Reviser | `agents/reviser.py` | Revises based on feedback |
@@ -34,7 +34,7 @@ LangGraph-based system inspired by [STORM paper](https://arxiv.org/abs/2402.1420
 ## Workflow
 
 ```
-1. Browser (GPTResearcher) → Initial research
+1. Browser (InquireXResearcher) → Initial research
 2. Editor → Plans report outline
 3. For each outline topic (parallel):
    a. Researcher → In-depth subtopic research
@@ -51,7 +51,7 @@ LangGraph-based system inspired by [STORM paper](https://arxiv.org/abs/2402.1420
 ### Via API
 
 ```python
-report_type = "multi_agents"
+report_type = "agent_teams"
 ```
 
 ### Via WebSocket
@@ -59,7 +59,7 @@ report_type = "multi_agents"
 ```json
 {
     "task": "Research query",
-    "report_type": "multi_agents",
+    "report_type": "agent_teams",
     "tone": "Analytical"
 }
 ```
@@ -67,7 +67,7 @@ report_type = "multi_agents"
 ### Directly in Python
 
 ```python
-from multi_agents.main import run_research_task
+from agent_teams.main import run_research_task
 
 report = await run_research_task(
     query="Comprehensive analysis of market trends",
@@ -78,6 +78,6 @@ report = await run_research_task(
 
 ### Configuration File
 
-**File:** `multi_agents/task.json`
+**File:** `agent_teams/task.json`
 
 Configure the multi-agent research task parameters and agent behaviors.

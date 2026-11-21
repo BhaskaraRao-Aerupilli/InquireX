@@ -7,7 +7,7 @@ const FeatureList = [
   {
     title: 'GPT Researcher',
     Svg: require('../../static/img/gptr-logo.png').default,
-    docLink: './docs/gpt-researcher/getting-started',
+    docLink: './docs/inquirex/getting-started',
     description: (
       <>
         GPT Researcher is an open source autonomous agent designed for comprehensive online research on a variety of tasks.
@@ -27,7 +27,7 @@ const FeatureList = [
   {
     title: 'Multi-Agent Assistant',
     Svg: require('../../static/img/multi-agent.png').default,
-    docLink: './docs/gpt-researcher/multi_agents/langgraph',
+    docLink: './docs/inquirex/agent_teams/langgraph',
     description: (
       <>
         Learn how a team of AI agents can work together to conduct research on a given topic, from planning to publication.

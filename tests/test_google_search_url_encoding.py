@@ -16,7 +16,7 @@ import unittest
 from unittest import mock
 from urllib.parse import urlparse, parse_qs
 
-from gpt_researcher.retrievers.google.google import GoogleSearch
+from inquirex.retrievers.google.google import GoogleSearch
 
 
 class _Resp:
@@ -30,7 +30,7 @@ class GoogleSearchUrlEncodingTests(unittest.TestCase):
         with mock.patch.dict(os.environ, env):
             gs = GoogleSearch(query)
         with mock.patch(
-            "gpt_researcher.retrievers.google.google.requests.get",
+            "inquirex.retrievers.google.google.requests.get",
             return_value=_Resp(),
         ) as m:
             gs.search()

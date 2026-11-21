@@ -4,10 +4,10 @@ import asyncio
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from multi_agents.agents.fact_checker import FactCheckerAgent
-from multi_agents.agents.visualizer import VisualizerAgent
-import multi_agents.agents.fact_checker
-import multi_agents.agents.visualizer
+from agent_teams.agents.fact_checker import FactCheckerAgent
+from agent_teams.agents.visualizer import VisualizerAgent
+import agent_teams.agents.fact_checker
+import agent_teams.agents.visualizer
 
 # Mock call_model
 async def mock_call_model(prompt, model=None, response_format=None):
@@ -18,8 +18,8 @@ async def mock_call_model(prompt, model=None, response_format=None):
         return "```mermaid\npie title AI Jobs Impact\n    \"New Jobs Created\": 80\n    \"Jobs Replaced\": 20\n```"
     return "None"
 
-multi_agents.agents.fact_checker.call_model = mock_call_model
-multi_agents.agents.visualizer.call_model = mock_call_model
+agent_teams.agents.fact_checker.call_model = mock_call_model
+agent_teams.agents.visualizer.call_model = mock_call_model
 
 load_dotenv()
 

@@ -7,8 +7,8 @@ import shutil
 import traceback
 from typing import Awaitable, Dict, List, Any
 from fastapi.responses import JSONResponse, FileResponse
-from gpt_researcher.document.document import DocumentLoader
-from gpt_researcher import GPTResearcher
+from inquirex.document.document import DocumentLoader
+from inquirex import InquireXResearcher, InquireX
 from utils import write_md_to_pdf, write_md_to_word, write_text_to_md
 from pathlib import Path
 from datetime import datetime
@@ -87,7 +87,7 @@ class Researcher:
         self.research_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(query)}"
         # Initialize logs handler with research ID
         self.logs_handler = CustomLogsHandler(None, self.research_id)
-        self.researcher = GPTResearcher(
+        self.researcher = InquireXResearcher(
             query=query,
             report_type=report_type,
             websocket=self.logs_handler
@@ -315,13 +315,15 @@ async def handle_file_deletion(filename: str, DOC_PATH: str) -> JSONResponse:
         return JSONResponse(status_code=404, content={"message": "File not found"})
 
 
-async def execute_multi_agents(manager) -> Any:
+async def execute_agent_teams(manager) -> Any:
     websocket = manager.active_connections[0] if manager.active_connections else None
     if websocket:
         report = await run_multi_agent_task("Is AI in a hype cycle?", websocket, stream_output)
         return {"report": report}
     else:
         return JSONResponse(status_code=400, content={"message": "No active WebSocket connection"})
+
+execute_multi_agents = execute_agent_teams
 
 
 async def handle_websocket_communication(websocket, manager):

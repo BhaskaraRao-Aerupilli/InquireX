@@ -1,7 +1,7 @@
 // index.js
 const WebSocket = require('ws');
 
-class GPTResearcher {
+class InquireXResearcher {
   constructor(options = {}) {
     this.host = options.host || 'http://localhost:8000';
     this.socket = null;
@@ -120,4 +120,4 @@ class GPTResearcher {
   }
 }
 
-module.exports = GPTResearcher;
+module.exports = InquireXResearcher;

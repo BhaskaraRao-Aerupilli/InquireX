@@ -13,7 +13,7 @@ import glob
 import tempfile
 from unittest.mock import MagicMock, patch
 
-from gpt_researcher.scraper.pymupdf.pymupdf import PyMuPDFScraper
+from inquirex.scraper.pymupdf.pymupdf import PyMuPDFScraper
 
 
 class _FakeResponse:
@@ -34,10 +34,10 @@ def test_tempfile_removed_when_loader_raises():
     before = _temp_pdfs()
 
     with patch(
-        "gpt_researcher.scraper.pymupdf.pymupdf.requests.get",
+        "inquirex.scraper.pymupdf.pymupdf.requests.get",
         return_value=_FakeResponse(),
     ), patch(
-        "gpt_researcher.scraper.pymupdf.pymupdf.PyMuPDFLoader"
+        "inquirex.scraper.pymupdf.pymupdf.PyMuPDFLoader"
     ) as mock_loader:
         mock_loader.return_value.load.side_effect = RuntimeError("corrupt PDF")
 

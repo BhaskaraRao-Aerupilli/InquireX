@@ -24,13 +24,13 @@ This post walks through the [build-with-ag2](https://github.com/ag2ai/build-with
 
 The example uses AG2's `DefaultPattern` to run eight agents in sequence. Each is a separate `ConversableAgent` with its own system message and dedicated tool function. When a tool returns, it explicitly hands off to the next agent via `AgentNameTarget` -- the same pattern described in AG2's [pipeline cookbook](https://docs.ag2.ai/latest/docs/user-guide/agentchat/group-chat/sequential-chats):
 
-1. **Chief Editor** (`init_research`) — receives the query, creates a `GPTResearcher` instance
+1. **Chief Editor** (`init_research`) — receives the query, creates a `InquireXResearcher` instance
 2. **Editor** (`plan_sections`) — outlines 3-5 report sections
-3. **Researcher** (`do_research`) — calls `GPTResearcher.conduct_research()` to search and collect sources
+3. **Researcher** (`do_research`) — calls `InquireXResearcher.conduct_research()` to search and collect sources
 4. **Reviewer** (`evaluate_research`) — scores research quality 1-10 and identifies gaps
-5. **Revisor** (`do_revision`) — runs a supplementary `GPTResearcher` search if gaps were found
+5. **Revisor** (`do_revision`) — runs a supplementary `InquireXResearcher` search if gaps were found
 6. **Human Review** (`present_for_review`) — presents findings and **pauses for human approval**
-7. **Writer** (`do_write_report`) — calls `GPTResearcher.write_report()` to compile the report
+7. **Writer** (`do_write_report`) — calls `InquireXResearcher.write_report()` to compile the report
 8. **Publisher** (`do_publish`) — stamps the report with source count and date metadata
 
 The Human Review step is first-class in this pipeline, not optional. `present_for_review` emits a structured summary to the browser -- quality score, gaps, report outline, sources, findings preview -- then returns `RevertToUserTarget()`. AG2 fires an `InputRequestEvent`, which the SSE endpoint converts to an `INPUT_REQUEST` event for the frontend. The browser shows an approve/feedback panel and the pipeline waits. When the user responds, the `human_review_agent` uses an LLM condition to decide: loop back to the Researcher, or advance to the Writer.
@@ -77,7 +77,7 @@ Set your research question in `task.json`:
 python main.py
 ```
 
-`GPTResearcher` runs its web search and writes the report to stdout.
+`InquireXResearcher` runs its web search and writes the report to stdout.
 
 ### Web UI Mode (AG-UI)
 
@@ -100,7 +100,7 @@ from autogen.agentchat.group import (
     ReplyResult, RevertToUserTarget, StringLLMCondition, TerminateTarget,
 )
 from autogen.agentchat.group.patterns import DefaultPattern
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 
 llm_config = LLMConfig(
     {"model": "gpt-4o-mini", "parallel_tool_calls": False, "cache_seed": None}
@@ -166,7 +166,7 @@ response = await a_run_group_chat(pattern, messages=query, max_rounds=50)
 
 </details>
 
-`GPTResearcher` expects a WebSocket for its internal streaming output. `StreamAdapter` mimics that interface, routing messages to an asyncio queue that the `/logs` SSE endpoint serves to the frontend:
+`InquireXResearcher` expects a WebSocket for its internal streaming output. `StreamAdapter` mimics that interface, routing messages to an asyncio queue that the `/logs` SSE endpoint serves to the frontend:
 
 <details>
 <summary>server.py — StreamAdapter and /logs endpoint</summary>
@@ -191,8 +191,8 @@ class StreamAdapter:
 
 _stream_adapter = StreamAdapter()
 
-# Pass the adapter as websocket when creating GPTResearcher:
-_researcher = GPTResearcher(query=query, websocket=_stream_adapter, ...)
+# Pass the adapter as websocket when creating InquireXResearcher:
+_researcher = InquireXResearcher(query=query, websocket=_stream_adapter, ...)
 
 @app.get("/logs")
 async def logs_stream():
@@ -298,7 +298,7 @@ async function sendHitlFeedback() {
 
 ## Where to Take It Next
 
-`task.json` only needs a `query` and `report_type` to run. The `report_type` field is passed directly to `GPTResearcher` -- `"research_report"` produces a comprehensive multi-section report, while `"outline_report"` and `"resource_report"` give you lighter-weight alternatives. You can also pass additional parameters to the `GPTResearcher` constructor in `init_research`: `max_sections` controls depth, `model` sets the research LLM independently from the AG2 orchestration model, and `report_source` scopes the search to web or local sources.
+`task.json` only needs a `query` and `report_type` to run. The `report_type` field is passed directly to `InquireXResearcher` -- `"research_report"` produces a comprehensive multi-section report, while `"outline_report"` and `"resource_report"` give you lighter-weight alternatives. You can also pass additional parameters to the `InquireXResearcher` constructor in `init_research`: `max_sections` controls depth, `model` sets the research LLM independently from the AG2 orchestration model, and `report_source` scopes the search to web or local sources.
 
 The pipeline itself is straightforward to extend. Because each agent is a separate `ConversableAgent` with an explicit handoff, adding a stage means writing a new tool function and inserting an `AgentNameTarget` into the chain. A fact-checking agent between Reviewer and Revisor, for example, would cross-reference key claims before the revision step. A notification agent at the end could post the finished report to Slack or email with a few lines using AG2's [communication platform tools](https://docs.ag2.ai/latest/docs/user-guide/reference-tools/communication-platforms/slack/).
 
@@ -309,7 +309,7 @@ The human-in-the-loop step can also be extended. Right now there's one `RevertTo
 ## Learn More
 
 - [GPT Researcher documentation](https://docs.gptr.dev/) — Assaf Elovic's full documentation for GPT Researcher
-- [AG2 integration guide](https://docs.gptr.dev/docs/gpt-researcher/multi_agents/ag2) — the original AG2 integration docs from the GPT Researcher team
+- [AG2 integration guide](https://docs.gptr.dev/docs/inquirex/agent_teams/ag2) — the original AG2 integration docs from the GPT Researcher team
 - [Deep Research reference page](https://docs.ag2.ai/latest/docs/user-guide/reference-tools/deep-research/) — DeepResearchTool vs. GPT Researcher comparison
 - [AG-UI protocol](https://docs.ag2.ai/latest/docs/user-guide/ag-ui/backend-deepdive/) — streaming agent state to a frontend
 

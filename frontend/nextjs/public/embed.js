@@ -1,5 +1,5 @@
 (function () {
-    window.GPTResearcher = {
+    window.InquireXResearcher = {
         init: function () {
             const parentApiUrl = localStorage.getItem("GPTR_API_URL");
 
@@ -64,5 +64,5 @@
     };
 
     // Initialize when script loads
-    window.GPTResearcher.init();
+    window.InquireXResearcher.init();
 })();

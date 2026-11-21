@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-import gpt_researcher.skills.deep_research as deep_research_module
-from gpt_researcher.skills.deep_research import (
+import inquirex.skills.deep_research as deep_research_module
+from inquirex.skills.deep_research import (
     DeepResearchSkill,
     MAX_CONTEXT_WORDS,
     parse_follow_up_questions_response,

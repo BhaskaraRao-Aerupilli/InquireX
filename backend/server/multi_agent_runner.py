@@ -16,15 +16,15 @@ def _resolve_run_research_task() -> RunResearchTask:
     _ensure_repo_root_on_path()
 
     try:
-        from multi_agents.main import run_research_task
+        from agent_teams.main import run_research_task
         return run_research_task
     except Exception:
         try:
-            from multi_agents.ag2.main import run_research_task
+            from agent_teams.ag2.main import run_research_task
             return run_research_task
         except Exception as ag2_error:
             raise ImportError(
-                "Could not import run_research_task from multi_agents or multi_agents/ag2"
+                "Could not import run_research_task from agent_teams or agent_teams/ag2"
             ) from ag2_error
 
 

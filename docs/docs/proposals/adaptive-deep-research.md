@@ -100,15 +100,15 @@ breadth = 4
 #### 2.1 AdaptiveDeepResearchSkill 类
 
 ```python
-# gpt_researcher/skills/adaptive_deep_research.py
+# inquirex/skills/adaptive_deep_research.py
 
 from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass
 import asyncio
 import json
 
-from gpt_researcher.llm_provider import create_chat_completion
-from gpt_researcher.config import Config
+from inquirex.llm_provider import create_chat_completion
+from inquirex.config import Config
 
 
 @dataclass
@@ -538,12 +538,12 @@ MIN_IMPROVEMENT_THRESHOLD = 0.5     # 继续研究所需的最小分数提升
 
 ### 3. 集成点
 
-#### 3.1 修改 GPTResearcher
+#### 3.1 修改 InquireXResearcher
 
 ```python
-# gpt_researcher/agent.py
+# inquirex/agent.py
 
-class GPTResearcher:
+class InquireXResearcher:
     async def conduct_research(self, on_progress=None):
         if self.report_type == "deep":
             if self.cfg.deep_research_mode == "adaptive":
@@ -645,7 +645,7 @@ function handleProgress(progress: AdaptiveProgress) {
 
 ### 阶段 2: 集成（第 3 周）
 
-- [ ] 与 `GPTResearcher` 集成
+- [ ] 与 `InquireXResearcher` 集成
 - [ ] 添加 WebSocket 进度更新
 - [ ] 更新前端以显示质量指标
 - [ ] 添加 CLI 自适应模式支持
@@ -693,7 +693,7 @@ function handleProgress(progress: AdaptiveProgress) {
 
 ## 参考资料
 
-- [当前深度研究实现](../gpt-researcher/gptr/deep_research.md)
+- [当前深度研究实现](../inquirex/gptr/deep_research.md)
 - [LangGraph 文档](https://python.langchain.com/docs/langgraph)
 - [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
 
@@ -702,6 +702,6 @@ function handleProgress(progress: AdaptiveProgress) {
 ## 附录: 完整代码清单
 
 请参阅以下文件中的实现:
-- `gpt_researcher/skills/adaptive_deep_research.py`
-- `gpt_researcher/config/config.py`（新配置选项）
+- `inquirex/skills/adaptive_deep_research.py`
+- `inquirex/config/config.py`（新配置选项）
 - `frontend/nextjs/components/AdaptiveProgress.tsx`

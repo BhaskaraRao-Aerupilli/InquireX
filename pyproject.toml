@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "gpt-researcher"
-version = "0.14.7"
-description = "GPT Researcher is an autonomous agent designed for comprehensive online research on a variety of tasks."
-authors = ["Assaf Elovic <assaf.elovic@gmail.com>"]
+name = "inquirex"
+version = "2.0.0"
+description = "InquireX is an autonomous agentic deep research engine designed for comprehensive intelligence synthesis."
+authors = ["Bhaskara Rao Aerupilli <bhaskararao1012005@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
@@ -59,13 +59,13 @@ python_files = "test_*.py"
 asyncio_fixture_loop_scope = "function"
 
 [tool.uv.sources]
-gpt-researcher = { workspace = true }
+inquirex = { workspace = true }
 
 [project]
-name = "gpt-researcher"
-version = "0.14.7"
-description = "GPT Researcher is an autonomous agent designed for comprehensive online research on a variety of tasks."
-authors = [{ name = "Assaf Elovic", email = "assaf.elovic@gmail.com" }]
+name = "inquirex"
+version = "2.0.0"
+description = "InquireX is an autonomous agentic deep research engine designed for comprehensive intelligence synthesis."
+authors = [{ name = "Bhaskara Rao Aerupilli", email = "bhaskararao1012005@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11"

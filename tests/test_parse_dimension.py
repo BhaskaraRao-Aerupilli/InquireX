@@ -10,7 +10,7 @@ return None for the rest.
 import logging
 import unittest
 
-from gpt_researcher.scraper.utils import parse_dimension
+from inquirex.scraper.utils import parse_dimension
 
 
 class TestParseDimension(unittest.TestCase):

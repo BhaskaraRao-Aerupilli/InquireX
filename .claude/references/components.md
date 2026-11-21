@@ -1,20 +1,20 @@
 # Core Components & Method Signatures
 
 ## Table of Contents
-- [GPTResearcher](#gptresearcher)
+- [InquireXResearcher](#gptresearcher)
 - [ResearchConductor](#researchconductor)
 - [ReportGenerator](#reportgenerator)
 
 ---
 
-## GPTResearcher
+## InquireXResearcher
 
-**File:** `gpt_researcher/agent.py`
+**File:** `inquirex/agent.py`
 
 The main orchestrator class. Full initialization signature:
 
 ```python
-class GPTResearcher:
+class InquireXResearcher:
     def __init__(
         self,
         query: str,                              # Research question (required)
@@ -87,13 +87,13 @@ def add_costs(self, cost: float) -> None:
 
 ## ResearchConductor
 
-**File:** `gpt_researcher/skills/researcher.py`
+**File:** `inquirex/skills/researcher.py`
 
 Manages the research process:
 
 ```python
 class ResearchConductor:
-    def __init__(self, researcher: GPTResearcher):
+    def __init__(self, researcher: InquireXResearcher):
         self.researcher = researcher
         self.logger = logging.getLogger(__name__)
 
@@ -159,11 +159,11 @@ class ResearchConductor:
 
 ## ReportGenerator
 
-**File:** `gpt_researcher/skills/writer.py`
+**File:** `inquirex/skills/writer.py`
 
 ```python
 class ReportGenerator:
-    def __init__(self, researcher: GPTResearcher):
+    def __init__(self, researcher: InquireXResearcher):
         self.researcher = researcher
         self.research_params = {
             "query": researcher.query,

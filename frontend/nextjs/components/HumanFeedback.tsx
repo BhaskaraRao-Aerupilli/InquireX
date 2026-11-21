@@ -1,4 +1,4 @@
-// /multi_agents/frontend/components/HumanFeedback.tsx
+// /agent_teams/frontend/components/HumanFeedback.tsx
 
 import React, { useState, useEffect } from 'react';
 

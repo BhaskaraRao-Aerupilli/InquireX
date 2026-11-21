@@ -18,12 +18,12 @@
       collapsible: true,
       collapsed: false,
       items: [
-        'gpt-researcher/getting-started/introduction',
-        'gpt-researcher/getting-started/how-to-choose',
-        'gpt-researcher/getting-started/getting-started',
-        'gpt-researcher/getting-started/cli',
-        'gpt-researcher/getting-started/getting-started-with-docker',
-        'gpt-researcher/getting-started/linux-deployment',
+        'inquirex/getting-started/introduction',
+        'inquirex/getting-started/how-to-choose',
+        'inquirex/getting-started/getting-started',
+        'inquirex/getting-started/cli',
+        'inquirex/getting-started/getting-started-with-docker',
+        'inquirex/getting-started/linux-deployment',
       ]
     },
     {
@@ -32,18 +32,18 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/gptr/pip-package',
-        'gpt-researcher/gptr/npm-package',
-        'gpt-researcher/gptr/claude-skill',
-        'gpt-researcher/gptr/example',
-        'gpt-researcher/gptr/deep_research',
-        'gpt-researcher/gptr/image_generation',
-        'gpt-researcher/gptr/ai-development',
-        'gpt-researcher/gptr/config',
-        'gpt-researcher/gptr/scraping',
-        'gpt-researcher/gptr/querying-the-backend',
-        'gpt-researcher/gptr/automated-tests',
-        'gpt-researcher/gptr/troubleshooting'
+        'inquirex/gptr/pip-package',
+        'inquirex/gptr/npm-package',
+        'inquirex/gptr/claude-skill',
+        'inquirex/gptr/example',
+        'inquirex/gptr/deep_research',
+        'inquirex/gptr/image_generation',
+        'inquirex/gptr/ai-development',
+        'inquirex/gptr/config',
+        'inquirex/gptr/scraping',
+        'inquirex/gptr/querying-the-backend',
+        'inquirex/gptr/automated-tests',
+        'inquirex/gptr/troubleshooting'
       ],
     },
     {
@@ -52,13 +52,13 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/frontend/introduction',
-        'gpt-researcher/frontend/nextjs-frontend',
-        'gpt-researcher/frontend/react-package',
-        'gpt-researcher/frontend/embed-script',
-        'gpt-researcher/frontend/vanilla-js-frontend',
-        'gpt-researcher/frontend/discord-bot',
-        'gpt-researcher/frontend/visualizing-websockets'
+        'inquirex/frontend/introduction',
+        'inquirex/frontend/nextjs-frontend',
+        'inquirex/frontend/react-package',
+        'inquirex/frontend/embed-script',
+        'inquirex/frontend/vanilla-js-frontend',
+        'inquirex/frontend/discord-bot',
+        'inquirex/frontend/visualizing-websockets'
       ],
     },
     {
@@ -67,12 +67,12 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/context/tailored-research',
-        'gpt-researcher/context/local-docs',
-        'gpt-researcher/context/azure-storage',
-        'gpt-researcher/context/filtering-by-domain',
-        'gpt-researcher/context/vector-stores',
-        'gpt-researcher/context/data-ingestion'
+        'inquirex/context/tailored-research',
+        'inquirex/context/local-docs',
+        'inquirex/context/azure-storage',
+        'inquirex/context/filtering-by-domain',
+        'inquirex/context/vector-stores',
+        'inquirex/context/data-ingestion'
         ]
     },
     {
@@ -81,9 +81,9 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/handling-logs/all-about-logs',
-        'gpt-researcher/handling-logs/simple-logs-example',
-        'gpt-researcher/handling-logs/langsmith-logs'
+        'inquirex/handling-logs/all-about-logs',
+        'inquirex/handling-logs/simple-logs-example',
+        'inquirex/handling-logs/langsmith-logs'
         ]
     },
     {
@@ -92,11 +92,11 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/llms/llms',
-        'gpt-researcher/llms/supported-llms',
-        'gpt-researcher/llms/testing-your-llm',
-        'gpt-researcher/llms/running-with-azure',
-        'gpt-researcher/llms/running-with-ollama'
+        'inquirex/llms/llms',
+        'inquirex/llms/supported-llms',
+        'inquirex/llms/testing-your-llm',
+        'inquirex/llms/running-with-azure',
+        'inquirex/llms/running-with-ollama'
       ]
     },
     {
@@ -105,9 +105,9 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/search-engines/search-engines',
-        'gpt-researcher/retrievers/mcp-configs',
-        'gpt-researcher/search-engines/test-your-retriever',
+        'inquirex/search-engines/search-engines',
+        'inquirex/retrievers/mcp-configs',
+        'inquirex/search-engines/test-your-retriever',
         ]
     },
     {
@@ -116,9 +116,9 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/multi_agents/ag2',
-        'gpt-researcher/multi_agents/langgraph',
-        'gpt-researcher/multi_agents/deepagents',
+        'inquirex/agent_teams/ag2',
+        'inquirex/agent_teams/langgraph',
+        'inquirex/agent_teams/deepagents',
         ]
     },
     {
@@ -127,9 +127,9 @@
       collapsible: true,
       collapsed: true,
       items: [
-        'gpt-researcher/mcp-server/getting-started',
-        'gpt-researcher/mcp-server/advanced-usage',
-        'gpt-researcher/mcp-server/claude-integration',
+        'inquirex/mcp-server/getting-started',
+        'inquirex/mcp-server/advanced-usage',
+        'inquirex/mcp-server/claude-integration',
         ]
     },
     {'Examples': [{type: 'autogenerated', dirName: 'examples'}]},

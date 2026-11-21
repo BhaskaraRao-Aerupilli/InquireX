@@ -1,5 +1,5 @@
 // src/index.ts
-import { GPTResearcher } from './GPTResearcher';
+import { InquireXResearcher } from './InquireXResearcher';
 
-export { GPTResearcher };
-export type { GPTResearcherProps } from './GPTResearcher';
+export { InquireXResearcher };
+export type { InquireXResearcherProps } from './InquireXResearcher';

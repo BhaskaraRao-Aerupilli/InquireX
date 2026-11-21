@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from gpt_researcher.retrievers.semantic_scholar.semantic_scholar import (
+from inquirex.retrievers.semantic_scholar.semantic_scholar import (
     SemanticScholarSearch,
 )
 

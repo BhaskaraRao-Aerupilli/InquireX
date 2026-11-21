@@ -14,7 +14,7 @@ Andrew Ng has [recently stated](https://www.deeplearning.ai/the-batch/how-agents
 
 In this article you will learn why multi-agent workflows are the current best standard and how to build the optimal autonomous research multi-agent assistant using LangGraph.
 
-To skip this tutorial, feel free to check out the Github repo of [GPT Researcher x LangGraph](https://github.com/assafelovic/gpt-researcher/tree/master/multi_agents).
+To skip this tutorial, feel free to check out the Github repo of [GPT Researcher x LangGraph](https://github.com/assafelovic/inquirex/tree/master/agent_teams).
 
 ## Introducing LangGraph
 LangGraph is an extension of LangChain aimed at creating agent and multi-agent flows. It adds in the ability to create cyclical flows and comes with memory built in — both important attributes for creating agents.
@@ -93,7 +93,7 @@ Initializing the graph with LangGraph
 As stated above, one of the great things about multi-agent development is building each agent to have specialized and scoped skills. Let’s take an example of the Researcher agent using GPT Researcher python package:
 
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 
 class ResearchAgent:
     def __init__(self):
@@ -101,7 +101,7 @@ class ResearchAgent:
   
     async def research(self, query: str):
         # Initialize the researcher
-        researcher = GPTResearcher(parent_query=parent_query, query=query, report_type=research_report, config_path=None)
+        researcher = InquireXResearcher(parent_query=parent_query, query=query, report_type=research_report, config_path=None)
         # Conduct research on the given query
         await researcher.conduct_research()
         # Write the report
@@ -209,7 +209,7 @@ The task object is pretty self explanatory, however please notice that follow_gu
 
 Running the assistant will result in a final research report in formats such as Markdown, PDF and Docx.
 
-To download and run the example check out the GPT Researcher x LangGraph [open source page](https://github.com/assafelovic/gpt-researcher/tree/master/multi_agents).
+To download and run the example check out the GPT Researcher x LangGraph [open source page](https://github.com/assafelovic/inquirex/tree/master/agent_teams).
 
 ## What’s Next?
 Going forward, there are super exciting things to think about. Human in the loop is key for optimized AI experiences. Having a human help the assistant revise and focus on just the right research plan, topics and outline, would enhance the overall quality and experience. Also generally, aiming for relying on human intervention throughout the AI flow ensures correctness, sense of control and deterministic results. Happy to see that LangGraph already supports this out of the box as seen here.

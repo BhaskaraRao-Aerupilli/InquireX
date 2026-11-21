@@ -1099,7 +1099,7 @@
                 <span>Research Console</span>
             </a>
             <span class="footer-sep" aria-hidden="true">•</span>
-            <a href="https://github.com/assafelovic/gpt-researcher" target="_blank" rel="noopener noreferrer" class="footer-nav-link" title="View InquireX & GPT-Researcher Documentation">
+            <a href="https://github.com/BhaskaraRao-Aerupilli/InquireX" target="_blank" rel="noopener noreferrer" class="footer-nav-link" title="View InquireX Documentation">
                 <i class="fa-solid fa-book-bookmark footer-link-icon"></i>
                 <span>Documentation</span>
             </a>
@@ -1135,8 +1135,9 @@
                     const sName = document.getElementById('sidebarUserName');
                     if (sName) sName.textContent = user.name || user.email || 'User';
                     // Refresh research history scoped to this specific user
-                    if (window.GPTResearcher && typeof window.GPTResearcher.loadUserHistory === 'function') {
-                        window.GPTResearcher.loadUserHistory(user.id);
+                    const researcherEngine = window.InquireXResearcher || window.InquireX || window.GPTResearcher;
+                    if (researcherEngine && typeof researcherEngine.loadUserHistory === 'function') {
+                        researcherEngine.loadUserHistory(user.id);
                     } else if (typeof window.loadConversationHistory === 'function') {
                         window.loadConversationHistory();
                     }

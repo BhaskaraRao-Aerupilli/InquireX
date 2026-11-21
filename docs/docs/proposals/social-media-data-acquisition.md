@@ -941,7 +941,7 @@ URL 进入
 ### 7.1 架构设计
 
 ```
-gpt_researcher/
+inquirex/
 ├── scraper/
 │   ├── social_media/                    # 新增：社交媒体模块
 │   │   ├── __init__.py
@@ -974,7 +974,7 @@ gpt_researcher/
 #### 7.2.1 抽象基类
 
 ```python
-# gpt_researcher/scraper/social_media/base.py
+# inquirex/scraper/social_media/base.py
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
@@ -1017,7 +1017,7 @@ class SocialMediaScraper(ABC):
 #### 7.2.2 平台检测器
 
 ```python
-# gpt_researcher/scraper/social_media/detector.py
+# inquirex/scraper/social_media/detector.py
 
 from urllib.parse import urlparse
 from enum import Enum
@@ -1092,7 +1092,7 @@ class PlatformDetector:
 #### 7.2.3 Apify 客户端
 
 ```python
-# gpt_researcher/scraper/social_media/providers/apify/client.py
+# inquirex/scraper/social_media/providers/apify/client.py
 
 from apify_client import ApifyClient
 from typing import List, Dict, Any, Optional
@@ -1177,7 +1177,7 @@ SOCIAL_MEDIA_MAX_ITEMS=50
 #### 7.3.2 配置类
 
 ```python
-# gpt_researcher/config/social_media.py
+# inquirex/config/social_media.py
 
 from dataclasses import dataclass, field
 from typing import Optional, List

@@ -205,7 +205,7 @@ Level-0 and Level-1 data flow representation depicting data stores, process tran
 ---
 
 ### 5. Class Diagram
-Object-oriented class hierarchy detailing the core abstractions (`GPTResearcher`, `Agent`, `Retriever`, `Scraper`, `ContextCompressor`, `ReportGenerator`, `AuthService`, and `WebSocketManager`).
+Object-oriented class hierarchy detailing the core abstractions (`InquireXResearcher`, `Agent`, `Retriever`, `Scraper`, `ContextCompressor`, `ReportGenerator`, `AuthService`, and `WebSocketManager`).
 
 <div align="center">
   <img src="class_diagram.png" alt="InquireX Class Diagram" width="90%">
@@ -354,7 +354,7 @@ InquireX/
 │   ├── register.html          # User registration page
 │   ├── scripts.js             # Client controller, WebSocket handler, Slides, Mermaid & Audio engine
 │   └── styles.css             # Glassmorphism dark-cyberpunk & pure crisp light theme CSS
-├── gpt_researcher/            # Core agentic deep research engine
+├── inquirex/                  # Core InquireX deep research engine & autonomous intelligence
 │   ├── actions/               # Query generation, web scraping, markdown processing
 │   ├── document/              # Multi-format document ingestion loaders (PDF, DOCX, TXT)
 │   ├── llm_provider/          # LLM integrations (OpenAI, Claude, Gemini, Ollama, Groq)
@@ -363,6 +363,8 @@ InquireX/
 │   ├── scraper/               # Resilient web page scrapers & text extractors
 │   ├── skills/                # Research planner, context compression, synthesis engine
 │   └── utils/                 # LLM token counters, sanitizers, and helper functions
+├── agent_teams/               # Multi-agent collaborative orchestration (LangGraph & AG2)
+├── autonomous_agents/         # Autonomous deep research agent harnesses & benchmarks
 ├── outputs/                   # Automatically generated reports (.md, .pdf, .docx, .json)
 ├── activity_diagram.png       # UML Activity Diagram
 ├── class_diagram.png          # UML Class Diagram

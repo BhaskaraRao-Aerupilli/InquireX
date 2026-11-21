@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 
-from gpt_researcher.llm_provider.generic.base import GenericLLMProvider
+from inquirex.llm_provider.generic.base import GenericLLMProvider
 
 
 class _Chunk:

@@ -61,7 +61,7 @@ async def test_researcher_logging():  # Renamed function to be more specific
             
     except ImportError as e:
         logger.error(f"Import error: {e}")
-        logger.error("Make sure gpt_researcher is installed and in your PYTHONPATH")
+        logger.error("Make sure inquirex is installed and in your PYTHONPATH")
         raise
     except Exception as e:
         logger.error(f"Error during research: {e}")

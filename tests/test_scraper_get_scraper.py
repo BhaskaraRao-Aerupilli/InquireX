@@ -12,8 +12,8 @@ empty content. These tests pin correct routing.
 
 import unittest
 
-from gpt_researcher.scraper.scraper import Scraper
-from gpt_researcher.scraper import PyMuPDFScraper, BeautifulSoupScraper
+from inquirex.scraper.scraper import Scraper
+from inquirex.scraper import PyMuPDFScraper, BeautifulSoupScraper
 
 
 def _scraper():

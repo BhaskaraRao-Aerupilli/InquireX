@@ -1,9 +1,9 @@
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 
 async def get_report(query: str, report_source: str, sources: list) -> str:
-    researcher = GPTResearcher(query=query, report_source=report_source, source_urls=sources)
+    researcher = InquireXResearcher(query=query, report_source=report_source, source_urls=sources)
     research_context = await researcher.conduct_research()
     return await researcher.write_report()
 

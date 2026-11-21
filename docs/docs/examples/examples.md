@@ -2,7 +2,7 @@
 
 ### Run PIP Package
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 ### Using Quick Run
@@ -17,7 +17,7 @@ async def main():
     report_type = "research_report"
 
     # Initialize the researcher
-    researcher = GPTResearcher(query=query, report_type=report_type, config_path=None)
+    researcher = InquireXResearcher(query=query, report_type=report_type, config_path=None)
     # Conduct research on the given query
     await researcher.conduct_research()
     # Write the report
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 ### Using Custom Prompts
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 
@@ -48,7 +48,7 @@ async def main():
     report_type = "research_report"
 
     # Initialize the researcher
-    researcher = GPTResearcher(query=query, report_type=report_type)
+    researcher = InquireXResearcher(query=query, report_type=report_type)
     
     # Conduct research on the given query
     await researcher.conduct_research()

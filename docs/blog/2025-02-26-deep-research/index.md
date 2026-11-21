@@ -51,12 +51,12 @@ Imagine deploying a team of AI researchers, each following their own research pa
 Integrating deep research into your projects is remarkably straightforward:
 
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 async def main():
     # Initialize researcher with deep research type
-    researcher = GPTResearcher(
+    researcher = InquireXResearcher(
         query="What are the latest developments in quantum computing?",
         report_type="deep",  # This triggers deep research mode
     )
@@ -165,7 +165,7 @@ reasoning_effort: medium
 Apply these configurations through environment variables, a config file, or directly in code:
 
 ```python
-researcher = GPTResearcher(
+researcher = InquireXResearcher(
     query="your query",
     report_type="deep",
     config_path="path/to/config.yaml"
@@ -208,7 +208,7 @@ Ready to experience the power of deep research in your projects? Here's how to g
 3. **Configuration**: Customize parameters based on your research needs
 4. **Implementation**: Use the example code to integrate into your application
 
-More detailed instructions and examples can be found in the [GPT Researcher documentation](https://docs.gptr.dev/docs/gpt-researcher/gptr/deep_research)
+More detailed instructions and examples can be found in the [GPT Researcher documentation](https://docs.gptr.dev/docs/inquirex/gptr/deep_research)
 
 Whether you're a developer building the next generation of research tools, an academic seeking deeper insights, or a business professional needing comprehensive analysis, GPT Researcher's deep research capabilities offer an accessible, powerful solution that rivals - and in many ways exceeds - the offerings from major AI companies.
 

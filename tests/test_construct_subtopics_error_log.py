@@ -12,7 +12,7 @@ import unittest
 
 import pytest
 
-from gpt_researcher.utils.llm import construct_subtopics
+from inquirex.utils.llm import construct_subtopics
 
 
 class _BrokenConfig:

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-LATEST_VERSION = "0.14.7"
+LATEST_VERSION = "2.0.0"
 
 exclude_packages = [
     "selenium",
@@ -9,7 +9,6 @@ exclude_packages = [
     "fastapi.*",
     "uvicorn",
     "jinja2",
-    "gpt-researcher",
     "langgraph"
 ]
 
@@ -20,16 +19,16 @@ with open("requirements.txt", "r") as f:
     reqs = [line.strip() for line in f if not any(pkg in line for pkg in exclude_packages)]
 
 setup(
-    name="gpt-researcher",
+    name="inquirex",
     version=LATEST_VERSION,
-    description="GPT Researcher is an autonomous agent designed for comprehensive web research on any task",
-    package_dir={'gpt_researcher': 'gpt_researcher'},
+    description="InquireX is an autonomous agentic deep research engine designed for comprehensive intelligence synthesis",
+    package_dir={'inquirex': 'inquirex'},
     packages=find_packages(exclude=exclude_packages),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/assafelovic/gpt-researcher",
-    author="Assaf Elovic",
-    author_email="assaf.elovic@gmail.com",
+    url="https://github.com/BhaskaraRao-Aerupilli/InquireX",
+    author="Bhaskara Rao Aerupilli",
+    author_email="bhaskararao1012005@gmail.com",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
@@ -43,6 +42,4 @@ setup(
     ],
     python_requires='>=3.11',
     install_requires=reqs,
-
-
 )

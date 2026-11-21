@@ -16,12 +16,12 @@ import asyncio
 import unittest
 from unittest.mock import AsyncMock, patch
 
-from gpt_researcher.agent import GPTResearcher
+from inquirex.agent import InquireXResearcher
 
 
 class QuickSearchSummaryContextTests(unittest.TestCase):
-    @patch("gpt_researcher.agent.get_search_results", new_callable=AsyncMock)
-    @patch("gpt_researcher.agent.create_chat_completion", new_callable=AsyncMock)
+    @patch("inquirex.agent.get_search_results", new_callable=AsyncMock)
+    @patch("inquirex.agent.create_chat_completion", new_callable=AsyncMock)
     @patch("langchain_openai.OpenAIEmbeddings")
     def test_summary_prompt_contains_real_retriever_fields(
         self, _mock_embeddings, mock_create_chat, mock_search
@@ -33,7 +33,7 @@ class QuickSearchSummaryContextTests(unittest.TestCase):
         ]
         mock_create_chat.return_value = "summary"
 
-        researcher = GPTResearcher(query="rust async")
+        researcher = InquireXResearcher(query="rust async")
         captured = {}
 
         def fake_quick_prompt(query, context):

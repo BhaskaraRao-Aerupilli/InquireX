@@ -1,4 +1,4 @@
-"""Strict None/no acceptance sentinels for multi_agents loops.
+"""Strict None/no acceptance sentinels for agent_teams loops.
 
 Regression for #1881 (reviewer/fact-checker false-accept on substring "None")
 and shared helpers for the human plan-approval gate (#1882).
@@ -11,7 +11,7 @@ import pytest
 
 SENTINEL_PATH = (
     Path(__file__).resolve().parents[1]
-    / "multi_agents"
+    / "agent_teams"
     / "agents"
     / "utils"
     / "none_sentinels.py"

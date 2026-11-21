@@ -586,11 +586,9 @@ function createNewResearch() {
 
 
   // 4. Reset researcher state to initial if available
-
-  if (window.GPTResearcher && window.GPTResearcher.resetState) {
-
-    window.GPTResearcher.resetState();
-
+  const researcherObj = window.InquireXResearcher || window.InquireX || window.GPTResearcher;
+  if (researcherObj && researcherObj.resetState) {
+    researcherObj.resetState();
   }
 
 
@@ -1393,7 +1391,8 @@ window.toggleResearchSidebar = toggleResearchSidebar;
 
 
 
-const GPTResearcher = (() => {
+const InquireXResearcher = (() => {
+  const GPTResearcher = undefined; // Alias placeholder inside scope
 
 
 
@@ -18079,9 +18078,11 @@ const GPTResearcher = (() => {
 
 
 
-window.GPTResearcher = GPTResearcher;
+window.InquireXResearcher = InquireXResearcher;
+window.InquireX = InquireXResearcher;
+window.GPTResearcher = InquireXResearcher;
 
-window.addEventListener('DOMContentLoaded', GPTResearcher.init);
+window.addEventListener('DOMContentLoaded', InquireXResearcher.init);
 
 
 

@@ -61,7 +61,7 @@
 ### 1.2 当前配置
 
 ```python
-# gpt_researcher/config/variables/default.py 中的默认设置
+# inquirex/config/variables/default.py 中的默认设置
 {
     "SCRAPER": "bs",                    # BeautifulSoup（基础 HTML 解析器）
     "MAX_SCRAPER_WORKERS": 15,          # 并行抓取工作线程
@@ -345,7 +345,7 @@ FIRECRAWL_API_KEY=your_key  # 如果使用 firecrawl
 #### 选项 B: 代码修改
 
 ```python
-# gpt_researcher/retrievers/tavily/tavily_search.py
+# inquirex/retrievers/tavily/tavily_search.py
 
 # 之前（当前）
 results = self._search(
@@ -379,7 +379,7 @@ search_response = [
 ### 4.2 新混合抓取器实现
 
 ```python
-# gpt_researcher/skills/hybrid_content_fetcher.py
+# inquirex/skills/hybrid_content_fetcher.py
 
 """
 用于高质量文本和图片的混合内容获取器。
@@ -538,16 +538,16 @@ class HybridContentFetcher:
             scraper_type = self.cfg.scraper
 
             if scraper_type == 'browser':
-                from gpt_researcher.scraper import BrowserScraper
+                from inquirex.scraper import BrowserScraper
                 scraper = BrowserScraper(url)
             elif scraper_type == 'nodriver':
-                from gpt_researcher.scraper import NoDriverScraper
+                from inquirex.scraper import NoDriverScraper
                 scraper = NoDriverScraper(url)
             elif scraper_type == 'tavily_extract':
-                from gpt_researcher.scraper import TavilyExtract
+                from inquirex.scraper import TavilyExtract
                 scraper = TavilyExtract(url)
             else:
-                from gpt_researcher.scraper import BeautifulSoupScraper
+                from inquirex.scraper import BeautifulSoupScraper
                 scraper = BeautifulSoupScraper(url)
 
             if hasattr(scraper, 'scrape_async'):

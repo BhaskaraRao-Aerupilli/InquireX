@@ -1,5 +1,5 @@
-from gpt_researcher.config.config import Config
-from gpt_researcher.memory.embeddings import Memory
+from inquirex.config.config import Config
+from inquirex.memory.embeddings import Memory
 import asyncio
 import os
 from dotenv import load_dotenv

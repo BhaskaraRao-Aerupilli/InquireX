@@ -421,7 +421,7 @@ export default function Home() {
     // We'll use this as a temporary ID to keep track of this research
     const tempResearchId = `temp-${newResearchStarted}`;
 
-    if (chatBoxSettings.report_type === 'multi_agents' && langgraphHostUrl) {
+    if (chatBoxSettings.report_type === 'agent_teams' && langgraphHostUrl) {
       let { streamResponse, host, thread_id } = await startLanggraphResearch(newQuestion, chatBoxSettings.report_source, langgraphHostUrl);
       const langsmithGuiLink = `https://smith.langchain.com/studio/thread/${thread_id}?baseUrl=${host}`;
       setOrderedData((prevOrder) => [...prevOrder, { type: 'langgraphButton', link: langsmithGuiLink }]);

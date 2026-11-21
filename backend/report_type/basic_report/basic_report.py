@@ -4,7 +4,7 @@ import time
 from fastapi import WebSocket
 from typing import Any
 
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher
 
 
 class BasicReport:
@@ -39,7 +39,7 @@ class BasicReport:
         self.research_id = self._generate_research_id(query)
 
         # Initialize researcher with optional MCP parameters
-        gpt_researcher_params = {
+        inquirex_params = {
             "query": self.query,
             "query_domains": self.query_domains,
             "report_type": self.report_type,
@@ -54,15 +54,15 @@ class BasicReport:
 
         # Add MCP parameters if provided
         if mcp_configs is not None:
-            gpt_researcher_params["mcp_configs"] = mcp_configs
+            inquirex_params["mcp_configs"] = mcp_configs
         if mcp_strategy is not None:
-            gpt_researcher_params["mcp_strategy"] = mcp_strategy
+            inquirex_params["mcp_strategy"] = mcp_strategy
 
-        self.gpt_researcher = GPTResearcher(**gpt_researcher_params)
+        self.inquirex_researcher = InquireXResearcher(**inquirex_params)
 
         # Override max_search_results_per_query if provided by user
         if max_search_results is not None:
-            self.gpt_researcher.cfg.max_search_results_per_query = int(max_search_results)
+            self.inquirex_researcher.cfg.max_search_results_per_query = int(max_search_results)
 
     def _generate_research_id(self, query: str) -> str:
         """Generate a unique research ID from query and timestamp."""
@@ -71,15 +71,15 @@ class BasicReport:
         return f"research_{timestamp}_{query_hash}"
 
     async def run(self):
-        await self.gpt_researcher.conduct_research()
-        report = await self.gpt_researcher.write_report()
+        await self.inquirex_researcher.conduct_research()
+        report = await self.inquirex_researcher.write_report()
         # Ensure all visited/scraped URLs are included in References
-        if self.gpt_researcher.visited_urls:
+        if self.inquirex_researcher.visited_urls:
             if "## References" not in report:
-                report = self.gpt_researcher.add_references(report, self.gpt_researcher.visited_urls)
+                report = self.inquirex_researcher.add_references(report, self.inquirex_researcher.visited_urls)
             else:
                 existing_urls = set(re.findall(r'https?://[^\s\)\"\'<>]+', report))
-                missing_urls = set(self.gpt_researcher.visited_urls) - existing_urls
+                missing_urls = set(self.inquirex_researcher.visited_urls) - existing_urls
                 if missing_urls:
                     ref_additions = "\n" + "\n".join(f"- [{url}]({url})" for url in sorted(missing_urls))
                     report += ref_additions

@@ -2,7 +2,7 @@ import os
 import asyncio
 import pytest
 from unittest.mock import AsyncMock
-from gpt_researcher.agent import GPTResearcher
+from inquirex.agent import InquireXResearcher
 from backend.server.server_utils import CustomLogsHandler
 from typing import List, Dict, Any
 
@@ -15,11 +15,11 @@ query = "what is gpt-researcher"
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("report_type", report_types)
-async def test_gpt_researcher(report_type):
+async def test_inquirex_researcher(report_type):
     mock_websocket = AsyncMock()
     custom_logs_handler = CustomLogsHandler(mock_websocket, query)
-    # Create an instance of GPTResearcher
-    researcher = GPTResearcher(
+    # Create an instance of InquireXResearcher
+    researcher = InquireXResearcher(
         query=query,
         query_domains=["github.com"],
         report_type=report_type,

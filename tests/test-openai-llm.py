@@ -1,6 +1,6 @@
 import asyncio
-from gpt_researcher.utils.llm import get_llm
-from gpt_researcher import GPTResearcher
+from inquirex.utils.llm import get_llm
+from inquirex import InquireXResearcher
 from dotenv import load_dotenv
 load_dotenv()
 

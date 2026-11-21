@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from gpt_researcher.skills.deep_research import DeepResearchSkill
+from inquirex.skills.deep_research import DeepResearchSkill
 
 
 @pytest.mark.asyncio
@@ -42,7 +42,7 @@ async def test_stops_when_all_query_processors_return_none():
 
     skill.generate_search_queries = fake_generate  # type: ignore
 
-    with patch("gpt_researcher.GPTResearcher") as MockR:
+    with patch("inquirex.InquireXResearcher") as MockR:
         inst = MockR.return_value
         inst.conduct_research = AsyncMock(side_effect=boom)
         inst.visited_urls = set()

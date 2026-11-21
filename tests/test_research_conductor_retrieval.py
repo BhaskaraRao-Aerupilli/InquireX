@@ -1,7 +1,7 @@
 import unittest
 from types import SimpleNamespace
 
-from gpt_researcher.skills.researcher import ResearchConductor
+from inquirex.skills.researcher import ResearchConductor
 
 
 class FakeSnippetRetriever:

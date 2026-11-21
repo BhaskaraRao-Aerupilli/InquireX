@@ -12,8 +12,8 @@ Before you begin, ensure you have the following:
 
 - Python 3.10 or higher installed on your system
 - pip (Python package installer)
-- An OpenAI API key (you can also choose other supported [LLMs](../gpt-researcher/llms/llms.md))
-- A Tavily API key (you can also choose other supported [Retrievers](../gpt-researcher/search-engines/retrievers.md))
+- An OpenAI API key (you can also choose other supported [LLMs](../inquirex/llms/llms.md))
+- A Tavily API key (you can also choose other supported [Retrievers](../inquirex/search-engines/retrievers.md))
 
 ## Installation
 
@@ -60,11 +60,11 @@ Set the environment variable REPORT_SOURCE to an empty string "" in default.py
 Here's a basic script to run hybrid research:
 
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 async def get_research_report(query: str, report_type: str, report_source: str) -> str:
-    researcher = GPTResearcher(query=query, report_type=report_type, report_source=report_source)
+    researcher = InquireXResearcher(query=query, report_type=report_type, report_source=report_source)
     research = await researcher.conduct_research()
     report = await researcher.write_report()
     return report
@@ -82,11 +82,11 @@ if __name__ == "__main__":
 Here's a basic script to run hybrid research:
 
 ```python
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 async def get_research_report(query: str, report_type: str, report_source: str) -> str:
-    researcher = GPTResearcher(query=query, report_type=report_type, document_urls=document_urls, report_source=report_source)
+    researcher = InquireXResearcher(query=query, report_type=report_type, document_urls=document_urls, report_source=report_source)
     research = await researcher.conduct_research()
     report = await researcher.write_report()
     return report
@@ -121,7 +121,7 @@ The output will be a comprehensive research report that combines insights from b
 A: The duration varies based on the complexity of the query and the amount of data to process. It can range from 1-5 minutes for very comprehensive research.
 
 **Q: Can I use GPT Researcher with other language models?**
-A: Currently, GPT Researcher is optimized for OpenAI's models. Support for other models can be found [here](../gpt-researcher/llms/llms.md).
+A: Currently, GPT Researcher is optimized for OpenAI's models. Support for other models can be found [here](../inquirex/llms/llms.md).
 
 **Q: How does GPT Researcher handle conflicting information between local and web sources?**
 A: The system attempts to reconcile differences by providing context and noting discrepancies in the final report. It prioritizes more recent or authoritative sources when conflicts arise.

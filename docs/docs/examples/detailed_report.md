@@ -4,7 +4,7 @@
 
 The `DetailedReport` class inspired by the recent STORM paper, is a powerful component of GPT Researcher, designed to generate comprehensive reports on complex topics. It's particularly useful for creating long-form content that exceeds the typical limits of LLM outputs. This class orchestrates the research process, breaking down the main query into subtopics, conducting in-depth research on each, and combining the results into a cohesive, detailed report.
 
-Located in `backend/report_types/detailed_report.py` in the [GPT Researcher GitHub repository](https://github.com/assafelovic/gpt-researcher), this class leverages the capabilities of the `GPTResearcher` agent to perform targeted research and generate content.
+Located in `backend/report_types/detailed_report.py` in the [GPT Researcher GitHub repository](https://github.com/assafelovic/gpt-researcher), this class leverages the capabilities of the `InquireXResearcher` agent to perform targeted research and generate content.
 
 ## Key Features
 
@@ -48,7 +48,7 @@ Here's how you can use the `DetailedReport` class in your project:
 ```python
 import asyncio
 from fastapi import WebSocket
-from gpt_researcher.utils.enum import Tone
+from inquirex.utils.enum import Tone
 from backend.report_type import DetailedReport
 
 async def generate_report(websocket: WebSocket):

@@ -25,13 +25,13 @@ from server.websocket_manager import WebSocketManager
 from server.server_utils import (
     get_config_dict, sanitize_filename,
     update_environment_variables, handle_file_upload, handle_file_deletion,
-    execute_multi_agents, handle_websocket_communication
+    execute_agent_teams, execute_multi_agents, handle_websocket_communication
 )
 from server.agent_discovery import build_agent_discovery_document
 
 from server.websocket_manager import run_agent
 from utils import write_md_to_word, write_md_to_pdf
-from gpt_researcher.utils.enum import Tone
+from inquirex.utils.enum import Tone
 from chat.chat import ChatAgentWithMemory
 
 from server.report_store import ReportStore
@@ -325,7 +325,7 @@ async def write_report(research_request: ResearchRequest, research_id: str = Non
 
     docx_path = await write_md_to_word(report_information[0], research_id)
     pdf_path = await write_md_to_pdf(report_information[0], research_id)
-    if research_request.report_type != "multi_agents":
+    if research_request.report_type not in ["multi_agents", "agent_teams"]:
         report, researcher = report_information
         response = {
             "research_id": research_id,
@@ -367,9 +367,10 @@ async def list_files():
     return {"files": files}
 
 
+@app.post("/api/agent_teams")
 @app.post("/api/multi_agents")
-async def run_multi_agents():
-    return await execute_multi_agents(manager)
+async def run_agent_teams():
+    return await execute_agent_teams(manager)
 
 
 @app.post("/upload/")

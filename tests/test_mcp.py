@@ -96,19 +96,19 @@ async def test_web_search_mcp():
     print("=" * 50)
     
     try:
-        from gpt_researcher import GPTResearcher
+        from inquirex import InquireXResearcher
         
         # Create web search MCP configuration
         mcp_configs = get_mcp_config()
         
         # Create researcher with web search query
         query = "What is the latest updates in the NBA playoffs?"
-        researcher = GPTResearcher(
+        researcher = InquireXResearcher(
             query=query,
             mcp_configs=mcp_configs
         )
         
-        print("✅ GPTResearcher initialized with web search MCP")
+        print("✅ InquireXResearcher initialized with web search MCP")
         print(f"🔧 MCP servers configured: {len(mcp_configs)} (Tavily)")
         print(f"📝 Query: {query}")
         
@@ -158,19 +158,19 @@ async def test_github_mcp():
     print("=" * 50)
     
     try:
-        from gpt_researcher import GPTResearcher
+        from inquirex import InquireXResearcher
         
         # Create GitHub MCP configuration
         mcp_configs = get_github_mcp_config()
         
         # Create researcher with code-related query
         query = "What are the key features and implementation of React's useState hook? How has it evolved in recent versions?"
-        researcher = GPTResearcher(
+        researcher = InquireXResearcher(
             query=query,
             mcp_configs=mcp_configs
         )
         
-        print("✅ GPTResearcher initialized with GitHub MCP")
+        print("✅ InquireXResearcher initialized with GitHub MCP")
         print(f"🔧 MCP servers configured: {len(mcp_configs)} (GitHub)")
         print(f"📝 Query: {query}")
         

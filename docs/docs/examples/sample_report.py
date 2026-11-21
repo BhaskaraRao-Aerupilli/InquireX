@@ -2,12 +2,12 @@ import nest_asyncio  # required for notebooks
 
 nest_asyncio.apply()
 
-from gpt_researcher import GPTResearcher
+from inquirex import InquireXResearcher, InquireXResearcher
 import asyncio
 
 
 async def get_report(query: str, report_type: str, custom_prompt: str = None):
-    researcher = GPTResearcher(query, report_type)
+    researcher = InquireXResearcher(query, report_type)
     research_result = await researcher.conduct_research()
     
     # Generate report with optional custom prompt

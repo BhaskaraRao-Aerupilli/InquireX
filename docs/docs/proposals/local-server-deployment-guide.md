@@ -257,7 +257,7 @@ source venv/bin/activate
 
 # 安装依赖
 pip install -r requirements.txt
-pip install -r multi_agents/requirements.txt
+pip install -r agent_teams/requirements.txt
 
 # 配置环境变量
 export OPENAI_API_KEY=sk-your-key
@@ -589,7 +589,7 @@ Docker 部署:
 
 ```bash
 # /etc/logrotate.d/gpt-researcher
-/home/app/gpt-researcher/logs/*.log {
+/home/app/inquirex/logs/*.log {
     daily
     rotate 7
     compress
@@ -728,7 +728,7 @@ SCRAPER_RATE_LIMIT_DELAY=0.5    # 适当的请求间隔
 #### 使用 Nginx 负载均衡
 
 ```nginx
-upstream gpt_researcher_backend {
+upstream inquirex_backend {
     server 127.0.0.1:8000 weight=1;
     server 127.0.0.1:8001 weight=1;
     server 127.0.0.1:8002 weight=1;
@@ -736,7 +736,7 @@ upstream gpt_researcher_backend {
 
 server {
     location /ws {
-        proxy_pass http://gpt_researcher_backend;
+        proxy_pass http://inquirex_backend;
         # ... WebSocket 配置
     }
 }
