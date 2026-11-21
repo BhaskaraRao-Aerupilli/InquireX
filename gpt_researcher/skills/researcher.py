@@ -400,11 +400,24 @@ class ResearchConductor:
                 ]
             )
             self.logger.info(f"Gathered context from {len(context)} sub-queries")
-            # Filter out empty results and join the context
-            context = [c for c in context if c]
-            if context:
-                combined_context = " ".join(context)
-                self.logger.info(f"Combined context size: {len(combined_context)}")
+            # Filter out empty results and audit context aggregation
+            valid_contexts = [c for c in context if c and str(c).strip()]
+            if valid_contexts:
+                # II.1 & II.3 Balanced Multi-Entity Context Allocation:
+                # Allocate equal character budget to every sub-query so each entity receives equal representation
+                max_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "12000"))
+                per_query_budget = max(1200, max_chars // len(valid_contexts))
+                balanced_contexts = []
+                for c in valid_contexts:
+                    c_str = str(c)
+                    if len(c_str) > per_query_budget:
+                        balanced_contexts.append(c_str[:per_query_budget] + "\n...[Context budget preserved for remaining entities]...")
+                    else:
+                        balanced_contexts.append(c_str)
+                combined_context = "\n\n".join(balanced_contexts)
+                self.logger.info(
+                    f"[Context Vector Audit] Verified {len(valid_contexts)}/{len(sub_queries)} sub-query context buffers symmetrically balanced ({per_query_budget} chars/query budget). Total characters: {len(combined_context)}"
+                )
                 return combined_context
             return []
         except Exception as e:

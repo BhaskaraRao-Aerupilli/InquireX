@@ -1,3 +1,12 @@
+from langchain_core.messages import AIMessage
+
+def _extract_text(content):
+    """Normalize message content to a string (handles both raw str and list of content blocks)."""
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, list):
+        return "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+    return str(content or "")
 import aiofiles
 import asyncio
 import importlib
@@ -185,7 +194,8 @@ class GenericLLMProvider:
             _check_pkg("langchain_google_genai")
             from langchain_google_genai import ChatGoogleGenerativeAI
 
-            llm = ChatGoogleGenerativeAI(**kwargs)
+            google_key = kwargs.pop("google_api_key", None) or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+            llm = ChatGoogleGenerativeAI(google_api_key=google_key, **kwargs)
         elif provider == "fireworks":
             _check_pkg("langchain_fireworks")
             from langchain_fireworks import ChatFireworks
@@ -361,7 +371,7 @@ class GenericLLMProvider:
             output = await self.llm.ainvoke(messages, **kwargs)
             self._capture_response_metadata(output)
 
-            res = output.content
+            res = _extract_text(output.content)
 
         else:
             res = await self.stream_response(messages, websocket, **kwargs)
@@ -385,7 +395,7 @@ class GenericLLMProvider:
         # Streaming the response using the chain astream method from langchain
         async for chunk in self.llm.astream(messages, **kwargs):
             self._capture_response_metadata(chunk)
-            content = chunk.content
+            content = _extract_text(chunk.content)
             if not content:
                 continue
             response += content

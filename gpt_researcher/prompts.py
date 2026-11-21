@@ -327,18 +327,73 @@ in-depth, and comprehensive, {length_instruction}
 
 Please follow all of the following guidelines in your report:
 {strict_grounding}
-- USER INTENT & BEHAVIORAL ADAPTATION:
-  1. Parse the user's prompt for behavioral cues, explicit constraints, and target tone.
-  2. If the user asks for "just X", "only X", or "that's it", eliminate ALL fluff: do not write introductions, background history, long detailed explanations, or narrative sections after the table. Deliver ONLY the requested content (e.g. output ONLY the Markdown Table followed by References).
-  3. If the user requests a specific structure (e.g., Markdown Table, JSON, Bullet Points, Executive Brief), you MUST format the entire primary output in that structure. Never replace a requested table with paragraphs or prose.
+### I. STRICT USER CONSTRAINT COMPLIANCE
+1. FORMAT OVERRIDE PRIMACY:
+   - The user's requested output format completely overrides all system defaults.
+   - When the user specifies a layout or format constraint (e.g. "table only", "JSON only", "bullet points only", "executive summary only", or custom section headings):
+     * Suppress all default structural elements, introductions, default narrative sections, and unrequested metadata.
+     * Deliver exclusively the requested format.
+2. NEGATIVE CONSTRAINT ENFORCEMENT:
+   - Strictly respect and enforce all negative constraints (e.g., "no intro", "do not include executive summary", "no conclusion", "without X", "exclude Y").
+   - Any inclusion of prohibited content, headers, or structural elements invalidates the response.
+3. TONE, STYLE, & LENGTH BOUNDARIES:
+   - Adhere strictly to user-defined word limits, technical complexity levels, language selections, and stylistic instructions.
 
-- MULTI-ENTITY RETRIEVAL & BALANCE GUARD:
-  1. ENTITY BALANCING: Identify all distinct subjects in the prompt (e.g., [Entity A: Goku], [Entity B: Saitama]). Allocate EQUAL token allocation and consideration in the final synthesized output for each identified entity. Do NOT let context or discussion for any single entity exceed 60% of the total prompt context window or comparative text.
-  2. EVEN MATRIX CHECK: Prior to completing the final report, verify that facts, stats, and metrics exist for EVERY subject in the user's comparison request.
-  3. BALANCED COMPARATIVE TABLES & MATRICES:
-     - When generating comparison tables, the rows MUST be balanced, universal categories / attributes (e.g., Striking Power & Physical Strength, Combat Speed & Reflexes, Durability & Defense, Signature Attacks & Techniques, Peak Transformations / Forms, Power Scaling & Power Ceiling, Growth Mechanism & Adaptability) or symmetrical feature breakdowns.
-     - CRITICAL: NEVER use one entity's universe-specific moves or terms (e.g., Kamehameha, Super Saiyan, Bankai, Chakra, Devil Fruit) as the row criteria for the other entity!
-     - STRICT NEGATIVE PROHIBITION: NEVER output phrases like "not mentioned in the provided context", "not indicated in the provided context", "not detailed in the provided sources", "no information in sources", "not specified", "unknown", "N/A", or leave table cells blank. Every requested subject MUST have complete, factual, and informative descriptions in EVERY row and cell. For categories such as transformations, power scaling, or growth mechanisms, describe each entity's actual canonical status (e.g., Goku utilizes Super Saiyan through Ultra Instinct forms; Saitama possesses no transformations due to breaking his limiter). If specific RAG text is missing, rely on verified canonical base knowledge to complete all entries symmetrically. DO NOT drop any entity from the final output.
+### II. RAG & MULTI-ENTITY RETRIEVAL BALANCING
+1. BALANCED ENTITY COVERAGE:
+   - Identify all distinct subjects in the prompt (e.g., [Entity A], [Entity B]). Allocate EQUAL analytical depth, token allocation, and consideration in the final synthesized output for each entity. Do NOT let context or discussion for any single entity dominate or exceed 60% of the comparative text.
+2. MISSING DATA HANDLING:
+   - Do NOT speculate or introduce ungrounded knowledge when strict factual grounding is required.
+   - If context for any requested entity or attribute is absent from the RAG pipeline, explicitly render a missing data indicator (e.g. `[Data Not Available in Sources]`) within the corresponding slot or table cell rather than fabricating claims or omitting the entity.
+3. BALANCED COMPARATIVE TABLES & MATRICES:
+   - When generating comparison tables, the rows MUST be balanced, universal categories / attributes (e.g., Physical Performance, Speed & Reflexes, Durability & Defense, Signature Capabilities, Architecture & Scaling, Growth Mechanism & Adaptability) or symmetrical feature breakdowns.
+   - CRITICAL: NEVER use one entity's universe-specific moves or proprietary terms as the row criteria for another entity!
+   - Ensure every requested entity has a dedicated, balanced column with complete and factual assessments.
+
+### III. INLINE MEDIA & VISUAL INTEGRATION
+1. CONTEXTUAL PLACEMENT:
+   - When visual figures or images are available, embed the image syntax directly inline at the specified position where the topic is analyzed.
+2. GALLERY SEGREGATION:
+   - Do NOT move or bundle inline media to top-level lightbox galleries or headers unless explicitly commanded by the user.
+3. IMAGE VERIFICATION:
+   - Only embed image links present in the provided scraping metadata. Do NOT fabricate media source paths, alter URLs, or create placeholder links.
+
+### IV. CITATION & PROVENANCE INTEGRATION
+1. SOURCE MAPPING:
+   - Append inline citations to every factual claim, metric, or entity property: `[Source Name / Domain](url)`.
+2. STRUCTURAL CITATION PLACEMENT:
+   - In structured layouts (such as tables or lists), include dedicated reference columns or embed inline references directly beside data points.
+3. DEDUPLICATED REFERENCES:
+   - End with a clean, deduplicated `## References` section hyperlinking all consulted sources.
+
+### V. PRE-OUTPUT VALIDATION CHECKLIST
+Before generating the final output payload, validate the output against this checklist:
+- [ ] Has the requested output format been implemented with zero prohibited structural elements?
+- [ ] Are all requested entities and attributes represented equally in the output?
+- [ ] Are all extracted image links embedded in their exact specified positions?
+- [ ] Are missing context fields explicitly flagged rather than assumed or hallucinated?
+- [ ] Have all negative constraints been fully satisfied?
+
+- HIGH-IMPACT CHATGPT / PERPLEXITY GRADE FORMATION & ARCHITECTURE:
+  1. MANDATORY EXECUTIVE SUMMARY:
+     - The report MUST begin with an Executive Summary blockquote immediately following the # Main Title:
+       > **Executive Summary**: [High-density 3-5 sentence synthesis directly answering the inquiry. Include core findings, verified numbers/metrics, and definitive takeaways.]
+  2. STRUCTURED THEMATIC SECTIONS:
+     - Organize into logical, numbered thematic headings: `## 1. [Thematic Title]`, `## 2. [Thematic Title]`, etc.
+     - Under each major heading, use `### [Subheading]` to separate distinct mechanisms, trade-offs, empirical data, or components.
+  3. MANDATORY STRUCTURED COMPARATIVE / DATA TABLE:
+     - Whenever comparing subjects, technologies, architectures, or multi-faceted strategies, include at least ONE comprehensive Markdown Table with balanced columns (e.g. `| Feature / Metric | Entity A | Entity B | Analysis / Verdict |`).
+     - Every cell MUST contain meaningful, verified analytical content (never output empty cells, 'N/A', or 'unknown').
+  4. KEY TAKEAWAYS & STRATEGIC RECOMMENDATIONS:
+     - Include bulleted `### Key Takeaways` or `### Strategic Implications` highlighting actionable conclusions at the end of major sections.
+  5. PROHIBITION OF VAGUENESS & FLUFF:
+     - Eliminate empty transitional filler ("In today's fast-paced world", "It is important to remember", "Only time will tell", "As we have seen").
+     - Every paragraph must deliver concrete technical or factual substance with numbers, dates, and empirical evidence.
+  6. INLINE HYPERLINK CITATIONS:
+     - Anchor claims, statistics, and technical facts directly with clean inline markdown hyperlinks: `[Source Title / Domain](URL)`.
+     - End with a clean, deduplicated `## References` section.
+  7. MANDATORY COMPLETE CONCLUSION:
+     - You MUST bring every sentence, paragraph, and comparative verdict to a complete, grammatically sound conclusion. Never stop mid-thought, mid-sentence, or leave trailing clauses before writing References.
 
 - DYNAMIC OUTPUT FORMATTING RULES:
   1. [TABLE REQUESTED]: Output a clean Markdown Table immediately. Do not add introductory sentences before the table unless explicitly asked.
@@ -518,17 +573,24 @@ Using the following hierarchically researched information and citations:
 
 "{context}"
 
-Write a comprehensive research report answering the query: "{question}"
+Write an authoritative, publication-grade research report answering the query: "{question}"
 
-The report should:
-1. Synthesize information from multiple levels of research depth
-2. Integrate findings from various research branches
-3. Present a coherent narrative that builds from foundational to advanced insights
-4. Maintain proper citation of sources throughout
-5. Be well-structured with clear sections and subsections
-6. Have a minimum length of {total_words} words
-7. Follow {report_format} format with markdown syntax
-8. Use markdown tables, lists and other formatting features when presenting comparative data, statistics, or structured information
+The report must follow this high-impact formation:
+1. MANDATORY EXECUTIVE SUMMARY:
+   Start immediately after the # Main Title with:
+   > **Executive Summary**: [3-5 dense sentences summarizing the core findings, key quantitative metrics, and final verdict.]
+2. THEMATIC NUMBERED SECTIONS:
+   Use structured headers (`## 1. Foundational Architecture`, `## 2. Technical Evaluation`, etc.) with `### Subheadings`.
+3. STRUCTURED DATA / COMPARISON TABLES:
+   Include at least one detailed Markdown comparison or specification table with clear columns and verified data.
+4. SYNTHESIZE DEEP RESEARCH FINDINGS:
+   Synthesize information from multiple research depths, highlighting empirical evidence, trade-offs, and strategic takeaways.
+5. STRICT NO FLUFF:
+   Eliminate empty conversational filler. Maximize technical density, facts, numbers, and direct analysis.
+6. MINIMUM LENGTH:
+   Comprehensive coverage with at least {total_words} words.
+7. HYPERLINK CITATIONS:
+   Anchor facts and metrics with inline markdown hyperlinks: [Source](url). Followed by a consolidated ## References section.
 
 Additional requirements:
 - Prioritize insights that emerged from deeper levels of research

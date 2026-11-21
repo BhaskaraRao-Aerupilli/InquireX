@@ -11,23 +11,24 @@ logger = get_formatted_logger()
 
 
 def _cap_context(context, max_chars: int = None):
-    """Cap context length to prevent exceeding LLM tokens-per-minute (TPM) limits."""
+    """Cap context length with balanced entity allocation to prevent exceeding LLM tokens-per-minute (TPM) limits."""
     if max_chars is None:
-        max_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "8000"))
-    if isinstance(context, str) and len(context) > max_chars:
+        max_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "12000"))
+    if isinstance(context, str):
+        if len(context) <= max_chars:
+            return context
+        # Split by sub-query paragraphs so every entity/topic receives equal context budget
+        sections = [s for s in context.split("\n\n") if s.strip()]
+        if len(sections) > 1:
+            per_section_budget = max(400, max_chars // len(sections))
+            capped = [s[:per_section_budget] for s in sections]
+            return "\n\n".join(capped)
         return context[:max_chars] + "\n...[Context truncated to fit token limits]..."
     elif isinstance(context, list):
-        total_len = 0
-        capped_list = []
-        for item in context:
-            item_str = str(item)
-            if total_len + len(item_str) > max_chars:
-                remaining = max_chars - total_len
-                if remaining > 100:
-                    capped_list.append(item_str[:remaining])
-                break
-            capped_list.append(item)
-            total_len += len(item_str)
+        if not context:
+            return context
+        per_item_budget = max(400, max_chars // len(context))
+        capped_list = [str(item)[:per_item_budget] for item in context]
         return capped_list
     return context
 
@@ -227,7 +228,7 @@ async def generate_report(
     available_images: list = None,
     **kwargs
 ):
-    available_images = available_images or []
+    available_images = (available_images or [])[:4]
     generate_prompt = get_prompt_by_report_type(report_type, prompt_family)
     report = ""
 
@@ -241,20 +242,25 @@ async def generate_report(
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words, language=cfg.language)}"
     
-    # Add available images instruction if images were pre-generated
+    # Add verified research images instruction if images are available
     if available_images:
         images_info = "\n".join([
-            f"- Image {i+1}: ![{img.get('title', img.get('alt_text', 'Illustration'))}]({img['url']}) - {img.get('section_hint', 'General')}"
+            f"- Image {i+1}: ![{img.get('title', img.get('alt_text', 'Visual Figure'))}]({img['url']})\n  Topic Context: {img.get('section_hint', img.get('alt_text', 'Figure relevant to the topic'))}"
             for i, img in enumerate(available_images)
         ])
         content += f"""
 
-AVAILABLE IMAGES:
-You have the following pre-generated images available. Embed them in relevant sections of your report using the exact markdown syntax provided:
+VERIFIED RESEARCH VISUAL FIGURES & DIAGRAMS:
+You have the following topic-verified visual figures and diagrams available from the research search. You MUST embed them into the report:
 
 {images_info}
 
-Place each image on its own line after the relevant section header or paragraph. Use all available images where they add value to the content."""
+INLINE MEDIA & VISUAL INTEGRATION RULES:
+1. Contextual Placement: When visual content or images are available, embed the image syntax directly inline within the specific section or layout position they illustrate.
+2. Gallery Segregation: Do NOT move or bundle inline media into top-level lightbox galleries or headers unless explicitly commanded by the user.
+3. Image Verification: Use the exact markdown syntax: `![Title](url)`. Only embed image links present in the scraping metadata above. NEVER alter URLs, fabricate media source paths, or invent placeholder URLs.
+4. Explanatory Captions: Immediately below each image, include an informative italicized caption explaining the figure (e.g. `*Figure: Explanatory caption based on the research context.*`).
+5. Formatting: Ensure each image is placed on its own line with empty lines before and after so it renders cleanly in Markdown."""
     try:
         report = await create_chat_completion(
             model=cfg.smart_llm_model,

@@ -66,31 +66,20 @@ if (document.readyState === 'loading') {
 // Toggle Advanced Settings Accordion
 
 function toggleAdvancedSettings() {
-
   const accordion = document.getElementById('advancedSettingsAccordion');
-
   const toggleBtn = document.getElementById('advancedSettingsToggle');
-
   if (!accordion) return;
 
-
-
   const isHidden = accordion.style.display === 'none' || !accordion.style.display;
-
   if (isHidden) {
-
+    // Close templates popover first (mutual exclusion)
+    if (typeof closeTemplatesMenu === 'function') closeTemplatesMenu();
     accordion.style.display = 'block';
-
     if (toggleBtn) toggleBtn.classList.add('open');
-
   } else {
-
     accordion.style.display = 'none';
-
     if (toggleBtn) toggleBtn.classList.remove('open');
-
   }
-
 }
 
 window.toggleAdvancedSettings = toggleAdvancedSettings;
@@ -119,6 +108,200 @@ function setQuickReportType(typeVal, btnElement) {
 
 window.setQuickReportType = setQuickReportType;
 
+// Two-way sync: when report_type <select> changes, update the quick preset pills
+document.addEventListener('DOMContentLoaded', function() {
+  const reportSelect = document.getElementById('report_type');
+  if (reportSelect) {
+    reportSelect.addEventListener('change', function() {
+      const val = this.value;
+      document.querySelectorAll('.preset-chip[data-preset-report]').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-preset-report') === val);
+      });
+    });
+  }
+});
+
+
+// ==========================================
+// Research Archetypes & Fast Query Templates (Popover Menu)
+// ==========================================
+function toggleTemplatesMenu(event) {
+  if (event) {
+    event.stopPropagation();
+  }
+  const popover = document.getElementById('templatesPopover');
+  const chevron = document.getElementById('templatesChevron');
+  if (!popover) return;
+
+  const isHidden = popover.style.display === 'none' || !popover.style.display;
+  if (isHidden) {
+    // Close advanced settings first (mutual exclusion)
+    const accordion = document.getElementById('advancedSettingsAccordion');
+    const advToggle = document.getElementById('advancedSettingsToggle');
+    if (accordion && accordion.style.display === 'block') {
+      accordion.style.display = 'none';
+      if (advToggle) advToggle.classList.remove('open');
+    }
+    popover.style.display = 'block';
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+
+    // Dismiss on outside click
+    const dismissHandler = (e) => {
+      const wrapper = document.getElementById('templatesMenuWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        popover.style.display = 'none';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+        document.removeEventListener('click', dismissHandler);
+      }
+    };
+    setTimeout(() => {
+      document.addEventListener('click', dismissHandler);
+    }, 10);
+  } else {
+    popover.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  }
+}
+window.toggleTemplatesMenu = toggleTemplatesMenu;
+
+function closeTemplatesMenu() {
+  const popover = document.getElementById('templatesPopover');
+  const chevron = document.getElementById('templatesChevron');
+  if (popover) popover.style.display = 'none';
+  if (chevron) chevron.style.transform = 'rotate(0deg)';
+}
+window.closeTemplatesMenu = closeTemplatesMenu;
+
+const RESEARCH_ARCHETYPES = {
+  comparison: {
+    template: "Compare [Entity A] vs [Entity B] across architecture, core features, performance benchmarks, pros/cons, and final comparative verdict.",
+    reportType: "detailed_report",
+    tone: "Comparative",
+    placeholderSelect: "[Entity A]",
+    badgeName: "Comparative Analysis"
+  },
+  market: {
+    template: "In-depth market and competitor analysis of [Company / Industry]: market size, key industry players, value proposition, pricing models, market trends, and strategic opportunities.",
+    reportType: "detailed_report",
+    tone: "Analytical",
+    placeholderSelect: "[Company / Industry]",
+    badgeName: "Market & Competitor Intel"
+  },
+  tech_deep_dive: {
+    template: "Comprehensive technical deep dive into [Technology / Framework / Protocol]: system architecture, internal mechanisms, key trade-offs, and production implementation best practices.",
+    reportType: "detailed_report",
+    tone: "Informative",
+    placeholderSelect: "[Technology / Framework / Protocol]",
+    badgeName: "Technical Deep Dive"
+  },
+  fact_check: {
+    template: "Fact-check and verification analysis for [Claim / Topic]: verified empirical evidence, counter-arguments, source provenance, and consensus conclusion.",
+    reportType: "research_report",
+    tone: "Critical",
+    placeholderSelect: "[Claim / Topic]",
+    badgeName: "Fact-Check & Verification"
+  },
+  news_breakthrough: {
+    template: "Latest breakthroughs, key industry developments, and major announcements in [Domain / Topic] over the past year.",
+    reportType: "research_report",
+    tone: "Informative",
+    placeholderSelect: "[Domain / Topic]",
+    badgeName: "Recent Developments"
+  },
+  swot_analysis: {
+    template: "Comprehensive SWOT Analysis (Strengths, Weaknesses, Opportunities, Threats) for [Organization, Product, or Strategy] with actionable strategic recommendations.",
+    reportType: "detailed_report",
+    tone: "Analytical",
+    placeholderSelect: "[Organization, Product, or Strategy]",
+    badgeName: "SWOT Analysis"
+  }
+};
+
+function applyResearchArchetype(key, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+  closeTemplatesMenu();
+
+  const archetype = RESEARCH_ARCHETYPES[key];
+  if (!archetype) return;
+
+  const textarea = document.getElementById('task');
+  if (!textarea) return;
+
+  const existingText = textarea.value.trim();
+  let finalText = archetype.template;
+
+  // Smart insertion: if user already typed a topic/entity and not a bracketed template
+  if (existingText && !existingText.includes('[') && existingText.length < 140) {
+    if (key === 'comparison' && (existingText.includes(' vs ') || existingText.includes(' against ') || existingText.includes(' or '))) {
+      finalText = `Compare ${existingText} across architecture, core features, performance benchmarks, pros/cons, and final comparative verdict.`;
+    } else {
+      finalText = archetype.template.replace(archetype.placeholderSelect, existingText);
+    }
+  }
+
+  textarea.value = finalText;
+
+  // Sync report_type select & preset chips
+  const reportTypeSelect = document.getElementById('report_type');
+  if (reportTypeSelect) {
+    reportTypeSelect.value = archetype.reportType;
+    reportTypeSelect.dispatchEvent(new Event('change'));
+  }
+  document.querySelectorAll('.preset-chip').forEach(chip => {
+    if (chip.getAttribute('data-preset-report') === archetype.reportType) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  });
+
+  // Sync tone select
+  const toneSelect = document.getElementById('tone');
+  if (toneSelect) {
+    toneSelect.value = archetype.tone;
+    toneSelect.dispatchEvent(new Event('change'));
+  }
+
+  // Focus textarea and highlight the bracketed placeholder so user can immediately type
+  textarea.focus();
+  const placeholderStart = finalText.indexOf('[');
+  const placeholderEnd = finalText.indexOf(']');
+  if (placeholderStart !== -1 && placeholderEnd !== -1) {
+    textarea.setSelectionRange(placeholderStart, placeholderEnd + 1);
+  } else {
+    textarea.setSelectionRange(finalText.length, finalText.length);
+  }
+
+  // Visual feedback toast
+  const msg = `Applied ${archetype.badgeName} template (${archetype.tone} Tone)`;
+  try {
+    if (typeof showToast === 'function') {
+      showToast(msg);
+    } else {
+      let t = document.getElementById('archetype-toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'archetype-toast';
+        t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#4f46e5;color:#fff;padding:10px 18px;border-radius:12px;font-size:0.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:9999;transition:all 0.3s ease;opacity:0;transform:translateY(10px);pointer-events:none;';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = '1';
+      t.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(10px)';
+      }, 3000);
+    }
+  } catch (e) {
+    console.debug('Toast notification suppressed:', e);
+  }
+}
+
+window.applyResearchArchetype = applyResearchArchetype;
+
 
 
 // State variables for conditional research report rendering & dropdown management
@@ -130,69 +313,69 @@ let researchStatus = 'initial'; // 'initial' | 'in_progress' | 'completed' | 'er
 
 
 function setReportReady(ready) {
-
   isReportReady = !!ready;
-
   const active = (typeof isResearchActive !== 'undefined') ? isResearchActive : false;
-
   researchStatus = isReportReady ? 'completed' : (active ? 'in_progress' : 'initial');
 
-
+  // Ensure Research Progress card stays visible above Verified Visuals & Report
+  const progressCard = document.getElementById('researchOutputContainer');
+  if (progressCard && isReportReady) {
+    progressCard.style.display = 'block';
+  }
 
   const mainReport = document.getElementById('mainReportContainer');
-
   if (mainReport) {
-
     if (isReportReady) {
-
       mainReport.style.setProperty('display', 'block', 'important');
-
       mainReport.setAttribute('data-ready', 'true');
-
       mainReport.classList.remove('report-hidden');
-
     } else {
-
       mainReport.style.setProperty('display', 'none', 'important');
-
       mainReport.setAttribute('data-ready', 'false');
-
       mainReport.classList.add('report-hidden');
-
     }
-
   }
-
-
 
   const reportToolbar = document.getElementById('reportStickyToolbar');
-
   if (reportToolbar) {
-
     if (isReportReady) {
-
       reportToolbar.classList.remove('toolbar-hidden');
-
       reportToolbar.style.setProperty('display', 'flex', 'important');
-
     } else {
-
       reportToolbar.classList.add('toolbar-hidden');
-
       reportToolbar.style.setProperty('display', 'none', 'important');
-
     }
-
   }
 
+  // Ensure all dropdown items and toolbar action buttons are properly enabled/disabled
+  const exportItems = ['downloadLinkTop', 'downloadLinkWordTop', 'downloadLinkMdTop', 'downloadLinkJsonTop', 'downloadLatexBtnTop'];
+  exportItems.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (isReportReady) {
+        el.classList.remove('disabled');
+      } else {
+        el.classList.add('disabled');
+      }
+    }
+  });
 
+  const toolbarButtons = ['copyToClipboardTop', 'viewSlidesBtnTop', 'audioBriefingBtnTop', 'expandReportBtn'];
+  toolbarButtons.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (isReportReady) {
+        el.classList.remove('disabled');
+        el.style.display = 'inline-flex';
+      } else {
+        el.classList.add('disabled');
+      }
+    }
+  });
 
   if (!isReportReady) {
-
     toggleExportDropdown(false);
-
   }
-
 }
 
 window.setReportReady = setReportReady;
@@ -316,15 +499,30 @@ document.addEventListener('scroll', handleExportScrollClose, { passive: true, ca
 
 
 // Close dropdown on Escape key
-
 document.addEventListener('keydown', (e) => {
-
   if (e.key === 'Escape') {
-
+    const menu = document.getElementById('exportDropdownMenu');
+    if (menu && (menu.classList.contains('show') || menu.style.display === 'flex')) {
+      toggleExportDropdown(false);
+      return;
+    }
+    const slideModal = document.getElementById('slideDeckModal');
+    if (slideModal && (slideModal.classList.contains('active') || slideModal.style.display !== 'none')) {
+      closeSlideDeck();
+      return;
+    }
+    const reportContainer = document.getElementById('mainReportContainer');
+    if (reportContainer && reportContainer.classList.contains('report-card-fullscreen')) {
+      toggleResearchReportFullscreen(null, false);
+      return;
+    }
+    const progressContainer = document.getElementById('researchOutputContainer');
+    if (progressContainer && progressContainer.classList.contains('progress-card-fullscreen')) {
+      toggleResearchProgressFullscreen(null, false);
+      return;
+    }
     toggleExportDropdown(false);
-
   }
-
 });
 
 
@@ -403,61 +601,696 @@ function createNewResearch() {
 
 window.createNewResearch = createNewResearch;
 
+// ==============================================================
+// InquireX Unified Export & Presentation Slides Suite
+// ==============================================================
+window.activeDownloadLinks = window.activeDownloadLinks || {};
+window.sessionLogRecords = window.sessionLogRecords || [];
 
+function displayGlobalToast(message, duration = 3000) {
+  try {
+    if (typeof showToast === 'function') {
+      showToast(message, duration);
+      return;
+    }
+  } catch (e) {}
+  let t = document.getElementById('inquirex-global-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'inquirex-global-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#4f46e5;color:#fff;padding:10px 18px;border-radius:12px;font-size:0.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.35);z-index:99999;transition:all 0.3s ease;opacity:0;transform:translateY(10px);pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = message;
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(10px)';
+  }, duration);
+}
+window.displayGlobalToast = displayGlobalToast;
 
+function escapeXml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
 
+function triggerBrowserDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+function getActiveReportData() {
+  const reportContainer = document.getElementById('reportContainer');
+  const reportHtml = reportContainer ? reportContainer.innerHTML : '';
+  const reportText = reportContainer ? reportContainer.innerText.trim() : '';
+
+  const taskInput = document.getElementById('task');
+  const activePrompt = (taskInput?.value || '').trim() ||
+                       (typeof activeResearchPrompt !== 'undefined' ? activeResearchPrompt : '') ||
+                       document.querySelector('.meta-report-title')?.textContent?.trim() ||
+                       'Research Report';
+
+  const fileSlug = activePrompt.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .substring(0, 60) || 'research_report';
+
+  return {
+    reportContainer,
+    reportHtml,
+    reportText,
+    topic: activePrompt,
+    fileSlug,
+    isValid: reportText.length >= 20 || reportHtml.length >= 30
+  };
+}
+window.getActiveReportData = getActiveReportData;
+
+function convertHtmlToCleanMarkdown(container, title) {
+  if (!container) return `# ${title}\n\n`;
+  const div = document.createElement('div');
+  div.innerHTML = container.innerHTML;
+
+  div.querySelectorAll('script, style, button, noscript').forEach(el => el.remove());
+
+  let md = `# ${title}\n\n`;
+  const nodes = div.children;
+  for (let el of nodes) {
+    const tag = el.tagName.toLowerCase();
+    const text = el.innerText.trim();
+    if (!text && tag !== 'hr') continue;
+
+    if (tag === 'h1' && text.toLowerCase() !== title.toLowerCase()) {
+      md += `# ${text}\n\n`;
+    } else if (tag === 'h2') {
+      md += `## ${text}\n\n`;
+    } else if (tag === 'h3') {
+      md += `### ${text}\n\n`;
+    } else if (tag === 'h4') {
+      md += `#### ${text}\n\n`;
+    } else if (tag === 'p') {
+      md += `${text}\n\n`;
+    } else if (tag === 'blockquote') {
+      md += `> ${text}\n\n`;
+    } else if (tag === 'pre') {
+      md += `\`\`\`\n${text}\n\`\`\`\n\n`;
+    } else if (tag === 'ul') {
+      el.querySelectorAll('li').forEach(li => {
+        md += `- ${li.innerText.trim()}\n`;
+      });
+      md += '\n';
+    } else if (tag === 'ol') {
+      let idx = 1;
+      el.querySelectorAll('li').forEach(li => {
+        md += `${idx++}. ${li.innerText.trim()}\n`;
+      });
+      md += '\n';
+    } else if (tag === 'hr') {
+      md += `---\n\n`;
+    } else {
+      md += `${text}\n\n`;
+    }
+  }
+  return md;
+}
+
+function exportAsPdf() {
+  toggleExportDropdown(false);
+  const data = getActiveReportData();
+  if (!data.isValid) {
+    displayGlobalToast('No research report available to export as PDF.');
+    return;
+  }
+
+  const pdfLink = (window.activeDownloadLinks && window.activeDownloadLinks.pdf) || '';
+  if (pdfLink && pdfLink !== '#' && !pdfLink.includes('undefined')) {
+    displayGlobalToast('Downloading PDF report...');
+    const a = document.createElement('a');
+    a.href = pdfLink;
+    a.download = `${data.fileSlug}.pdf`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 500);
+    return;
+  }
+
+  displayGlobalToast('Preparing print-ready PDF...');
+  setTimeout(() => {
+    window.print();
+  }, 250);
+}
+window.exportAsPdf = exportAsPdf;
+
+async function exportAsWord() {
+  toggleExportDropdown(false);
+  const data = getActiveReportData();
+  if (!data.isValid) {
+    displayGlobalToast('No research report available to export as Word document.');
+    return;
+  }
+
+  displayGlobalToast('Generating Word Document (.docx)...');
+
+  const docxLink = (window.activeDownloadLinks && window.activeDownloadLinks.docx) || '';
+  if (docxLink && docxLink !== '#' && !docxLink.includes('undefined')) {
+    try {
+      const resp = await fetch(docxLink, { method: 'HEAD' });
+      if (resp.ok) {
+        const a = document.createElement('a');
+        a.href = docxLink;
+        a.download = `${data.fileSlug}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 500);
+        displayGlobalToast('Word Document (.docx) downloaded successfully!');
+        return;
+      }
+    } catch (e) {}
+  }
+
+  const docHtml = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>${escapeXml(data.topic)}</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+@page { size: 8.5in 11in; margin: 1.0in; }
+body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11.5pt; line-height: 1.6; color: #1e293b; }
+h1 { font-family: 'Calibri Light', Arial, sans-serif; font-size: 24pt; color: #1e3a8a; border-bottom: 2pt solid #3b82f6; padding-bottom: 6pt; margin-bottom: 16pt; }
+h2 { font-family: 'Calibri Light', Arial, sans-serif; font-size: 16pt; color: #1d4ed8; border-bottom: 1pt solid #cbd5e1; padding-bottom: 4pt; margin-top: 22pt; margin-bottom: 10pt; }
+h3 { font-family: 'Calibri', Arial, sans-serif; font-size: 13pt; color: #334155; margin-top: 16pt; margin-bottom: 6pt; }
+p { margin-top: 0; margin-bottom: 10pt; }
+table { border-collapse: collapse; width: 100%; margin: 14pt 0; }
+th, td { border: 1pt solid #cbd5e1; padding: 7pt 10pt; text-align: left; }
+th { background-color: #f1f5f9; font-weight: bold; color: #0f172a; }
+code { font-family: Consolas, monospace; background: #f1f5f9; padding: 2pt 4pt; font-size: 10pt; color: #b91c1c; }
+pre { background: #f8fafc; border: 1pt solid #e2e8f0; padding: 10pt; font-family: Consolas, monospace; margin: 10pt 0; font-size: 10pt; }
+blockquote { border-left: 3pt solid #3b82f6; padding-left: 12pt; margin-left: 0; color: #475569; font-style: italic; }
+ul, ol { margin-top: 0; margin-bottom: 10pt; padding-left: 20pt; }
+li { margin-bottom: 4pt; }
+a { color: #2563eb; text-decoration: underline; }
+img { max-width: 100%; height: auto; margin: 12pt 0; }
+.meta-stamp { color: #64748b; font-size: 10pt; margin-bottom: 18pt; }
+</style>
+</head>
+<body>
+<h1>${escapeXml(data.topic)}</h1>
+<div class="meta-stamp">InquireX Autonomous Deep Research Report • Generated on ${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+${data.reportHtml}
+</body>
+</html>`;
+
+  const blob = new Blob(['\ufeff', docHtml], { type: 'application/msword' });
+  triggerBrowserDownload(blob, `${data.fileSlug}.docx`);
+  displayGlobalToast('Word Document (.docx) downloaded successfully!');
+}
+window.exportAsWord = exportAsWord;
+
+function exportAsMarkdown() {
+  toggleExportDropdown(false);
+  const data = getActiveReportData();
+  if (!data.isValid) {
+    displayGlobalToast('No research report available to export as Markdown.');
+    return;
+  }
+
+  displayGlobalToast('Generating Markdown (.md)...');
+
+  let mdContent = (typeof allReports !== 'undefined' && allReports) ||
+                  (typeof currentReport !== 'undefined' && currentReport) ||
+                  (typeof reportContent !== 'undefined' && reportContent) || '';
+
+  if (!mdContent || mdContent.trim().length < 50) {
+    mdContent = convertHtmlToCleanMarkdown(data.reportContainer, data.topic);
+  } else if (!mdContent.startsWith('# ')) {
+    mdContent = `# ${data.topic}\n\n` + mdContent;
+  }
+
+  const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+  triggerBrowserDownload(blob, `${data.fileSlug}.md`);
+  displayGlobalToast('Markdown (.md) downloaded successfully!');
+}
+window.exportAsMarkdown = exportAsMarkdown;
+
+function exportAsJsonTrace() {
+  toggleExportDropdown(false);
+  const data = getActiveReportData();
+  if (!data.isValid) {
+    displayGlobalToast('No research session trace available to export.');
+    return;
+  }
+
+  displayGlobalToast('Generating Log Trace (JSON)...');
+
+  const agentLogElements = document.querySelectorAll('#output .agent_response, #output .agent-step-item');
+  const domLogs = Array.from(agentLogElements).map((el, i) => ({
+    step: i + 1,
+    text: el.innerText.trim(),
+    html: el.innerHTML.trim()
+  }));
+
+  const stats = (typeof activeResearchStats !== 'undefined' && activeResearchStats) ? activeResearchStats : null;
+  const elapsedSec = stats && stats.startTime && stats.endTime 
+    ? Math.round((stats.endTime - stats.startTime) / 1000)
+    : (stats && stats.startTime ? Math.round((Date.now() - stats.startTime) / 1000) : 0);
+
+  const scrapedList = stats && stats.scrapedSources instanceof Set
+    ? Array.from(stats.scrapedSources)
+    : (Array.isArray(stats?.scrapedSources) ? stats.scrapedSources : []);
+
+  const citations = [];
+  data.reportContainer?.querySelectorAll('a[href^="http"]').forEach((a) => {
+    citations.push({ url: a.href, title: a.textContent.trim() });
+  });
+
+  const traceObj = {
+    inquirex_session_provenance: {
+      engine: "InquireX — Autonomous Deep Research Engine",
+      version: "2.0.0-agentic",
+      exportTimestamp: new Date().toISOString(),
+      task: data.topic,
+      agentType: stats?.agentName || "Auto Agent (Dynamic Routing)",
+      elapsedSeconds: elapsedSec,
+      startTime: stats?.startTime ? new Date(stats.startTime).toISOString() : null,
+      endTime: stats?.endTime ? new Date(stats.endTime).toISOString() : new Date().toISOString()
+    },
+    metrics: {
+      wordCount: data.reportText.split(/\s+/).filter(Boolean).length,
+      subqueriesCount: (stats?.subqueries || []).length,
+      scrapedCount: scrapedList.length,
+      citationsCount: citations.length
+    },
+    subqueries: stats?.subqueries || [],
+    sources: scrapedList.length > 0 ? scrapedList : citations.map(c => c.url),
+    citations: citations,
+    agentExecutionTrace: (window.sessionLogRecords && window.sessionLogRecords.length > 0)
+      ? window.sessionLogRecords
+      : domLogs,
+    downloadLinks: window.activeDownloadLinks || {}
+  };
+
+  const blob = new Blob([JSON.stringify(traceObj, null, 2)], { type: 'application/json;charset=utf-8' });
+  triggerBrowserDownload(blob, `${data.fileSlug}_trace.json`);
+  displayGlobalToast('Log Trace (JSON) exported successfully!');
+}
+window.exportAsJsonTrace = exportAsJsonTrace;
+
+function exportAsLatex() {
+  toggleExportDropdown(false);
+  const data = getActiveReportData();
+  if (!data.isValid) {
+    displayGlobalToast('No research report available to export as LaTeX.');
+    return;
+  }
+
+  displayGlobalToast('Generating Academic LaTeX (.tex)...');
+
+  const cleanTitle = data.topic.replace(/["'\\]/g, '');
+  let latexCode = `\\documentclass[11pt,a4paper]{article}
+
+\\usepackage[utf8]{inputenc}
+\\usepackage{amsmath}
+\\usepackage{amsfonts}
+\\usepackage{amssymb}
+\\usepackage{geometry}
+\\usepackage{hyperref}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{microtype}
+
+\\geometry{margin=1in}
+
+\\title{\\textbf{${cleanTitle}}\\\\ \\large \\textit{An Autonomous Multi-Source Deep Research Investigation}}
+\\author{InquireX Autonomous Deep Research Engine}
+\\date{\\today}
+
+\\begin{document}
+
+\\maketitle
+
+`;
+
+  const escapeLatex = (str) => {
+    return (str || '')
+      .replace(/\\/g, '\\textbackslash{}')
+      .replace(/([&%$#_{}])/g, '\\$1')
+      .replace(/~/g, '\\textasciitilde{}')
+      .replace(/\^/g, '\\textasciicircum{}');
+  };
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = data.reportHtml;
+
+  const children = tempDiv.children;
+  for (let el of children) {
+    if (el.tagName === 'H1') {
+      // already in maketitle
+    } else if (el.tagName === 'H2') {
+      latexCode += `\\section{${escapeLatex(el.textContent.trim())}}\n\n`;
+    } else if (el.tagName === 'H3') {
+      latexCode += `\\subsection{${escapeLatex(el.textContent.trim())}}\n\n`;
+    } else if (el.tagName === 'H4') {
+      latexCode += `\\subsubsection{${escapeLatex(el.textContent.trim())}}\n\n`;
+    } else if (el.tagName === 'P') {
+      const pText = el.textContent.trim();
+      if (pText) latexCode += `${escapeLatex(pText)}\n\n`;
+    } else if (el.tagName === 'UL') {
+      latexCode += `\\begin{itemize}\n`;
+      el.querySelectorAll('li').forEach(li => {
+        latexCode += `  \\item ${escapeLatex(li.textContent.trim())}\n`;
+      });
+      latexCode += `\\end{itemize}\n\n`;
+    } else if (el.tagName === 'OL') {
+      latexCode += `\\begin{enumerate}\n`;
+      el.querySelectorAll('li').forEach(li => {
+        latexCode += `  \\item ${escapeLatex(li.textContent.trim())}\n`;
+      });
+      latexCode += `\\end{enumerate}\n\n`;
+    } else if (el.tagName === 'BLOCKQUOTE') {
+      latexCode += `\\begin{quote}\n${escapeLatex(el.textContent.trim())}\n\\end{quote}\n\n`;
+    }
+  }
+
+  latexCode += `\\end{document}\n`;
+
+  const blob = new Blob([latexCode], { type: 'text/x-tex;charset=utf-8' });
+  triggerBrowserDownload(blob, `${data.fileSlug}_manuscript.tex`);
+  displayGlobalToast('LaTeX source (.tex) downloaded successfully!');
+}
+window.exportAsLatex = exportAsLatex;
+
+function handleExportClick(event, format) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  toggleExportDropdown(false);
+  switch (format) {
+    case 'pdf':
+      exportAsPdf();
+      break;
+    case 'docx':
+    case 'word':
+      exportAsWord();
+      break;
+    case 'md':
+    case 'markdown':
+      exportAsMarkdown();
+      break;
+    case 'json':
+      exportAsJsonTrace();
+      break;
+    case 'latex':
+    case 'tex':
+      exportAsLatex();
+      break;
+    default:
+      console.warn('Unknown export format:', format);
+  }
+}
+window.handleExportClick = handleExportClick;
+
+// Presentation Slide Deck Handlers
+window.slideData = [];
+window.currentSlideIndex = 0;
+
+function renderSlideDeckSlide() {
+  const slideBody = document.getElementById('slideBody');
+  const counter = document.getElementById('slideCounter');
+  const prevBtn = document.getElementById('prevSlideBtn');
+  const nextBtn = document.getElementById('nextSlideBtn');
+
+  if (!slideBody || !window.slideData || window.slideData.length === 0) return;
+
+  const idx = window.currentSlideIndex || 0;
+  const slide = window.slideData[idx];
+
+  slideBody.innerHTML = `
+    <h2>${slide.title}</h2>
+    <div class="slide-inner-content">${slide.content}</div>
+  `;
+  slideBody.scrollTop = 0;
+
+  if (counter) counter.textContent = `Slide ${idx + 1} of ${window.slideData.length}`;
+  if (prevBtn) prevBtn.disabled = idx === 0;
+  if (nextBtn) nextBtn.disabled = idx === window.slideData.length - 1;
+}
+window.renderSlideDeckSlide = renderSlideDeckSlide;
+
+function changeSlideDeckSlide(delta) {
+  if (!window.slideData || window.slideData.length === 0) return;
+  window.currentSlideIndex = Math.max(0, Math.min(window.slideData.length - 1, (window.currentSlideIndex || 0) + delta));
+  renderSlideDeckSlide();
+}
+window.changeSlideDeckSlide = changeSlideDeckSlide;
+
+function closeSlideDeck() {
+  const modal = document.getElementById('slideDeckModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+  document.body.style.overflow = 'auto';
+}
+window.closeSlideDeck = closeSlideDeck;
+
+function openSlideDeck() {
+  const data = getActiveReportData();
+  const modal = document.getElementById('slideDeckModal');
+  const topicEl = document.getElementById('slideDeckTopic');
+
+  if (!data.isValid || !modal) {
+    displayGlobalToast('No report content available to generate slides.');
+    return;
+  }
+
+  if (topicEl) topicEl.textContent = data.topic;
+
+  window.slideData = [];
+
+  // Title Slide
+  window.slideData.push({
+    title: data.topic,
+    content: '<p style="font-size: 1.25rem; opacity: 0.95; line-height: 1.7;">Autonomous Deep-Web Research & Analytical Intelligence Report</p><div style="margin-top: 24px; padding: 14px 22px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 12px; display: inline-block;">🚀 <b>Agentic RAG Framework</b> • Autonomous Knowledge Retrieval</div>'
+  });
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = data.reportHtml;
+
+  const sections = tempDiv.querySelectorAll('h2');
+  if (sections.length > 0) {
+    sections.forEach((sec) => {
+      const title = sec.textContent.trim();
+      let contentHtml = '';
+      let nextEl = sec.nextElementSibling;
+      while (nextEl && nextEl.tagName !== 'H2' && nextEl.tagName !== 'H1') {
+        contentHtml += nextEl.outerHTML;
+        nextEl = nextEl.nextElementSibling;
+      }
+      if (title) {
+        window.slideData.push({
+          title: title,
+          content: contentHtml || '<p>Detailed analysis in report.</p>'
+        });
+      }
+    });
+  } else {
+    const subheadings = tempDiv.querySelectorAll('h3');
+    if (subheadings.length > 0) {
+      subheadings.forEach((sec) => {
+        const title = sec.textContent.trim();
+        let contentHtml = '';
+        let nextEl = sec.nextElementSibling;
+        while (nextEl && nextEl.tagName !== 'H3' && nextEl.tagName !== 'H2' && nextEl.tagName !== 'H1') {
+          contentHtml += nextEl.outerHTML;
+          nextEl = nextEl.nextElementSibling;
+        }
+        if (title) {
+          window.slideData.push({
+            title: title,
+            content: contentHtml || '<p>Detailed analysis in report.</p>'
+          });
+        }
+      });
+    } else {
+      window.slideData.push({
+        title: 'Executive Summary',
+        content: tempDiv.innerHTML || '<p>Detailed analysis in report.</p>'
+      });
+    }
+  }
+
+  window.currentSlideIndex = 0;
+  renderSlideDeckSlide();
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+window.openSlideDeck = openSlideDeck;
+
+async function handleSlidesButtonClick(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const topBtn = document.getElementById('viewSlidesBtnTop');
+  const stickyBtn = document.getElementById('viewSlidesBtnSticky');
+  const data = getActiveReportData();
+
+  if (!data.isValid) {
+    displayGlobalToast('No research report available to generate slides yet. Please run research or select a report from history.');
+    return;
+  }
+
+  const originalTop = topBtn ? topBtn.innerHTML : '';
+  const originalSticky = stickyBtn ? stickyBtn.innerHTML : '';
+  if (topBtn) {
+    topBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Generating...</span>';
+    topBtn.classList.add('loading');
+  }
+  if (stickyBtn) {
+    stickyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Generating...</span>';
+    stickyBtn.classList.add('loading');
+  }
+
+  try {
+    await new Promise(resolve => setTimeout(resolve, 150));
+    openSlideDeck();
+    displayGlobalToast('Presentation slides generated successfully!');
+  } catch (err) {
+    console.error('Failed to open slide deck:', err);
+    displayGlobalToast('Failed to generate presentation slides: ' + (err.message || 'Unknown error'));
+  } finally {
+    if (topBtn) {
+      topBtn.innerHTML = originalTop || '<i class="fa-solid fa-chalkboard-user"></i><span>Slides</span>';
+      topBtn.classList.remove('loading');
+    }
+    if (stickyBtn) {
+      stickyBtn.innerHTML = originalSticky || '<i class="fa-solid fa-chalkboard-user"></i><span>Slides</span>';
+      stickyBtn.classList.remove('loading');
+    }
+  }
+}
+window.handleSlidesButtonClick = handleSlidesButtonClick;
+
+function saveSlideDeckAsPdf() {
+  displayGlobalToast('Preparing presentation slides for print / save...');
+  window.print();
+}
+window.saveSlideDeckAsPdf = saveSlideDeckAsPdf;
+
+function toggleAudioBriefingPlayer(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const container = document.getElementById('audioBriefingContainer');
+  if (container) {
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (typeof toggleAudioBriefing === 'function') {
+      toggleAudioBriefing();
+    }
+  }
+}
+window.toggleAudioBriefingPlayer = toggleAudioBriefingPlayer;
+
+function initGlobalSlideDeckModal() {
+  const modal = document.getElementById('slideDeckModal');
+  const overlay = document.getElementById('slideDeckOverlay');
+  const closeBtn = document.getElementById('closeSlideDeckBtn');
+  const prevBtn = document.getElementById('prevSlideBtn');
+  const nextBtn = document.getElementById('nextSlideBtn');
+
+  if (closeBtn) closeBtn.onclick = closeSlideDeck;
+  if (overlay) overlay.onclick = closeSlideDeck;
+  if (prevBtn) prevBtn.onclick = () => changeSlideDeckSlide(-1);
+  if (nextBtn) nextBtn.onclick = () => changeSlideDeckSlide(1);
+
+  document.addEventListener('keydown', (e) => {
+    if (modal && modal.style.display !== 'none' && modal.classList.contains('active')) {
+      if (e.key === 'ArrowLeft') changeSlideDeckSlide(-1);
+      if (e.key === 'ArrowRight' || e.key === ' ') changeSlideDeckSlide(1);
+      if (e.key === 'Escape') closeSlideDeck();
+    }
+  });
+}
+window.addEventListener('DOMContentLoaded', initGlobalSlideDeckModal);
+
+function handleFooterConsoleClick(e) {
+  if (e) e.preventDefault();
+  if (window.InquireXRouter && window.InquireXRouter.getCurrentView() !== 'agent') {
+    window.InquireXRouter.switchView('agent');
+  }
+  const taskInput = document.getElementById('task');
+  if (taskInput) {
+    taskInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    taskInput.focus();
+  }
+}
+window.handleFooterConsoleClick = handleFooterConsoleClick;
+
+function handleFooterStatusClick(e) {
+  if (e) e.preventDefault();
+  const wsBtn = document.getElementById('websocketPanelOpenBtn');
+  if (wsBtn) wsBtn.click();
+}
+window.handleFooterStatusClick = handleFooterStatusClick;
 
 // ==============================================================
-
 // InquireX V2.0 -- View Router
-
 // Manages 'home' vs 'agent' view transitions via data-view attr
-
 // ==============================================================
-
 const InquireXRouter = (() => {
-
-    let _currentView = 'home';
-
-
+    let _currentView = document.body.getAttribute('data-view') || 'home';
 
     function switchView(view) {
-
         if (view !== 'home' && view !== 'agent') return;
 
         _currentView = view;
-
         document.body.setAttribute('data-view', view);
 
-
-
         if (view === 'home') {
-
             // Hide export sidebar when returning to landing
-
             const sidebar = document.getElementById('exportSidebarPanel');
-
             if (sidebar) {
-
                 sidebar.style.display = 'none';
-
                 sidebar.classList.remove('visible');
-
             }
-
             const navExport = document.getElementById('navExportSuite');
-
             if (navExport) navExport.style.display = 'none';
 
-
-
             // Smooth scroll to top
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
-
-
-                } else if (view === 'agent') {
+        } else if (view === 'agent') {
             // Scroll to top of workspace
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -467,34 +1300,23 @@ const InquireXRouter = (() => {
                 if (sidebar) sidebar.classList.add('collapsed');
             }
 
-
-
             // Auto-focus the research textarea after transition
-
             setTimeout(() => {
-
                 const taskEl = document.getElementById('task');
-
                 if (taskEl) taskEl.focus({ preventScroll: true });
-
             }, 320);
-
         }
 
-
-
         console.log('[InquireXRouter] View switched to:', view);
-
     }
 
-
+    function toggleView() {
+        switchView(_currentView === 'home' ? 'agent' : 'home');
+    }
 
     function getCurrentView() { return _currentView; }
 
-
-
-    return { switchView, getCurrentView };
-
+    return { switchView, toggleView, getCurrentView };
 })();
 
 
@@ -584,6 +1406,7 @@ const GPTResearcher = (() => {
 
 
   let conversationHistory = [];
+  let activeResearchPrompt = '';
 
 
 
@@ -2276,375 +3099,163 @@ const GPTResearcher = (() => {
 
 
   const loadConversationHistory = () => {
-
-
-
     try {
-
-
-
       const storageKey = getHistoryStorageKey();
+      let storedHistory = null;
 
-
-
-      let storedHistory = getCookie(storageKey);
-
-
-
-      
-
-
-
-      // Fallback check: if no cookie, check localStorage directly
-
-
-
-      if (!storedHistory) {
-
-
-
-        try { storedHistory = localStorage.getItem(storageKey); } catch (e) {}
-
-
-
+      // 1. Primary storage: check localStorage under scoped user storageKey
+      try {
+        storedHistory = localStorage.getItem(storageKey);
+      } catch (e) {
+        console.warn('Could not read from localStorage:', e);
       }
 
-
-
-
-
-
-
-      if (storedHistory && storedHistory.trim() !== '') {
-
-
-
+      // 2. Fallbacks if user key is empty or missing
+      if (!storedHistory || storedHistory.trim() === '' || storedHistory.trim() === '[]') {
         try {
-
-
-
-          const parsedHistory = JSON.parse(storedHistory);
-
-
-
-          if (Array.isArray(parsedHistory)) {
-
-
-
-            // Rehydrate reportHtml from localStorage using stored reportKey
-
-
-
-            conversationHistory = parsedHistory.map(entry => {
-
-
-
-              if (entry.reportKey) {
-
-
-
-                try {
-
-
-
-                  entry.reportHtml = localStorage.getItem(entry.reportKey) || '';
-
-
-
-                } catch (e) {
-
-
-
-                  entry.reportHtml = '';
-
-
-
-                }
-
-
-
-              }
-
-
-
-              return entry;
-
-
-
-            });
-
-
-
-            console.debug(`Loaded research history for ${storageKey}:`, conversationHistory.length, 'items');
-
-
-
-          } else {
-
-
-
-            conversationHistory = [];
-
-
-
+          if (storageKey !== 'conversationHistory_default') {
+            storedHistory = localStorage.getItem('conversationHistory_default');
           }
-
-
-
-        } catch (jsonError) {
-
-
-
-          console.error('Invalid JSON in history storage:', jsonError);
-
-
-
-          conversationHistory = [];
-
-
-
-        }
-
-
-
-      } else {
-
-
-
-        conversationHistory = [];
-
-
-
+          if (!storedHistory || storedHistory.trim() === '' || storedHistory.trim() === '[]') {
+            storedHistory = localStorage.getItem('conversationHistory');
+          }
+        } catch (e) {}
       }
 
+      // 3. Fallback to cookie only if localStorage is completely absent
+      if (!storedHistory || storedHistory.trim() === '' || storedHistory.trim() === '[]') {
+        const cookieVal = getCookie(storageKey) || getCookie('conversationHistory');
+        if (cookieVal && cookieVal.trim() !== '' && cookieVal.trim() !== '[]') {
+          storedHistory = cookieVal;
+        }
+      }
 
+      if (storedHistory && storedHistory.trim() !== '' && storedHistory.trim() !== '[]') {
+        try {
+          const parsedHistory = JSON.parse(storedHistory);
+          if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+            // Rehydrate reportHtml from localStorage using stored reportKey
+            conversationHistory = parsedHistory.map(entry => {
+              if (entry.reportKey) {
+                try {
+                  entry.reportHtml = localStorage.getItem(entry.reportKey) || '';
+                } catch (e) {
+                  entry.reportHtml = '';
+                }
+              }
+              return entry;
+            });
+            console.debug('Loaded research history for ' + storageKey + ':', conversationHistory.length, 'items');
 
+            // Migrate/persist into user storageKey so future loads are instant
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(parsedHistory));
+            } catch (e) {}
+          } else {
+            conversationHistory = [];
+          }
+        } catch (jsonError) {
+          console.error('Invalid JSON in history storage:', jsonError);
+          conversationHistory = [];
+        }
+      } else {
+        conversationHistory = [];
+      }
     } catch (error) {
-
-
-
       console.error('Error loading research history:', error);
-
-
-
       conversationHistory = [];
-
-
-
     }
 
-
-
-
-
-
+    // Clean up oversized cookies to prevent 4KB header limit issues
+    try {
+      deleteCookie('conversationHistory');
+      deleteCookie(getHistoryStorageKey());
+    } catch (e) {}
 
     // Force render after loading
-
-
-
     renderHistoryEntries();
-
-
-
   };
 
+  // Expose to window for external auth and navigation triggers
+  window.loadConversationHistory = loadConversationHistory;
 
-
-
-
-
-
-  // Save conversation history to cookie & localStorage (isolated per user)
-
-
-
+  // Save conversation history to localStorage (isolated per user, prune HTML to keep quota safe)
   const saveConversationHistory = () => {
-
-
-
     try {
-
-
-
       const storageKey = getHistoryStorageKey();
-
-
-
-      if (conversationHistory.length === 0) {
-
-
-
-        deleteCookie(storageKey);
-
-
-
+      if (!conversationHistory || conversationHistory.length === 0) {
         try { localStorage.removeItem(storageKey); } catch (e) {}
-
-
-
         console.debug('No history to save, deleted storage for', storageKey);
-
-
-
         return;
-
-
-
       }
 
-
-
-
-
-
-
-      // Only keep the last 20 entries
-
-
-
+      // Keep up to 25 entries in metadata list
       let storageHistory = [...conversationHistory];
-
-
-
-      if (storageHistory.length > 20) {
-
-
-
-        storageHistory = storageHistory.slice(0, 20);
-
-
-
+      if (storageHistory.length > 25) {
+        storageHistory = storageHistory.slice(0, 25);
       }
 
-
-
-
-
-
-
-      // Save reportHtml to localStorage separately with user-specific keys
-
-
-
-      storageHistory = storageHistory.map(entry => {
-
-
-
-        if (entry.reportHtml && entry.timestamp) {
-
-
-
-          const key = getReportHtmlKey(entry.timestamp);
-
-
-
-          try {
-
-
-
-            localStorage.setItem(key, entry.reportHtml);
-
-
-
-          } catch (e) {
-
-
-
-            console.warn('localStorage full, could not save report HTML:', e);
-
-
-
+      // Save reportHtml to localStorage separately for top 8 recent entries to conserve 5MB quota
+      storageHistory = storageHistory.map((entry, idx) => {
+        const reportKey = entry.timestamp ? getReportHtmlKey(entry.timestamp) : '';
+        if (entry.reportHtml && reportKey) {
+          if (idx < 8) {
+            try {
+              localStorage.setItem(reportKey, entry.reportHtml);
+            } catch (e) {
+              console.warn('localStorage full, could not save report HTML:', e);
+            }
+          } else {
+            // Prune HTML from older entries to prevent quota errors
+            try { localStorage.removeItem(reportKey); } catch (e) {}
           }
-
-
-
         }
-
-
-
         return {
-
           prompt: entry.prompt || '',
-
           links: entry.links || {},
-
           images: Array.isArray(entry.images) ? entry.images : [],
-
           metrics: entry.metrics || {},
-
-          reportKey: entry.timestamp ? getReportHtmlKey(entry.timestamp) : '',
-
+          reportKey: reportKey,
           timestamp: entry.timestamp || new Date().toISOString()
-
         };
-
-
-
       });
-
-
-
-
-
-
 
       const jsonString = JSON.stringify(storageHistory);
 
-
-
-      setCookie(storageKey, jsonString, 30);
-
-
-
-      try { localStorage.setItem(storageKey, jsonString); } catch (e) {}
-
-
-
-
-
-
-
-      if (storageHistory.length > 0 && !isInitialLoad) {
-
-
-
-        showToast('Research history saved!');
-
-
-
+      // Save to primary user storageKey and global fallback key in localStorage
+      try {
+        localStorage.setItem(storageKey, jsonString);
+        localStorage.setItem('conversationHistory', jsonString);
+      } catch (e) {
+        console.error('Error writing history to localStorage:', e);
+        // If quota exceeded, purge older reportHtml_* entries and retry
+        try {
+          Object.keys(localStorage).forEach(k => {
+            if (k.startsWith('reportHtml_') && !storageHistory.slice(0, 3).some(s => s.reportKey === k)) {
+              localStorage.removeItem(k);
+            }
+          });
+          localStorage.setItem(storageKey, jsonString);
+        } catch (retryErr) {
+          console.error('Failed retry saving history to localStorage:', retryErr);
+        }
       }
 
+      // Clean up legacy cookies to prevent 4KB header limit issues
+      try {
+        deleteCookie('conversationHistory');
+        deleteCookie(storageKey);
+      } catch (e) {}
 
-
+      if (storageHistory.length > 0 && !isInitialLoad) {
+        showToast('Research history saved!');
+      }
     } catch (error) {
-
-
-
       console.error('Error saving research history:', error);
-
-
-
-      showToast('Error saving history. Some entries may not be saved.');
-
-
-
     }
-
-
-
   };
 
-
-
-
-
-
-
   // Delete a history entry
-
-
-
   const deleteHistoryEntry = (index) => {
 
 
@@ -3451,6 +4062,12 @@ const GPTResearcher = (() => {
 
       setReportReady(true);
 
+      // Ensure Research Progress card is visible above Verified Visuals
+      const histProgress = document.getElementById('researchOutputContainer');
+      if (histProgress) {
+        histProgress.style.display = 'block';
+      }
+
       // Restore the report content
 
       document.getElementById('reportContainer').innerHTML = safeHtml;
@@ -3464,12 +4081,14 @@ const GPTResearcher = (() => {
 
 
       // Restore download links if available
-
-
-
       const links = entry.links || {};
+      window.activeDownloadLinks = links;
 
-
+      // Enable all export items since dynamic fallbacks are available
+      ['downloadLinkTop', 'downloadLinkWordTop', 'downloadLinkMdTop', 'downloadLinkJsonTop', 'downloadLatexBtnTop'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('disabled');
+      });
 
       if (links.pdf) {
 
@@ -4050,210 +4669,48 @@ const GPTResearcher = (() => {
 
 
   const saveToHistory = (report, downloadLinks, reportHtml) => {
+    const prompt = activeResearchPrompt || (document.getElementById('task')?.value || '').trim() || 'Research Report';
 
-
-
-    if (!downloadLinks) {
-
-
-
-      console.error('No download links provided');
-
-
-
-      showToast('Error: Could not save research to history');
-
-
-
-      return;
-
-
-
-    }
-
-
-
-
-
-
-
-    const prompt = document.getElementById('task').value;
-
-
-
-
-
-
-
-    // Create links object with proper structure
-
-
-
+    // Create links object safely without dropping history if links are absent
     const links = {
-
-
-
-      pdf: downloadLinks.pdf || '',
-
-
-
-      docx: downloadLinks.docx || '',
-
-
-
-      md: downloadLinks.md || '',
-
-
-
-      json: downloadLinks.json || ''
-
-
-
+      pdf: (downloadLinks && downloadLinks.pdf) || '',
+      docx: (downloadLinks && downloadLinks.docx) || '',
+      md: (downloadLinks && downloadLinks.md) || '',
+      json: (downloadLinks && downloadLinks.json) || ''
     };
-
-
-
-
-
-
 
     console.debug('Saving history with links:', links);
 
-
-
-
-
-
-
     const elapsed = activeResearchStats && activeResearchStats.startTime && activeResearchStats.endTime
-
-
-
       ? Math.round((activeResearchStats.endTime - activeResearchStats.startTime) / 1000)
-
-
-
       : 0;
 
-
-
-
-
-
+    const rawHtml = typeof reportHtml === 'string' && reportHtml.trim() !== ''
+      ? reportHtml
+      : (typeof report === 'string' ? report : (document.getElementById('reportContainer')?.innerHTML || ''));
 
     // Create history entry with timestamp & genuine provenance metrics
-
     const historyEntry = {
-
       prompt,
-
       links,
-
-      reportHtml: typeof reportHtml === 'string' ? reportHtml : (typeof report === 'string' ? report : ''),
-
+      reportHtml: rawHtml,
       images: Array.isArray(activeResearchImages) ? [...activeResearchImages] : [],
-
       timestamp: new Date().toISOString(),
-
       metrics: {
-
-
-
         elapsedSec: elapsed,
-
-
-
         scrapedCount: activeResearchStats ? activeResearchStats.scrapedSources.size : 0,
-
-
-
         subqueriesCount: activeResearchStats ? activeResearchStats.subqueries.length : 0
-
-
-
       }
-
-
-
     };
 
-
-
-
-
-
-
-    // Add to beginning of array if it's not empty
-
-
-
     if (!conversationHistory) {
-
-
-
       conversationHistory = [];
-
-
-
     }
-
-
-
-
-
-
 
     conversationHistory.unshift(historyEntry);
-
-
-
     saveConversationHistory();
-
-
-
     renderHistoryEntries();
-
-
-
-    document.getElementById('historyPanel').classList.add('open');
-
-
-
-
-
-
-
-    // Prompt user about storage method
-
-
-
-    if (cookiesEnabled) {
-
-
-
-      showToast('Research saved! Your history is stored in a browser cookie.');
-
-
-
-    } else {
-
-
-
-      showToast('Research saved! Your history is stored using localStorage.');
-
-
-
-    }
-
-
-
-  }
-
-
-
-
-
-
+  };
 
   // Function to update the research icon spinning state
 
@@ -4336,9 +4793,7 @@ const GPTResearcher = (() => {
 
 
   const startResearch = () => {
-
-
-
+    activeResearchPrompt = (document.getElementById('task')?.value || '').trim();
     activeResearchStats = {
 
 
@@ -4619,6 +5074,22 @@ const GPTResearcher = (() => {
 
     setPipelineStep(1, 'Decomposing topic into sub-queries...');
 
+    const heroStopBtn = document.getElementById('stopResearchHeroBtn');
+    if (heroStopBtn) {
+      heroStopBtn.disabled = false;
+      heroStopBtn.style.display = 'inline-flex';
+      heroStopBtn.classList.add('pulse-active');
+    }
+
+    const headerStopBtn = document.getElementById('stopResearchHeaderBtn');
+    if (headerStopBtn) headerStopBtn.style.display = 'inline-flex';
+
+    const submitBtn = document.getElementById('submitButton');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.5';
+    }
+
 
 
 
@@ -4690,6 +5161,66 @@ const GPTResearcher = (() => {
 
 
   }
+
+  const resetResearchControls = () => {
+    const heroBtn = document.getElementById('stopResearchHeroBtn');
+    if (heroBtn) {
+      heroBtn.disabled = true;
+      heroBtn.style.display = 'none';
+      heroBtn.classList.remove('pulse-active');
+    }
+    const headerBtn = document.getElementById('stopResearchHeaderBtn');
+    if (headerBtn) {
+      headerBtn.style.display = 'none';
+    }
+    const submitBtn = document.getElementById('submitButton');
+    if (submitBtn) {
+      submitBtn.style.display = 'inline-flex';
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+    }
+  };
+  window.resetResearchControls = resetResearchControls;
+
+  const stopResearch = () => {
+    console.log("Stopping research requested by user...");
+
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+      try {
+        socket.send("stop");
+      } catch (e) {
+        console.warn("Could not send stop over socket:", e);
+      }
+    }
+
+    if (connectionTimeout) {
+      clearTimeout(connectionTimeout);
+      connectionTimeout = null;
+    }
+
+    isResearchActive = false;
+    updateResearchIcon(false);
+
+    resetResearchControls();
+
+    addAgentResponse({
+      type: 'logs',
+      content: 'research_stopped',
+      output: '🛑 <strong>Research halted by user.</strong> You can modify your research topic or settings and begin research again whenever you are ready.'
+    });
+
+    const activeStep = document.querySelector('.pipeline-step.active');
+    if (activeStep) {
+      activeStep.classList.remove('active');
+      activeStep.classList.add('error');
+      const stepStatus = activeStep.querySelector('.step-status');
+      if (stepStatus) {
+        stepStatus.textContent = 'Halted by user 🛑';
+      }
+    }
+  };
+
+  window.stopResearch = stopResearch;
 
 
 
@@ -4872,8 +5403,14 @@ const GPTResearcher = (() => {
 
 
       if (data.type === 'logs') {
-
-
+        if (!window.sessionLogRecords) window.sessionLogRecords = [];
+        window.sessionLogRecords.push({
+          timestamp: new Date().toISOString(),
+          type: data.type,
+          content: data.content,
+          output: data.output,
+          metadata: data.metadata
+        });
 
         if (data.content === 'subqueries' && data.metadata && Array.isArray(data.metadata)) {
 
@@ -4911,6 +5448,10 @@ const GPTResearcher = (() => {
 
 
 
+        } else if (data.content === 'research_stopped') {
+          isResearchActive = false;
+          updateResearchIcon(false);
+          resetResearchControls();
         }
 
 
@@ -4963,6 +5504,12 @@ const GPTResearcher = (() => {
 
         if (activeResearchStats) activeResearchStats.endTime = Date.now();
 
+        // Ensure Research Progress card remains visible in DOM
+        const streamProgressCard = document.getElementById('researchOutputContainer');
+        if (streamProgressCard) {
+          streamProgressCard.style.display = 'block';
+        }
+
 
 
         // 1. Finalize clean report rendering FIRST so reportContainer has complete HTML and references
@@ -4990,42 +5537,15 @@ const GPTResearcher = (() => {
 
 
         // Save to history now that research is complete
+        const containerHtml = document.getElementById('reportContainer')?.innerHTML || '';
+        const reportContentToSave = reportContent || allReports || containerHtml;
+        saveToHistory(reportContentToSave, downloadLinkData || {}, containerHtml);
 
-
-
-        if (reportContent && downloadLinkData) {
-
-
-
-          saveToHistory(reportContent, downloadLinkData, document.getElementById('reportContainer').innerHTML);
-
-
-
-
-
-
-
-          // Reset variables for next research session
-
-
-
-          reportContent = '';
-
-
-
-          allReports = '';
-
-
-
-          currentReport = '';
-
-
-
-          isFirstReport = true;
-
-
-
-        }
+        // Reset variables for next research session
+        reportContent = '';
+        allReports = '';
+        currentReport = '';
+        isFirstReport = true;
 
 
 
@@ -5041,6 +5561,10 @@ const GPTResearcher = (() => {
 
 
 
+      } else if (data.type === 'status' && data.status === 'stopped') {
+        isResearchActive = false;
+        updateResearchIcon(false);
+        resetResearchControls();
       } else if (data.type === 'chat') {
 
 
@@ -5946,14 +6470,16 @@ const GPTResearcher = (() => {
 
 
       md: ensureRoot(md),
-
-
-
       json: ensureRoot(json)
-
-
-
     };
+
+    window.activeDownloadLinks = currentLinks;
+
+    // Enable all export options since client-side fallback is guaranteed
+    ['downloadLinkTop', 'downloadLinkWordTop', 'downloadLinkMdTop', 'downloadLinkJsonTop', 'downloadLatexBtnTop'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('disabled');
+    });
 
 
 
@@ -10102,49 +10628,25 @@ const GPTResearcher = (() => {
 
 
     if (topBtn) {
-
-
-
       topBtn.addEventListener('click', (e) => {
-
-
-
         e.preventDefault();
-
-
-
-        openSlideDeck();
-
-
-
+        if (typeof handleSlidesButtonClick === 'function') {
+          handleSlidesButtonClick(e);
+        } else {
+          openSlideDeck();
+        }
       });
-
-
-
     }
 
-
-
     if (stickyBtn) {
-
-
-
       stickyBtn.addEventListener('click', (e) => {
-
-
-
         e.preventDefault();
-
-
-
-        openSlideDeck();
-
-
-
+        if (typeof handleSlidesButtonClick === 'function') {
+          handleSlidesButtonClick(e);
+        } else {
+          openSlideDeck();
+        }
       });
-
-
-
     }
 
 
@@ -10685,6 +11187,18 @@ const GPTResearcher = (() => {
 
 
 
+        // Ensure Research Progress card remains visible in DOM above Verified Visuals
+        const finishedProgressCard = document.getElementById('researchOutputContainer');
+        if (finishedProgressCard) {
+          finishedProgressCard.style.display = 'block';
+        }
+        const finishedTracker = document.getElementById('agentPipelineTracker');
+        if (finishedTracker) {
+          finishedTracker.style.display = 'flex';
+        }
+
+
+
         setReportReady(true);
 
 
@@ -10695,7 +11209,7 @@ const GPTResearcher = (() => {
 
         isResearchActive = false;
 
-
+        resetResearchControls();
 
         // Stop the research icon spinning
 
@@ -10975,7 +11489,7 @@ const GPTResearcher = (() => {
 
         isResearchActive = false;
 
-
+        resetResearchControls();
 
         // Stop the research icon spinning
 
@@ -11007,15 +11521,10 @@ const GPTResearcher = (() => {
 
         clearResearchImages();
 
-
-
         setReportActionsStatus('hidden')
 
-
-
         isResearchActive = false;
-
-
+        resetResearchControls();
 
         // Make sure the research icon is not spinning initially
 
@@ -15759,30 +16268,10 @@ const GPTResearcher = (() => {
 
 
 
+    // Report container expand button (fullscreen toggle)
     const expandReportBtn = document.getElementById('expandReportBtn');
-
-
-
-    if (expandReportBtn) {
-
-
-
-      expandReportBtn.addEventListener('click', () => {
-
-
-
-        const reportContainer = document.querySelector('.report-container');
-
-
-
-        toggleExpand(reportContainer);
-
-
-
-      });
-
-
-
+    if (expandReportBtn && !expandReportBtn.getAttribute('onclick')) {
+      expandReportBtn.setAttribute('onclick', 'toggleResearchReportFullscreen(event)');
     }
 
 
@@ -15831,30 +16320,10 @@ const GPTResearcher = (() => {
 
 
 
+    // Output container expand button (handled via onclick="toggleResearchProgressFullscreen(event)")
     const expandOutputBtn = document.getElementById('expandOutputBtn');
-
-
-
-    if (expandOutputBtn) {
-
-
-
-      expandOutputBtn.addEventListener('click', () => {
-
-
-
-        const outputContainer = document.querySelector('.research-output-container');
-
-
-
-        toggleExpand(outputContainer);
-
-
-
-      });
-
-
-
+    if (expandOutputBtn && !expandOutputBtn.getAttribute('onclick')) {
+      expandOutputBtn.setAttribute('onclick', 'toggleResearchProgressFullscreen(event)');
     }
 
 
@@ -17524,8 +17993,7 @@ const GPTResearcher = (() => {
 
 
     startResearch,
-
-
+    stopResearch,
 
     addTag,
 
@@ -17618,3 +18086,178 @@ window.addEventListener('DOMContentLoaded', GPTResearcher.init);
 
 
 
+
+
+// ==============================================================
+
+// InquireX Research Progress Fullscreen Controller (In-Place, Debounced, No DOM Unmounting)
+// ==============================================================
+let _progressFullscreenSavedScroll = 0;
+let _lastProgressFullscreenToggle = 0;
+
+function toggleResearchProgressFullscreen(e, forceState) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  // Debounce guard to prevent double-firing from bubbling/nested events
+  const now = Date.now();
+  if (now - _lastProgressFullscreenToggle < 200) {
+    return;
+  }
+  _lastProgressFullscreenToggle = now;
+
+  const container = document.getElementById('researchOutputContainer');
+  if (!container) return;
+
+  const isCurrentlyFullscreen = container.classList.contains('progress-card-fullscreen');
+  const shouldBeFullscreen = typeof forceState === 'boolean' ? forceState : !isCurrentlyFullscreen;
+
+  const btn = document.getElementById('expandOutputBtn') || container.querySelector('.expand-button');
+  const icon = btn ? btn.querySelector('i') : null;
+  const outputEl = document.getElementById('output');
+
+  if (shouldBeFullscreen) {
+    // 1. Record scroll position before fullscreen overlay
+    _progressFullscreenSavedScroll = window.scrollY || document.documentElement.scrollTop || 0;
+
+    // 2. Lock background scrolling
+    document.body.classList.add('progress-fullscreen-active');
+    document.documentElement.classList.add('progress-fullscreen-active');
+    document.body.style.overflow = 'hidden';
+
+    // 3. Apply fullscreen state IN-PLACE (never detach or append to body)
+    container.classList.add('progress-card-fullscreen');
+
+    // 4. Update expand/compress icon and button attributes
+    if (btn) {
+      btn.title = 'Exit Fullscreen (Esc)';
+      btn.setAttribute('aria-label', 'Exit Fullscreen');
+      btn.classList.add('is-fullscreen');
+    }
+    if (icon) {
+      icon.className = 'fas fa-compress-alt';
+    }
+
+    // 5. Stretch inner log feed to fill all vertical space
+    if (outputEl) {
+      outputEl.style.setProperty('max-height', 'none', 'important');
+      outputEl.style.setProperty('height', 'auto', 'important');
+      outputEl.style.setProperty('flex', '1 1 auto', 'important');
+      setTimeout(() => {
+        outputEl.scrollTop = outputEl.scrollHeight;
+      }, 40);
+    }
+  } else {
+    // 1. Remove fullscreen class
+    container.classList.remove('progress-card-fullscreen');
+
+    // 2. Unlock background scrolling
+    document.body.classList.remove('progress-fullscreen-active');
+    document.documentElement.classList.remove('progress-fullscreen-active');
+    document.body.style.overflow = '';
+
+    // 3. Reset button icon and attributes
+    if (btn) {
+      btn.title = 'Toggle Fullscreen (Esc to exit)';
+      btn.setAttribute('aria-label', 'Toggle Fullscreen');
+      btn.classList.remove('is-fullscreen');
+    }
+    if (icon) {
+      icon.className = 'fas fa-expand-alt';
+    }
+
+    // 4. Reset inner log feed styling
+    if (outputEl) {
+      outputEl.style.removeProperty('max-height');
+      outputEl.style.removeProperty('height');
+      outputEl.style.removeProperty('flex');
+    }
+
+    // 5. Restore scroll position
+    window.scrollTo({
+      top: _progressFullscreenSavedScroll,
+      behavior: 'instant'
+    });
+  }
+}
+window.toggleResearchProgressFullscreen = toggleResearchProgressFullscreen;
+
+
+// ==============================================================
+// InquireX Research Report Fullscreen Controller
+// ==============================================================
+let _reportFullscreenSavedScroll = 0;
+let _lastReportFullscreenToggle = 0;
+
+function toggleResearchReportFullscreen(e, forceState) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  // Debounce guard to prevent double-firing from bubbling/nested events
+  const now = Date.now();
+  if (now - _lastReportFullscreenToggle < 200) {
+    return;
+  }
+  _lastReportFullscreenToggle = now;
+
+  const container = document.getElementById('mainReportContainer') || document.querySelector('.report-container');
+  if (!container) return;
+
+  const isCurrentlyFullscreen = container.classList.contains('report-card-fullscreen');
+  const shouldBeFullscreen = typeof forceState === 'boolean' ? forceState : !isCurrentlyFullscreen;
+
+  const btn = document.getElementById('expandReportBtn') || container.querySelector('.btn-expand');
+  const icon = btn ? btn.querySelector('i') : null;
+
+  if (shouldBeFullscreen) {
+    // 1. Record current scroll position before entering fullscreen
+    _reportFullscreenSavedScroll = window.scrollY || document.documentElement.scrollTop || 0;
+
+    // 2. Lock background scrolling
+    document.body.classList.add('report-fullscreen-active');
+    document.documentElement.classList.add('report-fullscreen-active');
+    document.body.style.overflow = 'hidden';
+
+    // 3. Apply fullscreen state in-place (never detach from parent)
+    container.classList.add('report-card-fullscreen');
+
+    // 4. Update expand button icon and title
+    if (btn) {
+      btn.title = 'Exit Fullscreen (Esc)';
+      btn.setAttribute('aria-label', 'Exit Fullscreen');
+      btn.classList.add('is-fullscreen');
+    }
+    if (icon) {
+      icon.className = 'fas fa-compress-alt';
+    }
+  } else {
+    // 1. Remove fullscreen class
+    container.classList.remove('report-card-fullscreen');
+
+    // 2. Unlock background scrolling
+    document.body.classList.remove('report-fullscreen-active');
+    document.documentElement.classList.remove('report-fullscreen-active');
+    document.body.style.overflow = '';
+
+    // 3. Reset button icon and title
+    if (btn) {
+      btn.title = 'Expand Document View (Esc to exit)';
+      btn.setAttribute('aria-label', 'Toggle Fullscreen Report');
+      btn.classList.remove('is-fullscreen');
+    }
+    if (icon) {
+      icon.className = 'fas fa-expand-alt';
+    }
+
+    // 4. Restore scroll position
+    window.scrollTo({
+      top: _reportFullscreenSavedScroll,
+      behavior: 'instant'
+    });
+  }
+}
+window.toggleResearchReportFullscreen = toggleResearchReportFullscreen;

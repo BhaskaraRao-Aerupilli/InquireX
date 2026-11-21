@@ -354,6 +354,20 @@ async def handle_websocket_communication(websocket, manager):
                 
                 if data == "ping":
                     await websocket.send_text("pong")
+                elif data.strip().lower() in ("stop", "cancel") or data.strip().lower().startswith("stop"):
+                    logger.info("Received stop command from client.")
+                    if running_task and not running_task.done():
+                        running_task.cancel()
+                        running_task = None
+                        logger.info("Active research task cancelled successfully.")
+                    await websocket.send_json(
+                        {
+                            "type": "logs",
+                            "content": "research_stopped",
+                            "output": "🛑 Research stopped by user.",
+                        }
+                    )
+                    await websocket.send_json({"type": "status", "status": "stopped"})
                 elif running_task and not running_task.done():
                     # discard any new request if a task is already running
                     logger.warning(

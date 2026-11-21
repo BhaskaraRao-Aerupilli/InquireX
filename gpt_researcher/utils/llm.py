@@ -208,7 +208,7 @@ async def construct_subtopics(
 
         chain = prompt | model | parser
 
-        max_context_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "10000"))
+        max_context_chars = int(os.environ.get("MAX_CONTEXT_CHARS", "16000"))
         if isinstance(data, str) and len(data) > max_context_chars:
             data = data[:max_context_chars] + "\n...[Context truncated]..."
         elif isinstance(data, list):

@@ -22,7 +22,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="/site/styles.css?v=49.0" />
+    <link rel="stylesheet" href="/site/styles.css?v=60.0" />
     <style>
         .avatar {
             width: 80px;
@@ -77,41 +77,63 @@
 
 <body data-view="home">
     <!-- Persistent Modern Top Navbar -->
-        <header class="app-top-navbar">
+    <header class="app-top-navbar">
         <div class="top-navbar-left">
             <button type="button" class="top-menu-btn" id="topSidebarMenuBtn" onclick="toggleResearchSidebar()" title="Toggle Sidebar Navigation">
                 <i class="fa-solid fa-bars"></i>
                 <span>Menu</span>
             </button>
 
-            <button class="navbar-brand navbar-brand-btn" onclick="InquireXRouter.switchView('home')" title="Return to Home">
-                <div class="brand-icon-wrap"><i class="fa-solid fa-atom"></i></div>
-                <div class="brand-text">Inquire<strong>X</strong></div>
-                <span class="brand-core-badge">AUTONOMOUS CORE</span>
+            <button class="navbar-brand navbar-brand-btn navbar-brand-lockup" onclick="InquireXRouter.switchView('home')" title="InquireX Home Page">
+                <div class="brand-logo-container">
+                    <svg class="inquirex-logo-svg" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="ixp1" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#38bdf8"/>
+                                <stop offset="50%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                            <linearGradient id="ixp2" x1="30" y1="2" x2="2" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#818cf8"/>
+                                <stop offset="100%" stop-color="#4f46e5"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="16" cy="16" r="13.5" stroke="url(#ixp1)" stroke-width="1.75" stroke-linecap="round" stroke-dasharray="28 10 12 10" class="ix-gyro-ring"/>
+                        <path d="M9.5 9.5L22.5 22.5" stroke="url(#ixp1)" stroke-width="2.75" stroke-linecap="round"/>
+                        <path d="M22.5 9.5L9.5 22.5" stroke="url(#ixp2)" stroke-width="2.75" stroke-linecap="round"/>
+                        <circle cx="16" cy="16" r="3.5" fill="#0b0f19" stroke="url(#ixp1)" stroke-width="1.5" class="ix-iris-bg"/>
+                        <circle cx="16" cy="16" r="1.5" fill="#ffffff" class="ix-focal-core"/>
+                    </svg>
+                </div>
+                <div class="brand-text">Inquire<span class="brand-x">X</span></div>
             </button>
         </div>
 
         <div class="nav-buttons">
+            <div class="nav-control-group nav-tools-group">
+                <button type="button" id="websocketPanelOpenBtn" class="top-action-pill status-indicator-pill" title="Live System Connection Status">
+                    <span class="live-pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                    <span>Live Status</span>
+                </button>
+                <button type="button" id="historyPanelOpenBtn" class="top-action-pill history-pill" title="Research History">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>History</span>
+                </button>
+            </div>
             <button type="button" id="themeToggleBtn" class="top-action-pill theme-toggle-pill" onclick="toggleTheme()" title="Switch Light / Dark Theme">
                 <i id="themeToggleIcon" class="fa-solid fa-sun text-amber-500"></i>
                 <span id="themeToggleText">Light / Dark</span>
             </button>
-            <div id="navUserBadge" class="top-action-pill user-profile-pill" style="display:flex;">
-                <i class="fa-solid fa-circle-user text-indigo-500"></i>
-                <span id="navUserName">Bhaskara Rao</span>
+            <div class="nav-control-group nav-user-group">
+                <div id="navUserBadge" class="top-action-pill user-profile-pill" style="display:flex;">
+                    <i class="fa-solid fa-circle-user text-indigo-500"></i>
+                    <span id="navUserName">Bhaskara Rao</span>
+                </div>
+                <a href="/auth/logout" class="top-action-pill logout-pill" title="Sign out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
             </div>
-            <button type="button" id="websocketPanelOpenBtn" class="top-action-pill status-indicator-pill" title="Live System Connection Status">
-                <span class="live-pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
-                <span>Live Status</span>
-            </button>
-            <button type="button" id="historyPanelOpenBtn" class="top-action-pill history-pill" title="Research History">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>History</span>
-            </button>
-            <a href="/auth/logout" class="top-action-pill logout-pill" title="Sign out">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Logout</span>
-            </a>
         </div>
     </header>
 
@@ -196,6 +218,22 @@
 
     <section class="landing">
         <div class="max-w-5xl mx-auto text-center">
+            <div class="inquirex-orb-stage">
+                <div class="quantum-agent-orb" id="quantumAgentOrbLanding">
+                    <div class="orb-pulse-glow"></div>
+                    <div class="orb-outer-ring"></div>
+                    <div class="orb-gyro-ring"></div>
+                    <div class="orb-core">
+                        <i class="fa-solid fa-atom orb-icon"></i>
+                    </div>
+                    <div class="orb-particles">
+                        <span class="p-dot dot-1"></span>
+                        <span class="p-dot dot-2"></span>
+                        <span class="p-dot dot-3"></span>
+                        <span class="p-dot dot-4"></span>
+                    </div>
+                </div>
+            </div>
             <div class="project-pill-badge">
                 <i class="fa-solid fa-microchip"></i> INQUIREX — AGENTIC RESEARCH ENGINE V2.0
             </div>
@@ -227,8 +265,27 @@
         <aside class="workspace-sidebar" id="researchSidebar">
             <div class="sidebar-header-bar">
                 <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon"><i class="fa-solid fa-atom"></i></div>
-                    <span class="sidebar-brand-name">Inquire<strong>X</strong></span>
+                    <div class="brand-logo-container sidebar-logo-container">
+                        <svg class="inquirex-logo-svg" width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="ixp1-side" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#38bdf8"/>
+                                    <stop offset="50%" stop-color="#6366f1"/>
+                                    <stop offset="100%" stop-color="#8b5cf6"/>
+                                </linearGradient>
+                                <linearGradient id="ixp2-side" x1="30" y1="2" x2="2" y2="30" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#818cf8"/>
+                                    <stop offset="100%" stop-color="#4f46e5"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="16" cy="16" r="13.5" stroke="url(#ixp1-side)" stroke-width="1.75" stroke-linecap="round" stroke-dasharray="28 10 12 10" class="ix-gyro-ring"/>
+                            <path d="M9.5 9.5L22.5 22.5" stroke="url(#ixp1-side)" stroke-width="2.75" stroke-linecap="round"/>
+                            <path d="M22.5 9.5L9.5 22.5" stroke="url(#ixp2-side)" stroke-width="2.75" stroke-linecap="round"/>
+                            <circle cx="16" cy="16" r="3.5" fill="#0b0f19" stroke="url(#ixp1-side)" stroke-width="1.5" class="ix-iris-bg"/>
+                            <circle cx="16" cy="16" r="1.5" fill="#ffffff" class="ix-focal-core"/>
+                        </svg>
+                    </div>
+                    <span class="sidebar-brand-name">Inquire<strong class="brand-x">X</strong></span>
                 </div>
                 <button type="button" id="sidebarCollapseBtn" class="sidebar-collapse-btn" title="Collapse Sidebar" onclick="toggleResearchSidebar(false)">
                     <i class="fa-solid fa-chevron-left" id="sidebarToggleIcon"></i>
@@ -237,6 +294,14 @@
 
             <!-- Global Actions & Feeds -->
             <div class="sidebar-nav-menu">
+                <button type="button" class="sidebar-nav-item" id="sidebarHomeBtn" onclick="InquireXRouter.switchView('home')">
+                    <i class="fa-solid fa-house"></i>
+                    <div class="nav-item-text">
+                        <span class="nav-item-label">Home Page</span>
+                        <span class="nav-item-sub">Overview & Features</span>
+                    </div>
+                </button>
+
                 <button type="button" class="sidebar-nav-item btn-new-research" onclick="createNewResearch()">
                     <i class="fa-solid fa-plus"></i>
                     <span>New Research</span>
@@ -299,6 +364,22 @@
             <!-- A. CLEAN SEARCH CANVAS / HERO (Perplexity & ChatGPT Style) -->
             <section class="search-hero-canvas" id="searchHeroCanvas">
                 <div class="search-hero-header">
+                    <div class="inquirex-orb-stage">
+                        <div class="quantum-agent-orb" id="quantumAgentOrb">
+                            <div class="orb-pulse-glow"></div>
+                            <div class="orb-outer-ring"></div>
+                            <div class="orb-gyro-ring"></div>
+                            <div class="orb-core">
+                                <i class="fa-solid fa-atom orb-icon" id="agentOrbIcon"></i>
+                            </div>
+                            <div class="orb-particles">
+                                <span class="p-dot dot-1"></span>
+                                <span class="p-dot dot-2"></span>
+                                <span class="p-dot dot-3"></span>
+                                <span class="p-dot dot-4"></span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="hero-brand-pill">
                         <span class="pill-dot"></span>
                         <span>AGENTIC MULTI-SOURCE DEEP RESEARCH</span>
@@ -315,28 +396,109 @@
                     <!-- The Hero Search Input Container -->
                     <div class="search-hero-input-container">
                         <div class="search-input-top-bar">
-                            <i class="fa-solid fa-magnifying-glass search-leading-icon"></i>
+                            <div class="search-depth-header">
+                                <i class="fa-solid fa-sliders search-depth-icon"></i>
+                                <span class="search-depth-title">Report Type:</span>
+                            </div>
                             <div class="search-chips-row">
                                 <button type="button" class="preset-chip active" data-preset-report="research_report" onclick="setQuickReportType('research_report', this)">Summary</button>
                                 <button type="button" class="preset-chip" data-preset-report="detailed_report" onclick="setQuickReportType('detailed_report', this)">Detailed</button>
                                 <button type="button" class="preset-chip" data-preset-report="deep" onclick="setQuickReportType('deep', this)">Deep Research</button>
+                                <button type="button" class="preset-chip" data-preset-report="resource_report" onclick="setQuickReportType('resource_report', this)">Resources</button>
                             </div>
                         </div>
 
-                        <textarea id="task" name="task" class="search-hero-textarea" placeholder="What would you like me to research in depth? Ask anything..." required autocomplete="on" rows="3"></textarea>
+                        <div class="search-textarea-wrap">
+                            <i class="fa-solid fa-magnifying-glass search-input-leading-icon"></i>
+                            <textarea id="task" name="task" class="search-hero-textarea" placeholder="What would you like me to research in depth? Ask anything..." required autocomplete="on" rows="2"></textarea>
+                        </div>
 
                         <!-- Search Box Bottom Action Bar -->
                         <div class="search-input-bottom-bar">
-                            <button type="button" class="btn-advanced-toggle" id="advancedSettingsToggle" onclick="toggleAdvancedSettings()">
-                                <i class="fa-solid fa-sliders"></i>
-                                <span>Advanced Settings</span>
-                                <i class="fa-solid fa-chevron-down toggle-chevron" id="advancedToggleChevron"></i>
-                            </button>
+                            <div class="search-input-bottom-bar-left">
+                                <div class="templates-menu-wrapper" id="templatesMenuWrapper">
+                                    <button type="button" class="btn-advanced-toggle btn-templates-toggle" id="templatesMenuBtn" onclick="toggleTemplatesMenu(event)">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                        <span>Templates</span>
+                                        <i class="fa-solid fa-chevron-down toggle-chevron" id="templatesChevron"></i>
+                                    </button>
+                                    
+                                    <!-- Floating Popover Menu -->
+                                    <div class="templates-popover-menu" id="templatesPopover" style="display: none;">
+                                        <div class="templates-popover-header">
+                                            <span><i class="fa-solid fa-layer-group"></i> Research Archetypes</span>
+                                            <span class="templates-popover-tag">1-Click Setup</span>
+                                        </div>
+                                        <div class="templates-popover-list">
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('comparison', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">Comparative Analysis</span>
+                                                    <span class="template-item-desc">Side-by-side entity evaluation & balanced matrix</span>
+                                                </div>
+                                                <span class="template-item-pill">Compare</span>
+                                            </button>
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('market', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">Market & Competitor Intel</span>
+                                                    <span class="template-item-desc">Industry sizing, player landscape & pricing</span>
+                                                </div>
+                                                <span class="template-item-pill">Market</span>
+                                            </button>
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('tech_deep_dive', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-microchip"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">Technical Deep Dive</span>
+                                                    <span class="template-item-desc">Architecture breakdown, mechanisms & trade-offs</span>
+                                                </div>
+                                                <span class="template-item-pill">Deep Dive</span>
+                                            </button>
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('fact_check', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">Fact-Check & Verification</span>
+                                                    <span class="template-item-desc">Empirical claims, counter-evidence & consensus</span>
+                                                </div>
+                                                <span class="template-item-pill">Verify</span>
+                                            </button>
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('news_breakthrough', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-newspaper"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">Recent Developments</span>
+                                                    <span class="template-item-desc">Breakthroughs, industry news & updates</span>
+                                                </div>
+                                                <span class="template-item-pill">News</span>
+                                            </button>
+                                            <button type="button" class="template-item-btn" onclick="applyResearchArchetype('swot_analysis', event)">
+                                                <div class="template-item-icon"><i class="fa-solid fa-bullseye"></i></div>
+                                                <div class="template-item-content">
+                                                    <span class="template-item-title">SWOT Analysis</span>
+                                                    <span class="template-item-desc">Structured strengths, weaknesses & risks</span>
+                                                </div>
+                                                <span class="template-item-pill">SWOT</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <button type="submit" class="btn-search-hero-submit" id="submitButton">
-                                <span>Begin Research</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
+                                <button type="button" class="btn-advanced-toggle" id="advancedSettingsToggle" onclick="toggleAdvancedSettings()">
+                                    <i class="fa-solid fa-sliders"></i>
+                                    <span>Advanced Settings</span>
+                                    <i class="fa-solid fa-chevron-down toggle-chevron" id="advancedToggleChevron"></i>
+                                </button>
+                            </div>
+
+                            <div class="search-hero-actions">
+                                <button type="submit" class="btn-search-hero-submit" id="submitButton">
+                                    <span>Begin Research</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                                <button type="button" class="btn-stop-research" id="stopResearchHeroBtn" onclick="stopResearch()" disabled style="display: none;" title="Stop research while active">
+                                    <i class="fa-solid fa-circle-stop"></i>
+                                    <span>Stop Research</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -348,20 +510,19 @@
                                 <span class="acc-subtitle">Fine-tune ingestion depth, synthesis style, private RAG, and MCP servers</span>
                             </div>
 
-                            <div class="accordion-grid">
+                            <div class="accordion-grid accordion-grid-compact">
                                 <div class="form-group">
-                                    <label for="report_type" class="agent-question">Report Type</label>
+                                    <label for="report_type" class="agent-question">Report Type <span class="field-info-tip" title="Depth and format of the synthesized research output"><i class="fas fa-info-circle"></i></span></label>
                                     <select name="report_type" id="report_type" class="form-control highlight-connection" required>
                                         <option value="research_report">Summary — Fast & concise overview (~2 min)</option>
                                         <option value="detailed_report">Detailed — Comprehensive deep analysis (~5 min)</option>
                                         <option value="deep">Deep Research — Iterative multi-hop search</option>
                                         <option value="resource_report">Resource Report — Sources, links & references</option>
                                     </select>
-                                    <small class="text-muted">Depth and format of the synthesized research</small>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="tone" class="agent-question">Tone & Synthesis Style</label>
+                                    <label for="tone" class="agent-question">Tone & Style <span class="field-info-tip" title="Writing tone and analytical perspective applied to the report"><i class="fas fa-info-circle"></i></span></label>
                                     <select name="tone" id="tone" class="form-control highlight-connection" required>
                                         <option value="Objective">Objective — Impartial facts & findings</option>
                                         <option value="Formal">Formal — Academic structure & terminology</option>
@@ -373,30 +534,26 @@
                                         <option value="Comparative">Comparative — Contrasting theories & datasets</option>
                                         <option value="Optimistic">Optimistic — Highlighting opportunities</option>
                                     </select>
-                                    <small class="text-muted">Writing tone and analytical perspective</small>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="report_source" class="agent-question">Research Source</label>
+                                    <label for="report_source" class="agent-question">Source <span class="field-info-tip" title="Data origins for ingestion and grounding"><i class="fas fa-info-circle"></i></span></label>
                                     <select name="report_source" id="report_source" class="form-control highlight-connection" required>
                                         <option value="web">The Web — Live internet retrieval</option>
                                         <option value="local">My Documents — Private RAG vector store</option>
                                         <option value="hybrid">Hybrid — Web + Local private documents</option>
                                         <option value="azure">Azure Storage — Cloud blob repository</option>
                                     </select>
-                                    <small class="text-muted">Data origins for ingestion and grounding</small>
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="maxSearchResults" class="agent-question">Search Depth</label>
+                                <div class="form-group form-group-depth">
+                                    <label for="maxSearchResults" class="agent-question">Depth <span class="field-info-tip" title="Number of websites scraped per sub-query (default: 5, max: 20)"><i class="fas fa-info-circle"></i></span></label>
                                     <input type="number" class="form-control highlight-connection" id="maxSearchResults" name="max_search_results" min="1" max="20" value="5">
-                                    <small class="text-muted">Websites scraped per sub-query (default: 5)</small>
                                 </div>
 
-                                <div class="form-group query-domains-group" style="grid-column: 1 / -1;">
-                                    <label for="queryDomains" class="form-label">Query Domains (Optional)</label>
-                                    <input type="text" class="form-control highlight-connection" id="queryDomains" name="query_domains" placeholder="Filter specific domains (e.g. arxiv.org, reuters.com, github.com)" autocomplete="on">
-                                    <small class="text-muted">Comma-separated domains to prioritize during retrieval</small>
+                                <div class="form-group form-group-domains">
+                                    <label for="queryDomains" class="form-label">Domains <span class="field-info-tip" title="Comma-separated domains to prioritize during retrieval (e.g. arxiv.org, reuters.com)"><i class="fas fa-info-circle"></i></span></label>
+                                    <input type="text" class="form-control highlight-connection" id="queryDomains" name="query_domains" placeholder="e.g. arxiv.org, reuters.com, github.com" autocomplete="on">
                                 </div>
                             </div>
 
@@ -471,7 +628,12 @@
             <!-- Move spinner to the left side of the text -->
             <div class="research-output-header">
                 <h2><div id="modernSpinner" class="modern-spinner"></div> <span>Research Progress</span></h2>
-                <button id="expandOutputBtn" class="expand-button" title="Expand / Collapse Output"><i class="fas fa-expand-alt"></i></button>
+                <div class="research-header-actions">
+                    <button type="button" id="stopResearchHeaderBtn" class="btn-stop-research-header" style="display: none;" onclick="stopResearch()" title="Stop research immediately">
+                        <i class="fa-solid fa-circle-stop"></i> <span>Stop</span>
+                    </button>
+                    <button type="button" id="expandOutputBtn" class="expand-button" onclick="toggleResearchProgressFullscreen(event)" title="Toggle Fullscreen (Esc to exit)" aria-label="Toggle Fullscreen"><i class="fas fa-expand-alt"></i></button>
+                </div>
             </div>
             <p class="mt-2 text-left" style="font-size: 0.8rem;">
                 Watch as the Agentic AI orchestrates multi-source deep-web research in real-time.</p>
@@ -545,7 +707,7 @@
                             <span>Copy</span>
                         </button>
 
-                        <button type="button" id="viewSlidesBtnTop" class="export-tool-btn btn-slides" title="Interactive Presentation Slide Deck">
+                        <button type="button" id="viewSlidesBtnTop" class="export-tool-btn btn-slides" onclick="handleSlidesButtonClick(event)" title="Interactive Presentation Slide Deck">
                             <i class="fa-solid fa-chalkboard-user"></i>
                             <span>Slides</span>
                         </button>
@@ -559,28 +721,28 @@
                             </button>
 
                             <div class="export-dropdown-menu" id="exportDropdownMenu" style="display: none;">
-                                <a id="downloadLinkTop" href="#" class="dropdown-export-item item-pdf disabled" target="_blank" rel="noopener noreferrer">
+                                <a id="downloadLinkTop" href="#" class="dropdown-export-item item-pdf" onclick="handleExportClick(event, 'pdf')" target="_blank" rel="noopener noreferrer">
                                     <i class="fas fa-file-pdf"></i>
                                     <div class="item-text">
                                         <span class="item-title">PDF Document</span>
                                         <span class="item-desc">High-resolution formatted report</span>
                                     </div>
                                 </a>
-                                <a id="downloadLinkWordTop" href="#" class="dropdown-export-item item-word disabled" target="_blank" rel="noopener noreferrer">
+                                <a id="downloadLinkWordTop" href="#" class="dropdown-export-item item-word" onclick="handleExportClick(event, 'docx')" target="_blank" rel="noopener noreferrer">
                                     <i class="fas fa-file-word"></i>
                                     <div class="item-text">
                                         <span class="item-title">Word Document (.docx)</span>
                                         <span class="item-desc">Editable Microsoft Word format</span>
                                     </div>
                                 </a>
-                                <a id="downloadLinkMdTop" href="#" class="dropdown-export-item item-md disabled" target="_blank" rel="noopener noreferrer">
+                                <a id="downloadLinkMdTop" href="#" class="dropdown-export-item item-md" onclick="handleExportClick(event, 'md')" target="_blank" rel="noopener noreferrer">
                                     <i class="fas fa-file-lines"></i>
                                     <div class="item-text">
                                         <span class="item-title">Markdown (.md)</span>
                                         <span class="item-desc">Clean plain-text documentation</span>
                                     </div>
                                 </a>
-                                <a id="downloadLinkJsonTop" href="#" class="dropdown-export-item item-json disabled" target="_blank" rel="noopener noreferrer">
+                                <a id="downloadLinkJsonTop" href="#" class="dropdown-export-item item-json" onclick="handleExportClick(event, 'json')" target="_blank" rel="noopener noreferrer">
                                     <i class="fas fa-file-code"></i>
                                     <div class="item-text">
                                         <span class="item-title">Log Trace (JSON)</span>
@@ -588,24 +750,23 @@
                                     </div>
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <button type="button" id="downloadLatexBtnTop" class="dropdown-export-item item-latex">
+                                <button type="button" id="downloadLatexBtnTop" class="dropdown-export-item item-latex" onclick="handleExportClick(event, 'latex')">
                                     <i class="fas fa-file-code"></i>
                                     <div class="item-text">
                                         <span class="item-title">LaTeX (.tex) Academic Source</span>
                                         <span class="item-desc">Camera-ready preprint manuscript</span>
                                     </div>
                                 </button>
-                                <button type="button" id="audioBriefingBtnTop" class="dropdown-export-item item-audio">
-                                    <i class="fas fa-headphones"></i>
-                                    <div class="item-text">
-                                        <span class="item-title">AI Voice Audio Briefing</span>
-                                        <span class="item-desc">Hands-free synthesized briefing</span>
-                                    </div>
-                                </button>
                             </div>
                         </div>
 
-                        <button type="button" id="expandReportBtn" class="export-tool-btn btn-expand" title="Expand Document View">
+                        <!-- AI Voice Audio Briefing Button (Promoted to toolbar row) -->
+                        <button type="button" id="audioBriefingBtnTop" class="export-tool-btn btn-audio" onclick="toggleAudioBriefingPlayer(event)" title="AI Voice Audio Briefing">
+                            <i class="fas fa-headphones"></i>
+                            <span>Audio Briefing</span>
+                        </button>
+
+                        <button type="button" id="expandReportBtn" class="export-tool-btn btn-expand" onclick="toggleResearchReportFullscreen(event)" title="Expand Document View (Esc to exit)" aria-label="Toggle Fullscreen Report">
                             <i class="fas fa-expand-alt"></i>
                         </button>
                     </div>
@@ -889,15 +1050,66 @@
         </div>
     </div>
 
-<footer class="app-landing-footer">
-        <div class="footer-links">
-            <a href="javascript:void(0)" onclick="InquireXRouter.switchView('agent')">Research Console</a>
-            <span class="footer-sep">|</span>
-            <a target="_blank" href="https://github.com/assafelovic/gpt-researcher" rel="noopener noreferrer">Documentation</a>
-            <span class="footer-sep">|</span>
-            <a href="javascript:void(0)" onclick="document.getElementById('websocketPanelOpenBtn')?.click()">System Status</a>
+    <!-- Interactive Presentation Slide Deck Modal -->
+    <div id="slideDeckModal" class="slide-deck-modal" style="display: none;">
+        <div class="slide-deck-overlay" id="slideDeckOverlay"></div>
+        <div class="slide-deck-content">
+            <div class="slide-deck-header">
+                <div class="slide-deck-title">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <span id="slideDeckTopic">Research Presentation</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn btn-sm btn-outline-light" id="saveSlidesBtn" onclick="saveSlideDeckAsPdf()" title="Print / Save Slides">
+                        <i class="fa-solid fa-print"></i> <span>Print / Save</span>
+                    </button>
+                    <button type="button" class="slide-deck-close" id="closeSlideDeckBtn" title="Close Slides (Esc)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="slide-body" id="slideBody">
+                <!-- Slide content rendered dynamically -->
+            </div>
+            <div class="slide-deck-controls">
+                <button type="button" class="slide-nav-btn" id="prevSlideBtn">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    <span>Previous</span>
+                </button>
+                <div class="slide-counter" id="slideCounter" style="font-weight: 600; font-size: 0.9rem; color: #94a3b8;">
+                    Slide 1 of 1
+                </div>
+                <button type="button" class="slide-nav-btn" id="nextSlideBtn">
+                    <span>Next</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
-        <p class="footer-copyright">An Agentic AI-Driven RAG Framework &copy; 2026</p>
+    </div>
+
+    <footer class="app-landing-footer">
+        <div class="footer-links">
+            <a href="javascript:void(0)" class="footer-nav-link" onclick="InquireXRouter.switchView('home')" title="InquireX Home Page">
+                <i class="fa-solid fa-house footer-link-icon"></i>
+                <span>Home</span>
+            </a>
+            <span class="footer-sep" aria-hidden="true">•</span>
+            <a href="#searchHeroCanvas" class="footer-nav-link" onclick="handleFooterConsoleClick(event)" title="Focus Research Console">
+                <i class="fa-solid fa-terminal footer-link-icon"></i>
+                <span>Research Console</span>
+            </a>
+            <span class="footer-sep" aria-hidden="true">•</span>
+            <a href="https://github.com/assafelovic/gpt-researcher" target="_blank" rel="noopener noreferrer" class="footer-nav-link" title="View InquireX & GPT-Researcher Documentation">
+                <i class="fa-solid fa-book-bookmark footer-link-icon"></i>
+                <span>Documentation</span>
+            </a>
+            <span class="footer-sep" aria-hidden="true">•</span>
+            <a href="javascript:void(0)" class="footer-nav-link" onclick="handleFooterStatusClick(event)" title="Open Live System Connection Status">
+                <i class="fa-solid fa-signal footer-link-icon"></i>
+                <span>System Status</span>
+            </a>
+        </div>
+        <p class="footer-copyright">InquireX &mdash; Autonomous Multi-Source Deep Web Research Engine &copy; 2026</p>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js"
@@ -925,6 +1137,8 @@
                     // Refresh research history scoped to this specific user
                     if (window.GPTResearcher && typeof window.GPTResearcher.loadUserHistory === 'function') {
                         window.GPTResearcher.loadUserHistory(user.id);
+                    } else if (typeof window.loadConversationHistory === 'function') {
+                        window.loadConversationHistory();
                     }
                 } else if (res.status === 401) {
                     window.location.href = '/login';
@@ -932,7 +1146,7 @@
             } catch (e) { console.warn('Auth check failed', e); }
         })();
     </script>
-    <script src="/site/scripts.js?v=38.0"></script>
+    <script src="/site/scripts.js?v=51.0"></script>
     <script>
         // Auto-resize textarea as content grows
         const taskTextarea = document.getElementById('task');

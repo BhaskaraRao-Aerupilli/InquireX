@@ -273,7 +273,21 @@ class WrittenContentCompressor:
             similarity_threshold: Minimum similarity score for inclusion.
             **kwargs: Additional keyword arguments.
         """
-        self.documents = documents
+        normalized_docs = []
+        if documents:
+            for item in documents:
+                if isinstance(item, dict):
+                    if item.get("written_content") or item.get("content"):
+                        normalized_docs.append(item)
+                elif isinstance(item, str):
+                    if item.strip():
+                        normalized_docs.append({
+                            "section_title": "Section",
+                            "written_content": item.strip()
+                        })
+                else:
+                    normalized_docs.append(item)
+        self.documents = normalized_docs
         self.kwargs = kwargs
         self.embeddings = embeddings
         self.similarity_threshold = similarity_threshold
@@ -321,6 +335,8 @@ class WrittenContentCompressor:
         Returns:
             List of formatted section strings.
         """
+        if not self.documents:
+            return []
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
             cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))

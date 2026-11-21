@@ -97,18 +97,25 @@ class BrowserManager:
             '.svg', '.ico', '.gif', 'pixel', 'avatar', 'favicon', 'logo', 'tracking',
             'badge', 'spinner', '1x1', 'ad-', 'advertisement', 'doubleclick',
             'share_icon', 'social', 'button', 'w_64', 'w_32', '64x64', 'fallback',
-            'icon', 'sponsor', 'placeholder'
+            'icon', 'sponsor', 'placeholder', 'author', 'profile', 'headshot',
+            'portrait', 'shutterstock', 'gettyimages', 'istock', 'stockphoto',
+            'banner', 'promo', 'subscribe', 'newsletter'
         )
 
         for img in sorted(images, key=lambda im: im.get("score", 0) if isinstance(im, dict) else 0, reverse=True):
             if isinstance(img, dict):
+                score = img.get('score', 0)
+                # Filter out low-relevance scraped images that do not match topic entities
+                if score < 2:
+                    continue
                 url = img.get('url', '')
-                alt = img.get('alt', 'Research Visual Figure')
-                title = img.get('title', 'Visual Figure')
+                alt = img.get('alt') or getattr(self.researcher, 'query', 'Research Visual Figure')
+                title = img.get('title') or alt
             else:
                 url = str(img)
-                alt = 'Research Visual Figure'
-                title = 'Visual Figure'
+                alt = getattr(self.researcher, 'query', 'Research Visual Figure')
+                title = alt
+                score = 2
 
             if not url or not url.startswith('http'):
                 continue
@@ -128,7 +135,8 @@ class BrowserManager:
                 unique_images.append({
                     'url': url,
                     'alt': alt,
-                    'title': title
+                    'title': title,
+                    'score': score
                 })
 
                 if len(unique_images) == k:

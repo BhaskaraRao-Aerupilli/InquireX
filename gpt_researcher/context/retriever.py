@@ -41,31 +41,25 @@ class SectionRetriever(BaseRetriever):
     """
     SectionRetriever:
     This class is used to retrieve sections while avoiding redundant subtopics.
+    Supports either dictionaries with section_title/written_content, strings, or Documents.
     """
-    sections: List[Dict] = []
-    """
-    sections example:
-    [
-        {
-            "section_title": "Example Title",
-            "written_content": "Example content"
-        },
-        ...
-    ]
-    """
+    sections: List[Any] = []
     
     def _get_relevant_documents(
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
 
-        docs = [
-            Document(
-                page_content=page.get("written_content", ""),
-                metadata={
-                    "section_title": page.get("section_title", ""),
-                },
-            )
-            for page in self.sections  # Changed 'self.pages' to 'self.sections'
-        ]
+        docs = []
+        for page in self.sections:
+            if isinstance(page, dict):
+                content = page.get("written_content") or page.get("content") or ""
+                title = page.get("section_title") or page.get("title") or "Section"
+                if content.strip():
+                    docs.append(Document(page_content=content, metadata={"section_title": title}))
+            elif isinstance(page, str):
+                if page.strip():
+                    docs.append(Document(page_content=page.strip(), metadata={"section_title": "Section"}))
+            elif isinstance(page, Document):
+                docs.append(page)
 
         return docs

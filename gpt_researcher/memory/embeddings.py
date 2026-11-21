@@ -24,6 +24,20 @@ Supported providers:
 
 import os
 from typing import Any
+from langchain_core.embeddings import Embeddings
+
+class FastEmbeddings(Embeddings):
+    """Fast, local CPU embedding using ONNX Runtime with zero API keys required."""
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5"):
+        from fastembed import TextEmbedding
+        model = model_name if model_name and model_name not in ("default", "fastembed") else "BAAI/bge-small-en-v1.5"
+        self.model = TextEmbedding(model_name=model)
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return [list(vec) for vec in self.model.embed(texts)]
+
+    def embed_query(self, text: str) -> list[float]:
+        return list(next(self.model.embed([text])))
 
 OPENAI_EMBEDDING_MODEL = os.environ.get(
     "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
@@ -51,6 +65,7 @@ _SUPPORTED_PROVIDERS = {
     "openrouter",
     "minimax",
     "nebius",
+    "fastembed",
     "deterministic",
     "fake",
     "none",
@@ -235,9 +250,14 @@ class Memory:
                     openai_api_base=os.getenv("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1"),
                     **embedding_kwargs,
                 )
+            case "fastembed":
+                _embeddings = FastEmbeddings(model_name=model)
             case "deterministic" | "fake" | "none":
-                from langchain_community.embeddings import DeterministicFakeEmbedding
-                _embeddings = DeterministicFakeEmbedding(size=384)
+                try:
+                    _embeddings = FastEmbeddings(model_name=model)
+                except Exception:
+                    from langchain_community.embeddings import DeterministicFakeEmbedding
+                    _embeddings = DeterministicFakeEmbedding(size=384)
             case _:
                 raise Exception("Embedding not found.")
 

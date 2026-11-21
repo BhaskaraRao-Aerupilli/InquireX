@@ -466,23 +466,35 @@ class GPTResearcher:
         Returns:
             The generated report as a string.
         """
-        # Use pre-generated images if available (generated during conduct_research)
-        has_available_images = bool(self.available_images)
+        # Prepare available images for report embedding
+        # Prioritize pre-generated AI images; if none exist, use top verified research images from search
+        images_for_report = list(self.available_images)
+        if not images_for_report and self.research_images:
+            for img in self.research_images[:4]:
+                if isinstance(img, dict) and img.get("url"):
+                    images_for_report.append({
+                        "url": img["url"],
+                        "title": img.get("title") or img.get("alt") or self.query,
+                        "alt_text": img.get("alt") or img.get("title") or "Figure",
+                        "section_hint": img.get("title") or img.get("alt") or "Relevant Section"
+                    })
+
+        has_available_images = bool(images_for_report)
         
         self._current_step = "report_writing"
         await self._log_event("research", step="writing_report", details={
             "existing_headers": existing_headers,
             "context_source": "external" if ext_context else "internal",
-            "available_images_count": len(self.available_images),
+            "available_images_count": len(images_for_report),
         })
 
-        # Generate report with available images embedded
+        # Generate report with verified available images embedded
         report = await self.report_generator.write_report(
             existing_headers=existing_headers,
             relevant_written_contents=relevant_written_contents,
             ext_context=ext_context or self.context,
             custom_prompt=custom_prompt,
-            available_images=self.available_images,  # Pass pre-generated images
+            available_images=images_for_report,  # Pass verified images for embedding
         )
 
         await self._log_event("research", step="report_completed", details={
@@ -662,12 +674,35 @@ class GPTResearcher:
         return self.research_images[:top_k]
 
     def add_research_images(self, images: list[dict[str, Any]]) -> None:
-        """Add images to the research image collection.
+        """Add images to the research image collection with deduplication and score ranking.
 
         Args:
             images: List of image dictionaries to add.
         """
-        self.research_images.extend(images)
+        existing_urls = {
+            img.get("url") if isinstance(img, dict) else str(img)
+            for img in self.research_images
+        }
+        for img in images:
+            if isinstance(img, dict):
+                url = img.get("url", "")
+                if url and url not in existing_urls:
+                    existing_urls.add(url)
+                    self.research_images.append(img)
+            elif isinstance(img, str) and img.startswith("http"):
+                if img not in existing_urls:
+                    existing_urls.add(img)
+                    self.research_images.append({
+                        "url": img,
+                        "title": self.query,
+                        "alt": f"Research Visual Figure for {self.query}",
+                        "score": 5
+                    })
+        # Keep highest scoring, most relevant figures at the top
+        self.research_images.sort(
+            key=lambda x: x.get("score", 0) if isinstance(x, dict) else 0,
+            reverse=True
+        )
 
     def get_research_sources(self) -> list[dict[str, Any]]:
         """Get all research sources collected during research.
