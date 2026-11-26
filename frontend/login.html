@@ -4,522 +4,293 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — InquireX</title>
-  <link rel="icon" href="/site/static/favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+
+  <!-- Zero-Flash Theme Initialization synced with Workspace -->
   <script>
-    (function() {
+    (function () {
       try {
-        var savedTheme = localStorage.getItem('inquirex_theme');
-        if (savedTheme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.setAttribute('data-theme', 'light');
+        var mode = localStorage.getItem('inquirex_theme_mode');
+        var legacy = localStorage.getItem('inquirex_theme');
+        if (mode !== 'light' && mode !== 'dark' && mode !== 'system') {
+          mode = (legacy === 'dark' || legacy === 'light') ? legacy : 'system';
         }
-      } catch (e) {}
+        var resolved = mode;
+        if (mode === 'system') {
+          resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-mode', mode);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
     })();
   </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
+  <link rel="stylesheet" href="/site/css/tokens.css?v=3" />
+  <link rel="stylesheet" href="/site/css/base.css?v=3" />
+  <link rel="stylesheet" href="/site/css/components.css?v=3" />
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* Light Theme (Default) */
-    :root, [data-theme="light"] {
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --surface-elevated: #ffffff;
-      --border: #e2e8f0;
-      --border-input: #cbd5e1;
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-glow: rgba(79, 70, 229, 0.25);
-      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      --accent: #7c3aed;
-      --text: #0f172a;
-      --text-sub: #334155;
-      --muted: #64748b;
-      --input-bg: #ffffff;
-      --btn-google-bg: #ffffff;
-      --btn-google-border: #cbd5e1;
-      --btn-google-text: #334155;
-      --btn-google-hover: #f1f5f9;
-      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 20px 40px -10px rgba(0, 0, 0, 0.06);
-      --error: #dc2626;
-      --error-bg: #fef2f2;
-      --error-border: #fecaca;
-      --success: #059669;
-      --success-bg: #ecfdf5;
-      --success-border: #a7f3d0;
-      --radius: 12px;
-      --grid-line: rgba(99, 102, 241, 0.05);
-    }
-
-    /* Dark Theme */
-    [data-theme="dark"] {
-      --bg: #080b14;
-      --surface: rgba(22, 28, 44, 0.75);
-      --surface-elevated: rgba(30, 38, 60, 0.95);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-input: rgba(255, 255, 255, 0.14);
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-glow: rgba(99, 102, 241, 0.35);
-      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      --accent: #818cf8;
-      --text: #f8fafc;
-      --text-sub: #cbd5e1;
-      --muted: #94a3b8;
-      --input-bg: rgba(10, 15, 25, 0.85);
-      --btn-google-bg: rgba(255, 255, 255, 0.06);
-      --btn-google-border: rgba(255, 255, 255, 0.12);
-      --btn-google-text: #e2e8f0;
-      --btn-google-hover: rgba(255, 255, 255, 0.12);
-      --card-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
-      --error: #f87171;
-      --error-bg: rgba(248, 113, 113, 0.12);
-      --error-border: rgba(248, 113, 113, 0.3);
-      --success: #34d399;
-      --success-bg: rgba(52, 211, 153, 0.12);
-      --success-border: rgba(52, 211, 153, 0.3);
-      --radius: 12px;
-      --grid-line: rgba(255, 255, 255, 0.03);
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    .ix-auth-page {
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px 16px;
+      padding: var(--space-6) var(--space-4);
+      background-color: var(--bg-secondary);
       position: relative;
-      overflow-x: hidden;
-      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
-    /* Ambient background grid */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-      background-size: 36px 36px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Subtle ambient radial highlights */
-    .ambient-glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.18;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .ambient-1 {
-      top: -150px;
-      left: 10%;
-      background: #4f46e5;
-    }
-    .ambient-2 {
-      bottom: -150px;
-      right: 10%;
-      background: #7c3aed;
-    }
-
-    /* Top Controls Bar */
-    .top-controls {
+    .ix-auth-topbar {
       position: absolute;
-      top: 20px;
+      top: 18px;
       right: 20px;
-      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ix-auth-card {
+      width: 100%;
+      max-width: 420px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-8);
+    }
+
+    .ix-auth-brand {
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: var(--space-6);
     }
 
-    .theme-pill-btn {
+    .ix-auth-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-md);
+      background-color: var(--accent-primary-soft);
+      border: 1px solid var(--border-default);
       display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 14px;
-      border-radius: 9999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      background: var(--surface);
-      border: 1px solid var(--border-input);
-      color: var(--text-sub);
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      transition: all 0.2s ease;
-    }
-    .theme-pill-btn:hover {
-      background: var(--surface-elevated);
-      color: var(--primary);
-      border-color: var(--primary);
-      transform: translateY(-1px);
-    }
-
-    /* Auth Card Container */
-    .card {
-      position: relative;
-      z-index: 2;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 440px;
-      box-shadow: var(--card-shadow);
-      animation: cardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Logo & Branding */
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .logo-icon {
-      width: 42px;
-      height: 42px;
-      background: var(--primary-gradient);
-      border-radius: 12px;
-      display: flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
-      font-size: 19px;
-      box-shadow: 0 4px 14px var(--primary-glow);
-    }
-    .logo-text {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--text);
-    }
-    .logo-text strong {
-      color: var(--primary);
-    }
-    .brand-core-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 9px;
-      border-radius: 9999px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: rgba(79, 70, 229, 0.08);
-      border: 1px solid rgba(79, 70, 229, 0.2);
-      color: var(--primary);
-      margin-left: auto;
     }
 
-    .tagline {
-      color: var(--muted);
-      font-size: 13.5px;
-      margin-bottom: 28px;
-      line-height: 1.5;
-    }
-
-    h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 24px;
+    .ix-auth-wordmark {
+      font-family: var(--font-display);
+      font-size: 18px;
       font-weight: 700;
-      color: var(--text);
       letter-spacing: -0.02em;
-      margin-bottom: 4px;
-    }
-    .subtext {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 24px;
+      color: var(--text-primary);
     }
 
-    /* Form Fields */
-    .field {
-      margin-bottom: 18px;
-      text-align: left;
+    .ix-auth-wordmark span {
+      color: var(--accent-primary);
     }
-    label {
+
+    .ix-auth-alert {
+      display: none;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+    }
+
+    .ix-auth-alert.show {
       display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-sub);
-      margin-bottom: 6px;
     }
 
-    input {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--border-input);
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      color: var(--text);
-      font-size: 14.5px;
-      font-family: inherit;
-      outline: none;
-      transition: all 0.2s ease;
-      min-height: 46px;
-    }
-    input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
-    }
-    input::placeholder {
-      color: var(--muted);
-      opacity: 0.8;
+    .ix-auth-alert.error {
+      background-color: var(--status-error-soft);
+      border: 1px solid var(--status-error-border);
+      color: var(--status-error);
     }
 
-    /* Buttons */
-    .btn {
-      width: 100%;
-      min-height: 48px;
-      padding: 13px 20px;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 15px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
+    .ix-auth-alert.success {
+      background-color: var(--status-success-soft);
+      border: 1px solid var(--status-success-border);
+      color: var(--status-success);
     }
 
-    .btn-primary {
-      background: var(--primary-gradient);
-      color: #ffffff;
-      box-shadow: 0 4px 14px var(--primary-glow);
-    }
-    .btn-primary:hover {
-      transform: translateY(-1.5px);
-      box-shadow: 0 8px 25px var(--primary-glow);
-    }
-    .btn-primary:active {
-      transform: translateY(0);
-    }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-google {
-      background: var(--btn-google-bg);
-      border: 1px solid var(--btn-google-border);
-      color: var(--btn-google-text);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      margin-top: 10px;
-    }
-    .btn-google:hover {
-      background: var(--btn-google-hover);
-      border-color: var(--primary);
-      color: var(--primary);
-      transform: translateY(-1px);
-    }
-
-    .divider {
+    .ix-auth-divider {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin: 20px 0;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
+      margin: var(--space-5) 0;
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
     }
-    .divider::before, .divider::after {
-      content: '';
+
+    .ix-auth-divider::before,
+    .ix-auth-divider::after {
+      content: "";
       flex: 1;
       height: 1px;
-      background: var(--border);
+      background-color: var(--border-subtle);
     }
 
-    /* Alerts */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 18px;
-      display: none;
-      line-height: 1.45;
-    }
-    .alert.error {
-      background: var(--error-bg);
-      border: 1px solid var(--error-border);
-      color: var(--error);
-    }
-    .alert.success {
-      background: var(--success-bg);
-      border: 1px solid var(--success-border);
-      color: var(--success);
-    }
-    .alert.show {
-      display: block;
-      animation: alertFadeIn 0.2s ease;
-    }
-    @keyframes alertFadeIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .footer-link {
+    .ix-auth-footer {
       text-align: center;
-      margin-top: 24px;
-      font-size: 13.5px;
-      color: var(--muted);
-    }
-    .footer-link a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .footer-link a:hover {
-      text-decoration: underline;
+      margin-top: var(--space-6);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
     }
 
-    /* Spinner */
     .spinner {
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
       border: 2px solid rgba(255, 255, 255, 0.35);
-      border-top-color: #ffffff;
+      border-top-color: #FFFFFF;
       border-radius: 50%;
-      animation: spin 0.65s linear infinite;
+      animation: ixSpin 0.65s linear infinite;
       display: none;
     }
-    @keyframes spin {
+
+    @keyframes ixSpin {
       to { transform: rotate(360deg); }
     }
 
-    /* Responsive Adaptation for All Devices */
     @media (max-width: 480px) {
-      body {
-        padding: 16px 12px;
+      .ix-auth-card {
+        padding: var(--space-6) var(--space-5);
       }
-      .top-controls {
-        top: 14px;
-        right: 14px;
-      }
-      .card {
-        padding: 30px 22px;
-        border-radius: 20px;
-      }
-      h1 {
-        font-size: 22px;
-      }
-      .logo-text {
-        font-size: 22px;
-      }
-      .brand-core-badge {
-        display: none;
+      .ix-auth-topbar {
+        top: 12px;
+        right: 12px;
       }
     }
   </style>
 </head>
-<body>
-  <div class="ambient-glow ambient-1"></div>
-  <div class="ambient-glow ambient-2"></div>
-
-  <!-- Top Theme Toggle Control -->
-  <div class="top-controls">
-    <button type="button" class="theme-pill-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
-      <i id="themeIcon" class="fa-solid fa-moon"></i>
-      <span id="themeLabel">Dark Mode</span>
+<body class="ix-auth-page">
+  <div class="ix-auth-topbar">
+    <button
+      type="button"
+      class="ix-btn ix-btn-secondary ix-btn-sm"
+      id="themeToggleBtn"
+      title="Cycle Light / Dark / System Theme"
+    >
+      <i id="themeIcon" class="fa-solid fa-desktop"></i>
+      <span id="themeLabel">System</span>
     </button>
   </div>
 
-  <div class="card">
-    <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-atom"></i></div>
-      <div class="logo-text">Inquire<strong>X</strong></div>
-      <span class="brand-core-badge">V2.0</span>
+  <main class="ix-auth-card">
+    <div class="ix-auth-brand">
+      <span class="ix-auth-mark" aria-hidden="true">
+        <svg class="inquirex-logo-svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+          <defs>
+            <linearGradient id="ixp1Login" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="50%" stop-color="#6366f1" />
+              <stop offset="100%" stop-color="#8b5cf6" />
+            </linearGradient>
+            <linearGradient id="ixp2Login" x1="30" y1="2" x2="2" y2="30" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#818cf8" />
+              <stop offset="100%" stop-color="#4f46e5" />
+            </linearGradient>
+          </defs>
+          <circle cx="16" cy="16" r="13.5" stroke="url(#ixp1Login)" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="28 10 12 10" class="ix-gyro-ring" />
+          <path d="M9.5 9.5L22.5 22.5" stroke="url(#ixp1Login)" stroke-width="2.75" stroke-linecap="round" />
+          <path d="M22.5 9.5L9.5 22.5" stroke="url(#ixp2Login)" stroke-width="2.75" stroke-linecap="round" />
+          <circle cx="16" cy="16" r="3.4" fill="var(--bg-card)" stroke="url(#ixp1Login)" stroke-width="1.5" />
+          <circle cx="16" cy="16" r="1.5" fill="var(--accent-primary)" class="ix-focal-core" />
+        </svg>
+      </span>
+      <span class="ix-auth-wordmark">Inquire<span>X</span></span>
+      <span class="ix-badge" style="margin-left:auto;">Intelligence Engine</span>
     </div>
-    <p class="tagline">Autonomous Deep Research & Analytical Reporting</p>
 
-    <h1>Welcome back</h1>
-    <p class="subtext">Sign in to your account to continue research.</p>
+    <h1 style="font-size:var(--text-xl); margin-bottom:4px;">Welcome back</h1>
+    <p class="ix-help" style="margin-bottom:var(--space-5);">
+      Sign in to access your autonomous deep research workspace.
+    </p>
 
-    <div class="alert error" id="alertError"></div>
-    <div class="alert success" id="alertSuccess"></div>
+    <div class="ix-auth-alert error" id="alertError" role="alert"></div>
+    <div class="ix-auth-alert success" id="alertSuccess" role="status"></div>
 
-    <!-- Email / Password form -->
-    <form id="loginForm" novalidate>
-      <div class="field">
-        <label for="email">Email address</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+    <form id="loginForm" novalidate style="display:flex; flex-direction:column; gap:var(--space-4);">
+      <div class="ix-field">
+        <label class="ix-label" for="email">Email address</label>
+        <input type="email" id="email" class="ix-input" placeholder="you@example.com" autocomplete="email" required />
       </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="••••••••••••" autocomplete="current-password" required />
+
+      <div class="ix-field">
+        <label class="ix-label" for="password">Password</label>
+        <input type="password" id="password" class="ix-input" placeholder="••••••••••••" autocomplete="current-password" required />
       </div>
-      <button type="submit" class="btn btn-primary" id="loginBtn">
+
+      <button type="submit" class="ix-btn ix-btn-primary ix-btn-lg" id="loginBtn" style="width:100%;">
         <span class="spinner" id="spinner"></span>
         <span id="btnText">Sign In</span>
       </button>
     </form>
 
-    <div class="divider">or</div>
+    <div class="ix-auth-divider">or continue with</div>
 
-    <!-- Google OAuth -->
     <a href="/auth/google" style="text-decoration:none; display:block;">
-      <button type="button" class="btn btn-google">
-        <svg width="18" height="18" viewBox="0 0 48 48">
+      <button type="button" class="ix-btn ix-btn-secondary ix-btn-lg" style="width:100%;">
+        <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.4 30.3 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6.1C12.6 13.2 17.9 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z"/>
           <path fill="#FBBC05" d="M10.8 28.6A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.7l8.3-6.1z"/>
           <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.1 0-11.4-3.7-13.2-9l-7.8 6c3.9 7.8 11.8 13.3 21 13.3z"/>
-          <path fill="none" d="M0 0h48v48H0z"/>
         </svg>
         Sign in with Google
       </button>
     </a>
 
-    <p class="footer-link">Don't have an account? <a href="/auth/register-page">Create one</a></p>
-  </div>
+    <p class="ix-auth-footer">
+      Don't have an account? <a href="/auth/register-page">Create one</a>
+    </p>
+  </main>
 
-  <script>
-    // Theme Manager for Login Page
-    function updateThemeUI(theme) {
-      const isDark = theme === 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
+  <script type="module">
+    import { applyThemeMode, getThemeMode, cycleThemeMode } from '/site/js/theme.js';
+
+    function syncAuthThemeButton(mode, resolved) {
       const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
-      if (icon) icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-      if (label) label.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      if (icon) {
+        icon.className = mode === 'system'
+          ? 'fa-solid fa-desktop'
+          : resolved === 'dark'
+          ? 'fa-solid fa-moon'
+          : 'fa-solid fa-sun';
+      }
+      if (label) {
+        label.textContent = mode === 'system' ? 'System' : resolved === 'dark' ? 'Dark' : 'Light';
+      }
     }
 
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem('inquirex_theme', next); } catch (e) {}
-      updateThemeUI(next);
-    }
+    const initial = applyThemeMode(getThemeMode(), false);
+    syncAuthThemeButton(initial.mode, initial.resolved);
 
-    // Initialize on load
-    (function() {
-      var current = document.documentElement.getAttribute('data-theme') || 'light';
-      updateThemeUI(current);
-    })();
+    window.addEventListener('inquirex:themechange', (e) => {
+      if (e.detail) syncAuthThemeButton(e.detail.mode, e.detail.resolved);
+    });
 
-    // Show error from URL params (e.g. Google OAuth failure)
+    document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+      cycleThemeMode();
+    });
+
     const params = new URLSearchParams(location.search);
     if (params.get('error')) {
       const msgs = {
@@ -534,15 +305,17 @@
 
     function showAlert(type, msg) {
       const el = document.getElementById('alert' + (type === 'error' ? 'Error' : 'Success'));
-      el.textContent = msg;
-      el.classList.add('show');
+      if (el) {
+        el.textContent = msg;
+        el.classList.add('show');
+      }
     }
     function hideAlerts() {
-      document.getElementById('alertError').classList.remove('show');
-      document.getElementById('alertSuccess').classList.remove('show');
+      document.getElementById('alertError')?.classList.remove('show');
+      document.getElementById('alertSuccess')?.classList.remove('show');
     }
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlerts();
 
@@ -558,8 +331,8 @@
       const spinner = document.getElementById('spinner');
       const btnText = document.getElementById('btnText');
       btn.disabled = true;
-      spinner.style.display = 'block';
-      btnText.textContent = 'Signing in…';
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Signing in...';
 
       try {
         const res = await fetch('/auth/login', {
@@ -570,8 +343,8 @@
         const data = await res.json();
 
         if (res.ok) {
-          showAlert('success', '✓ Welcome back! Loading workspace…');
-          setTimeout(() => { window.location.href = '/'; }, 1000);
+          showAlert('success', 'Welcome back! Redirecting to workspace...');
+          setTimeout(() => { window.location.href = '/'; }, 700);
         } else {
           showAlert('error', data.detail || 'Invalid email or password.');
         }

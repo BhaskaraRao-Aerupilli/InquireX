@@ -40,6 +40,11 @@ from server.report_store import ReportStore
 from auth.routes import router as auth_router
 from auth.middleware import AuthMiddleware
 
+try:
+    from companion.routes import router as companion_router
+except ImportError:
+    from backend.companion.routes import router as companion_router
+
 # MongoDB services removed - no database persistence needed
 
 # Setup logging
@@ -126,6 +131,23 @@ app.add_middleware(
 # Add Auth middleware (runs after CORS)
 app.add_middleware(AuthMiddleware)
 
+
+@app.middleware("http")
+async def prevent_stale_module_cache(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/site/js/") or path.startswith("/site/css/") or path == "/":
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    f_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "static", "favicon.ico"))
+    if os.path.exists(f_path):
+        return FileResponse(f_path)
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
 # Use default JSON response class
 
 # Mount static files for frontend
@@ -150,8 +172,9 @@ DOC_PATH = os.getenv("DOC_PATH", "./my-docs")
 # Lifespan events now handled in the lifespan context manager above
 
 
-# -- Mount auth router
+# -- Mount auth & companion routers
 app.include_router(auth_router)
+app.include_router(companion_router)
 
 # -- Auth page routes
 @app.get("/login", response_class=HTMLResponse, include_in_schema=False)

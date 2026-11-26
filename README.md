@@ -107,9 +107,14 @@ Export research documents with one click via a non-intrusive floating popover me
   - 🎓 **Academic Researcher:** Peer-reviewed rigor, scientific method focus, and formal literature review.
   - 💻 **Technical Lead:** Architecture breakdowns, code implementation trade-offs, and technical feasibility.
 
-### 🎨 Responsive UI/UX & Dual Theme Engine
-- **100% Fluid Responsive:** Fully optimized across screen widths from 320px mobile devices to 4K ultra-wide monitors.
-- **Dual Theme Support:** Seamless instant switching between Cyberpunk Glassmorphism Dark Mode and Pure Crisp Light Mode with zero dark-bleeding artifacts.
+### 🎨 Modular SaaS UI/UX & Light/Dark Design System
+- **Modern Modular Architecture:** Built with semantic CSS design tokens (`frontend/css/tokens.css`) and modular ES6 JavaScript views (`frontend/js/`) featuring zero-flash theme preloading across pure Light and Dark modes, collapsible navigation, global search (`Ctrl+K`), and full mobile responsiveness (`320px+`).
+- **Focused Research Views:** Dedicated views for Home Orb, Dashboard, New Research, Live Research Monitor, Report Viewer, AI Research Team, Knowledge Graph, Fact Verification, Document Intelligence, Presentations, and Settings.
+
+### 🎙️ InquireX AI Companion (Voice & Text Copilot)
+- **Multi-State Animated AI Orb:** Dedicated `#companion` workspace and persistent floating quick-drawer (`#ixCmpDrawer`) with smooth `idle`, `listening`, `thinking`, `speaking`, and `error` orb animations driven by real-time microphone volume and output equalizer telemetry.
+- **Hybrid Voice Input (STT) & Natural Voice Output (TTS):** Supports browser Web Speech API recognition plus a `MediaRecorder` → Whisper fallback endpoint (`POST /api/companion/transcribe`) for Chromium/WebView compatibility, paired with chunked `SpeechSynthesis` playback (play, pause, resume, stop, replay, voice & speed controls).
+- **Workspace-Grounded Streaming Brain:** SSE streaming (`POST /api/companion/stream`) grounded in your active report, recent report summaries, uploaded files, and live research state—with allow-listed one-click workspace actions (`open_report`, `start_research`, `open_slides`, `export_report`, `navigate`), optional Tavily lookup, and automatic provider fallback on rate limits.
 
 ### 💬 Context-Aware Follow-Up Chat
 - **Report Memory Persistence:** Interactive Q&A chat assistant directly grounded in the synthesized research report to ask follow-up questions or request deeper analysis.
@@ -244,8 +249,8 @@ Comprehensive actor-to-system interactions capturing user capabilities (running 
 | **Vector RAG & Embeddings** | LangChain Text Splitters, OpenAI Embeddings, Cosine Similarity, Tiktoken |
 | **Tool Extensibility** | Model Context Protocol (`mcp`), `langchain-mcp-adapters` |
 | **Database & Auth** | Supabase, PostgreSQL, `bcrypt`, Python-JOSE (JWT), HTTP-Only Cookies |
-| **Frontend UI** | HTML5, CSS3 Glassmorphism, Vanilla JS (ES6+), Bootstrap 4, FontAwesome 6 |
-| **Visualization & Speech**| Mermaid.js v10, Showdown.js, DOMPurify, Web Speech API (SpeechSynthesis) |
+| **Frontend UI** | HTML5, Semantic CSS Design Tokens (Light/Dark), Modular Vanilla JS (ES6+ Modules), Inter / Space Grotesk / JetBrains Mono, FontAwesome 6 |
+| **Visualization & Speech**| Mermaid.js v10, Showdown.js, DOMPurify, Web Speech API (`SpeechRecognition` & `SpeechSynthesis`), `MediaRecorder` + Whisper STT, Web Audio API |
 | **Document Exporting** | `python-docx`, `htmldocx`, `weasyprint`, KaTeX, LaTeX Engine, Blob API |
 
 ---
@@ -347,14 +352,16 @@ InquireX/
 ├── backend/
 │   ├── auth/                  # Supabase database client, Bcrypt hashing, JWT auth middleware
 │   ├── chat/                  # Context-aware chat agent with report memory
+│   ├── companion/             # AI Companion SSE streaming brain, rate limiting & Whisper STT endpoints
 │   ├── report_type/           # Research strategies (Basic, Detailed, Deep Research)
-│   └── server/                # FastAPI app routes, WebSocket streaming manager, utilities
+│   └── server/                # FastAPI app routes, WebSocket streaming manager, no-cache headers, utilities
 ├── frontend/
-│   ├── index.html             # Main InquireX interactive dashboard & presentation modal
+│   ├── index.html             # Main InquireX SaaS shell & zero-flash theme loader
 │   ├── login.html             # User authentication sign-in
 │   ├── register.html          # User registration page
-│   ├── scripts.js             # Client controller, WebSocket handler, Slides, Mermaid & Audio engine
-│   └── styles.css             # Glassmorphism dark-cyberpunk & pure crisp light theme CSS
+│   ├── css/                   # Semantic design tokens, base, components, shell, views & companion CSS
+│   └── js/                    # Modular ES6 SPA views (home, dashboard, research, live, companion, etc.) & voice engine
+├── tests/                     # Companion, auth, and WebSocket unit tests
 ├── inquirex/                  # Core InquireX deep research engine & autonomous intelligence
 │   ├── actions/               # Query generation, web scraping, markdown processing
 │   ├── document/              # Multi-format document ingestion loaders (PDF, DOCX, TXT)
@@ -388,6 +395,11 @@ InquireX/
 - `POST /api/auth/login`: Authenticate credentials, set HTTP-only JWT session cookie.
 - `POST /api/auth/logout`: Revoke active session and clear authentication cookies.
 - `GET /api/auth/me`: Retrieve currently authenticated user profile.
+
+### AI Companion Endpoints (Authenticated)
+- `GET /api/companion/capabilities`: Retrieve configured LLM provider, model, STT backend availability, and search capability metadata (without exposing API keys).
+- `POST /api/companion/transcribe`: Transcribe uploaded microphone audio (up to 15 MB) via Whisper STT (`whisper-large-v3-turbo` / `whisper-1`).
+- `POST /api/companion/stream`: Server-Sent Events (`text/event-stream`) endpoint streaming grounded companion responses (`start`, `token`, `sources`, `action`, `done`, `error`).
 
 ### Real-Time WebSocket Channel (`/ws`)
 Connect to `ws://127.0.0.1:8000/ws` for live bidirectional research streaming.
