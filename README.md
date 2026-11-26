@@ -9,6 +9,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangChain](https://img.shields.io/badge/LangChain-v1-orange.svg?logo=langchain&logoColor=white)](https://langchain.com)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-Enabled-9cf.svg?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
+[![M8ven Verified](https://m8ven.ai/badge/mcp/bhaskararao-aerupilli/inquirex?variant=verified)](https://m8ven.ai/mcp/bhaskararao-aerupilli/inquirex?s=readme)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E.svg?logo=supabase&logoColor=white)](https://supabase.com)
 [![WebSockets](https://img.shields.io/badge/Real--Time-WebSockets-purple.svg)](https://websockets.readthedocs.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
