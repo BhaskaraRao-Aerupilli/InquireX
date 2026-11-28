@@ -15,12 +15,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <p align="center">
-  <b>InquireX</b> is a production-grade autonomous deep research platform powered by multi-agent decomposition, parallel web & academic retrieval, anti-hallucination vector compression, dynamic Mermaid.js concept graphs, interactive presentation slide generation, and AI voice audio briefings.
+  <b>InquireX</b> is a production-grade autonomous deep research platform powered by multi-agent decomposition, parallel web & academic retrieval, semantic vector compression, interactive knowledge graphs, presentation slide decks, Supabase multi-user persistence, and a voice-enabled <b>AI Companion</b>.
 </p>
 
 <!-- Live Preview Demo Above the Fold -->
 <p align="center">
-  <img src="inquirex_demo.png" alt="InquireX Autonomous Deep Research Engine in Action" width="100%">
+  <img src="inquirex_demo.png" alt="InquireX V2.0 SaaS Workspace & Quantum Agent Orb" width="100%">
 </p>
 
 </div>
@@ -45,7 +45,7 @@ source venv/bin/activate
 
 # 3. Install dependencies & configure keys
 pip install -r requirements.txt
-cp .env.example .env    # Add your OPENAI_API_KEY and TAVILY_API_KEY
+cp .env.example .env    # Configure your LLM key (e.g., GROQ_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY) and TAVILY_API_KEY
 
 # 4. Start the engine
 python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
@@ -85,9 +85,9 @@ Open [http://localhost:8000](http://localhost:8000) in your browser and enter an
 - **Full-Viewport Modal & Navigation:** Responsive presentation overlay with keyboard shortcuts (<kbd>←</kbd> / <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>Esc</kbd>), slide counter, and clean section transitions.
 - **Slide Deck PDF Export:** Direct printing and PDF saving capability for stakeholder presentations.
 
-### 🎙️ AI Voice Audio Briefings
-- **In-Browser Audio Narration:** Built-in speech synthesis engine delivering hands-free executive briefings directly from report content.
-- **Playback & Speed Modulation:** Dedicated toolbar audio player with speed modulation (`0.85x` - `1.0x`) and audio waveform visualizer.
+### 🔊 Report Audio Briefings
+- **In-Browser Audio Narration:** Built-in `SpeechSynthesis` narration engine delivering hands-free executive briefings directly from generated report prose.
+- **Interactive Playback Controls:** Play/stop narration with adjustable speech rate directly inside the Report Viewer toolbar.
 
 ### 📄 Omni-Format Document Export Suite
 Export research documents with one click via a non-intrusive floating popover menu with client-side dynamic fallbacks:
@@ -101,11 +101,13 @@ Export research documents with one click via a non-intrusive floating popover me
 - **Universal Tool Extensibility:** Native integration with the Anthropic Model Context Protocol (`mcp`), empowering agents to query local file systems, databases, GitHub repositories, and private enterprise tool servers.
 
 ### 🎭 Specialized Research Personas
-- Dynamic agent routing tailored to specific domains:
-  - 🤖 **Auto Agent:** Autonomous dynamic routing based on inquiry domain.
-  - 📈 **Business & Market Analyst:** Strategic commercial insights, competitive analysis, and market trends.
-  - 🎓 **Academic Researcher:** Peer-reviewed rigor, scientific method focus, and formal literature review.
-  - 💻 **Technical Lead:** Architecture breakdowns, code implementation trade-offs, and technical feasibility.
+- Dynamic agent routing tailored to specific domains (selectable in **New Research** or via `agent` in the `/ws` payload):
+  - ✨ **Auto Agent:** Dynamic backend routing based on topic domain.
+  - 📈 **Business Analyst:** Market trends, competitive sizing & strategy.
+  - 🎓 **Academic Researcher:** Literature rigor & peer-reviewed evidence.
+  - 💻 **Technical Lead:** System architecture, engineering & security.
+  - 💰 **Financial Analyst:** Valuation, revenue drivers & capital allocation.
+  - 📐 **Quantitative Analyst:** Statistical models & numerical benchmarks.
 
 ### 🎨 Modular SaaS UI/UX & Light/Dark Design System
 - **Modern Modular Architecture:** Built with semantic CSS design tokens (`frontend/css/tokens.css`) and modular ES6 JavaScript views (`frontend/js/`) featuring zero-flash theme preloading across pure Light and Dark modes, collapsible navigation, global search (`Ctrl+K`), and full mobile responsiveness (`320px+`).
@@ -130,42 +132,39 @@ Export research documents with one click via a non-intrusive floating popover me
 
 ```mermaid
 flowchart TD
-    User([👤 User / Client Dashboard]) -->|HTTP / WebSocket| Gateway[⚡ FastAPI Application Gateway]
-    
-    subgraph Auth [🔐 Authentication & Session Guard]
-        Gateway <--> Supabase[(Supabase PostgreSQL)]
-        Gateway <--> JWT[Bcrypt Hashing & JWT Cookies]
+    User(["👤 Authenticated User Workspace"]) -->|"HTTP / WebSocket / SSE"| Gateway["⚡ FastAPI Application Gateway"]
+
+    subgraph Auth ["🔐 Auth & Per-User Supabase Persistence"]
+        Gateway <-->|"Users & Reports"| Supabase[("Supabase PostgreSQL\npublic.users • public.reports")]
+        Gateway <-->|"Google OAuth & Passwords"| JWT["bcrypt • JWT HTTP-Only Cookie"]
     end
 
-    subgraph AgenticCore [🧠 InquireX Multi-Agent Core]
-        Gateway --> Orchestrator[LangChain / LangGraph Orchestrator]
-        Orchestrator --> Planner[Sub-Query Decomposition & Planning]
-        Planner --> Dispatcher{Search & Tool Dispatcher}
+    subgraph AgenticCore ["🧠 InquireX Multi-Agent Core"]
+        Gateway -->|"Persona & Config Routing"| Orchestrator["LangChain / LangGraph Orchestrator"]
+        Orchestrator --> Planner["Sub-Query Decomposition & Planning"]
+        Planner --> Dispatcher{"Search & Tool Dispatcher"}
     end
 
-    subgraph Retrieval [🌐 Multi-Source Intelligence Gathering]
-        Dispatcher --> Tavily[Tavily Search API]
-        Dispatcher --> DDG[DuckDuckGo Search]
-        Dispatcher --> Academic[ArXiv & PubMed Central]
-        Dispatcher --> Scrapers[Headless Browsers & BS4]
-        Dispatcher --> MCP[Model Context Protocol MCP Servers]
+    subgraph Retrieval ["🌐 Multi-Source & Private Retrieval"]
+        Dispatcher --> Tavily["Tavily Search API"]
+        Dispatcher --> DDG["DuckDuckGo • Google • SearXNG"]
+        Dispatcher --> Academic["ArXiv & PubMed Central"]
+        Dispatcher --> UserDocs["Isolated Private Docs\n./my-docs/user_<id>/"]
+        Dispatcher --> MCP["Model Context Protocol (MCP) Servers"]
     end
 
-    subgraph VectorEngine [⚙️ Vector Compression & Grounding]
-        Retrieval --> VectorFilter[Cosine Similarity & Context Compressor]
-        VectorFilter --> LLMEngine[LLM Synthesis Engine\nGPT-4o / Claude 3.5 / Gemini / Ollama]
-        LLMEngine --> AntiHallucination[Anti-Hallucination & Citation Validator]
+    subgraph VectorEngine ["⚙️ Vector Compression & Grounded Synthesis"]
+        Retrieval --> VectorFilter["FastEmbed / Vector Embeddings & Cosine Compression"]
+        VectorFilter --> LLMEngine["Multi-Provider LLM Engine\nGroq • Gemini • OpenRouter (:free) • OpenAI • Claude • Ollama"]
+        LLMEngine --> AntiHallucination["Citation Grounding & Verification"]
     end
 
-    subgraph PresentationTier [🖥️ Interactive Workspace & Delivery]
-        AntiHallucination --> Streamer[WebSocket Token Streamer]
-        Streamer --> LiveReport[Live Markdown Article]
-        Streamer --> MindMap[Mermaid.js Concept Graph]
-        Streamer --> SWOT[SWOT Strategic Matrix]
-        Streamer --> SlideDeck[Interactive Presentation Slides]
-        Streamer --> AudioBrief[Speech Synthesis Audio Briefing]
-        Streamer --> ChatAgent[Context-Grounded Follow-Up Chat]
-        Streamer --> Exporters[Omni-Format Export PDF / DOCX / MD / LaTeX / JSON]
+    subgraph PresentationTier ["🖥️ Modular SaaS Workspace & Delivery"]
+        AntiHallucination --> Streamer["WebSocket Pipeline (/ws)"]
+        Streamer --> Views["Home Orb • Dashboard • Report Viewer • Knowledge Graph"]
+        Streamer --> SlideDeck["Interactive Presentation Decks & SWOT"]
+        Streamer --> Exporters["Export Suite: PDF • DOCX • MD • LaTeX • JSON"]
+        Gateway <-->|"SSE Stream + Whisper STT"| Companion["AI Companion (Voice Orb & Quick Drawer)"]
     end
 ```
 
@@ -173,7 +172,7 @@ flowchart TD
 
 ## 📐 System Design & UML Diagrams
 
-InquireX is engineered with formal software architecture principles. Below are the comprehensive architectural, behavioral, and structural diagrams of the platform:
+InquireX is engineered with formal software architecture principles. Below are the comprehensive architectural, behavioral, and structural diagrams of the platform (alongside the live V2.0 additions for per-user `public.reports` storage and the SSE/Whisper AI Companion pipeline):
 
 ### 1. System Architecture Diagram
 High-level component architecture illustrating the client tier, application gateway, multi-agent orchestration core, retrieval subsystem, vector filtering pipeline, and external integrations.
@@ -244,12 +243,12 @@ Comprehensive actor-to-system interactions capturing user capabilities (running 
 | :--- | :--- |
 | **Backend Core** | Python 3.11+, FastAPI, Uvicorn, AsyncIO, Pydantic v2 |
 | **Agentic Framework** | LangChain v1, LangGraph, LiteLLM |
-| **Supported LLMs** | OpenAI (GPT-4o, GPT-4o-mini), Anthropic (Claude 3.5 Sonnet), Google Gemini (Gemini 2.0 Flash / Pro), Ollama (Local LLMs), Groq, Mistral |
+| **Supported LLMs** | Groq, Google Gemini, OpenRouter (`:free` & paid models), OpenAI, Anthropic (Claude), Ollama (Local LLMs), Mistral |
 | **Search Retrievers** | Tavily Search, DuckDuckGo (`ddgs`), ArXiv, PubMed Central, Google Search, Bing, SearXNG |
 | **Scraping & Ingestion**| BeautifulSoup4, PyMuPDF (`fitz`), LXML, Unstructured, Playwright |
-| **Vector RAG & Embeddings** | LangChain Text Splitters, OpenAI Embeddings, Cosine Similarity, Tiktoken |
+| **Vector RAG & Embeddings** | FastEmbed (`BAAI/bge-small-en-v1.5`), OpenAI/LangChain Embeddings, LangChain Text Splitters, Cosine Similarity, Tiktoken |
 | **Tool Extensibility** | Model Context Protocol (`mcp`), `langchain-mcp-adapters` |
-| **Database & Auth** | Supabase, PostgreSQL, `bcrypt`, Python-JOSE (JWT), HTTP-Only Cookies |
+| **Database & Auth** | Supabase PostgreSQL (`public.users` & `public.reports`), Local JSON Fallback, Google OAuth 2.0, `bcrypt`, Python-JOSE (JWT), HTTP-Only Cookies |
 | **Frontend UI** | HTML5, Semantic CSS Design Tokens (Light/Dark), Modular Vanilla JS (ES6+ Modules), Inter / Space Grotesk / JetBrains Mono, FontAwesome 6 |
 | **Visualization & Speech**| Mermaid.js v10, Showdown.js, DOMPurify, Web Speech API (`SpeechRecognition` & `SpeechSynthesis`), `MediaRecorder` + Whisper STT, Web Audio API |
 | **Document Exporting** | `python-docx`, `htmldocx`, `weasyprint`, KaTeX, LaTeX Engine, Blob API |
@@ -261,7 +260,8 @@ Comprehensive actor-to-system interactions capturing user capabilities (running 
 ### 1. Prerequisites
 - **Python 3.11+** installed on your system.
 - **Git** installed.
-- (Recommended) An [OpenAI](https://platform.openai.com) or [Anthropic](https://console.anthropic.com) API key, and a [Tavily](https://tavily.com) API key for live search.
+- An API key for at least one supported LLM provider (**Groq**, **Google Gemini**, **OpenRouter**, **OpenAI**, or **Anthropic**), plus a **[Tavily](https://tavily.com)** API key (recommended for live web retrieval).
+- *(Optional)* A **[Supabase](https://supabase.com)** project for cloud PostgreSQL user/report storage and **Google OAuth 2.0** credentials for Google Sign-In.
 
 ### 2. Clone the Repository
 ```bash
@@ -288,33 +288,60 @@ pip install -e .
 ```
 
 ### 5. Configure Environment Variables
-Copy the template configuration file:
+Start from `.env.example` (or create `.env` in the repository root):
 ```bash
 cp .env.example .env
 ```
-Open `.env` and fill in your keys:
+Configure your preferred LLM, search, authentication, and persistence keys in `.env`:
 ```ini
-# LLM Provider Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-# ANTHROPIC_API_KEY=your_anthropic_api_key_here
-# GEMINI_API_KEY=your_gemini_api_key_here
+# LLM Provider Keys (configure at least one)
+GROQ_API_KEY=your_groq_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+# OPENAI_API_KEY=your_openai_api_key_here
 
-# Search Retriever
+# Model & Companion Routing (provider:model syntax)
+FAST_LLM=groq:llama-3.1-8b-instant
+SMART_LLM=groq:llama-3.3-70b-versatile
+STRATEGIC_LLM=groq:llama-3.3-70b-versatile
+COMPANION_FREE_ONLY=true
+COMPANION_FREE_OPENROUTER_MODEL=openrouter/free
+
+# Search Retriever & Embeddings
 RETRIEVER=tavily
 TAVILY_API_KEY=your_tavily_api_key_here
+EMBEDDING=fastembed:BAAI/bge-small-en-v1.5
 
-# Model Selection
-SMART_LLM_MODEL=gpt-4o
-FAST_LLM_MODEL=gpt-4o-mini
-
-# Supabase Authentication (Optional)
+# Auth & Supabase Cloud Persistence (Optional)
+AUTH_SECRET_KEY=generate_a_secure_random_hex_key
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-SECRET_KEY=generate_a_secure_random_hex_key
+
+# Google OAuth 2.0 (Optional)
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 ```
 
-### 6. Launch the InquireX Server
+### 6. Supabase Database Setup (Optional Cloud Persistence)
+If using Supabase for multi-user accounts and cloud report persistence, run both tables once in the **Supabase SQL Editor**:
+1. Create `public.users` (schema defined in [`backend/auth/models.py`](backend/auth/models.py)):
+```sql
+CREATE TABLE IF NOT EXISTS public.users (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name        TEXT NOT NULL,
+    email       TEXT UNIQUE NOT NULL,
+    password    TEXT,
+    provider    TEXT NOT NULL DEFAULT 'email',
+    avatar_url  TEXT,
+    created_at  TIMESTAMPTZ DEFAULT now(),
+    last_login  TIMESTAMPTZ DEFAULT now()
+);
+```
+2. Run [`backend/server/supabase_reports.sql`](backend/server/supabase_reports.sql) to create `public.reports`, `idx_reports_user_ts`, and Row Level Security. *(Without `public.reports`, InquireX automatically falls back to local JSON persistence in `data/reports.json`.)*
+
+### 7. Launch the InquireX Server
 ```bash
 python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
@@ -328,21 +355,30 @@ http://127.0.0.1:8000
 
 ## ⚙️ Environment Variables Reference
 
-| Variable | Description | Default |
+| Variable | Description | Default / Example |
 | :--- | :--- | :--- |
-| `OPENAI_API_KEY` | OpenAI API Key for GPT models and embeddings | Required (or Anthropic/Gemini) |
-| `TAVILY_API_KEY` | Tavily Search API key for deep web research | Recommended |
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude 3.5 Sonnet | Optional |
-| `GEMINI_API_KEY` | Google Gemini API key | Optional |
-| `SMART_LLM_MODEL` | High-parameter model used for report synthesis | `gpt-4o` |
-| `FAST_LLM_MODEL` | Fast lightweight model for query planning & summarization | `gpt-4o-mini` |
+| `FAST_LLM` | Fast provider:model used for query planning & summarization | `openai:gpt-5.4-mini` (e.g., `groq:llama-3.1-8b-instant`) |
+| `SMART_LLM` | Primary provider:model used for research synthesis & AI Companion | `openai:gpt-5.4` (e.g., `groq:llama-3.3-70b-versatile`) |
+| `STRATEGIC_LLM` | Planning/reasoning provider:model for deep multi-hop tasks | `openai:gpt-5.4` |
+| `GROQ_API_KEY` | Groq API key for fast inference & Whisper STT (`whisper-large-v3-turbo`) | Optional |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` | Google Gemini API key for research synthesis & companion fallback | Optional |
+| `OPENROUTER_API_KEY` | OpenRouter API key (works with `:free` fallback routing) | Optional |
+| `OPENAI_API_KEY` | OpenAI API key for GPT models & Whisper `whisper-1` fallback | Optional |
+| `COMPANION_FREE_ONLY` | Enforces zero-cost `:free` OpenRouter routing in AI Companion | `true` |
+| `COMPANION_FREE_OPENROUTER_MODEL` | Free OpenRouter fallback model identifier | `openrouter/free` |
+| `TAVILY_API_KEY` | Tavily Search API key for live web research & companion search | Recommended |
 | `RETRIEVER` | Primary search retriever (`tavily`, `duckduckgo`, `google`, `searx`) | `tavily` |
-| `MAX_SEARCH_RESULTS_PER_QUERY` | Maximum number of websites scraped per sub-question | `5` |
-| `TOTAL_WORDS` | Target minimum length for generated reports | `1200` |
-| `DOC_PATH` | Directory path for local file retrieval (private RAG) | `./my-docs` |
-| `SUPABASE_URL` | Supabase instance URL for user database | Optional |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key for authentication management | Optional |
-| `SECRET_KEY` | Secret key for JWT cookie encryption | Random string |
+| `EMBEDDING` | Vector embedding provider:model for RAG context filtering | `fastembed:BAAI/bge-small-en-v1.5` |
+| `MAX_SEARCH_RESULTS_PER_QUERY` | Default number of websites scraped per sub-question (`1`–`20` in UI) | `8` |
+| `TOTAL_WORDS` | Target length (words) for generated research reports | `2000` |
+| `DOC_PATH` | Base directory for user-isolated private RAG uploads (`user_<id>/`) | `./my-docs` |
+| `SUPABASE_URL` | Supabase project URL for users & cloud report storage | Optional |
+| `SUPABASE_ANON_KEY` | Supabase project anonymous/public key | Optional |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key for backend auth & report persistence | Optional |
+| `AUTH_SECRET_KEY` | Secret key used to sign HTTP-only JWT session cookies | Random runtime hex |
+| `GOOGLE_CLIENT_ID` | Google OAuth 2.0 client ID for Sign in with Google | Optional |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 client secret | Optional |
+| `GOOGLE_REDIRECT_URI` | Google OAuth callback URI | `http://localhost:8000/auth/google/callback` |
 
 ---
 
