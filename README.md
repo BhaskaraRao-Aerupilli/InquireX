@@ -57,7 +57,7 @@ Open [http://localhost:8000](http://localhost:8000) in your browser and enter an
 
 <div align="center">
 
-[⚡ Quickstart](#-30-second-quickstart) • [🌟 Key Features](#-key-features) • [🏛️ System Architecture](#️-system-architecture) • [📐 UML Diagrams](#-system-design--uml-diagrams) • [💻 Tech Stack](#-tech-stack) • [🚀 Detailed Setup](#-detailed-installation--configuration) • [⚙️ Configuration](#️-environment-variables-reference) • [📁 Structure](#-project-structure) • [🔌 API Protocol](#-api--websocket-protocol) • [📄 License](#-license)
+[⚡ Quickstart](#-30-second-quickstart) • [🌟 Key Features](#-key-features) • [🏛️ System Architecture](#️-system-architecture) • [💻 Tech Stack](#-tech-stack) • [🚀 Detailed Setup](#-detailed-installation--configuration) • [⚙️ Configuration](#️-environment-variables-reference) • [📁 Structure](#-project-structure) • [🔌 API Protocol](#-api--websocket-protocol) • [📄 License](#-license)
 
 ---
 
@@ -167,73 +167,6 @@ flowchart TD
         Gateway <-->|"SSE Stream + Whisper STT"| Companion["AI Companion (Voice Orb & Quick Drawer)"]
     end
 ```
-
----
-
-## 📐 System Design & UML Diagrams
-
-InquireX is engineered with formal software architecture principles. Below are the comprehensive architectural, behavioral, and structural diagrams of the platform (alongside the live V2.0 additions for per-user `public.reports` storage and the SSE/Whisper AI Companion pipeline):
-
-### 1. System Architecture Diagram
-High-level component architecture illustrating the client tier, application gateway, multi-agent orchestration core, retrieval subsystem, vector filtering pipeline, and external integrations.
-
-<div align="center">
-  <img src="system_architecture.png" alt="InquireX System Architecture Diagram" width="90%">
-</div>
-
----
-
-### 2. Sequence Diagram
-Step-by-step chronological sequence detailing client WebSocket initialization, sub-query decomposition, parallel scraping, vector compression, iterative report token streaming, and history persistence.
-
-<div align="center">
-  <img src="sequence_diagram.png" alt="InquireX Sequence Diagram" width="90%">
-</div>
-
----
-
-### 3. Activity Diagram
-Complete end-to-end operational workflow showing parallel execution branches, decision nodes, anti-hallucination validation, error fallback paths, and final multi-format artifact generation.
-
-<div align="center">
-  <img src="activity_diagram.png" alt="InquireX Activity Diagram" width="90%">
-</div>
-
----
-
-### 4. Data Flow Diagram (DFD)
-Level-0 and Level-1 data flow representation depicting data stores, process transformations, external entities, and telemetry streams through the research lifecycle.
-
-<div align="center">
-  <img src="data_flow_diagram.png" alt="InquireX Data Flow Diagram" width="90%">
-</div>
-
----
-
-### 5. Class Diagram
-Object-oriented class hierarchy detailing the core abstractions (`InquireXResearcher`, `Agent`, `Retriever`, `Scraper`, `ContextCompressor`, `ReportGenerator`, `AuthService`, and `WebSocketManager`).
-
-<div align="center">
-  <img src="class_diagram.png" alt="InquireX Class Diagram" width="90%">
-</div>
-
----
-
-### 6. Database Entity-Relationship Diagram (ERD)
-PostgreSQL / Supabase relational schema model covering user profiles, authentication credentials, research sessions, citation ledgers, and telemetry records.
-
-<div align="center">
-  <img src="database_er_diagram.png" alt="InquireX Database ER Diagram" width="90%">
-</div>
-
----
-
-### 7. Use Case Diagram
-Comprehensive actor-to-system interactions capturing user capabilities (running deep research, configuring MCP tools, presenting slide decks, exporting documents, and initiating follow-up chat dialogues).
-
-<div align="center">
-  <img src="use_case_diagram.png" alt="InquireX Use Case Diagram" width="90%">
-</div>
 
 ---
 
@@ -411,13 +344,7 @@ InquireX/
 ├── agent_teams/               # Multi-agent collaborative orchestration (LangGraph & AG2)
 ├── autonomous_agents/         # Autonomous deep research agent harnesses & benchmarks
 ├── outputs/                   # Automatically generated reports (.md, .pdf, .docx, .json)
-├── activity_diagram.png       # UML Activity Diagram
-├── class_diagram.png          # UML Class Diagram
-├── data_flow_diagram.png      # Level 0 & 1 Data Flow Diagram
-├── database_er_diagram.png    # Database Entity-Relationship Diagram
-├── sequence_diagram.png       # UML Sequence Diagram
-├── system_architecture.png    # Complete System Architecture Diagram
-├── use_case_diagram.png       # UML Use Case Diagram
+├── inquirex_demo.png          # README workspace preview screenshot
 ├── main.py                    # Application entry point
 ├── requirements.txt           # Python package dependencies
 └── README.md                  # Comprehensive project documentation
