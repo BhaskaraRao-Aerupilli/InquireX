@@ -1254,11 +1254,201 @@
   }
 }
 
+/* --- Studio Audio Briefing Player --- */
+.ix-audio-studio {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.ix-audio-studio-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ix-audio-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.ix-audio-badge-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-primary-soft);
+  color: var(--accent-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.ix-audio-controls-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ix-audio-deck {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.ix-audio-play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: none;
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.ix-audio-play-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  background-color: var(--accent-primary-hover);
+}
+
+.ix-audio-play-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.ix-audio-skip-btn {
+  height: 30px;
+  padding: 0 9px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ix-audio-skip-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.ix-audio-skip-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ix-audio-eq {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 24px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.ix-audio-eq-bar {
+  width: 3px;
+  height: 6px;
+  border-radius: 99px;
+  background-color: var(--accent-primary);
+  opacity: 0.35;
+  transition: height 180ms ease, opacity 180ms ease;
+}
+
+.ix-audio-studio.is-playing .ix-audio-eq-bar {
+  opacity: 0.92;
+  animation: ixAudioPulse 1.05s ease-in-out infinite;
+}
+
+.ix-audio-studio.is-playing .ix-audio-eq-bar:nth-child(odd) {
+  animation-duration: 0.85s;
+}
+
+.ix-audio-studio.is-playing .ix-audio-eq-bar:nth-child(3n) {
+  animation-duration: 1.2s;
+  animation-delay: 0.14s;
+}
+
+.ix-audio-studio.is-playing .ix-audio-eq-bar:nth-child(4n) {
+  animation-delay: 0.28s;
+}
+
+@keyframes ixAudioPulse {
+  0%, 100% { height: 5px; }
+  50% { height: 22px; }
+}
+
+.ix-audio-timeline {
+  flex: 1 1 200px;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ix-audio-scrubber {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+  height: 5px;
+}
+
+.ix-audio-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ix-audio-transcript {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ix-audio-transcript-body {
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
 /* --- Print Stylesheet (Clean Academic / Stakeholder Printout) --- */
 @media print {
   .ix-sidebar,
   .ix-topbar,
   .ix-report-toolbar,
+  .ix-audio-studio,
   .ix-report-rail,
   .ix-toast-region {
     display: none !important;

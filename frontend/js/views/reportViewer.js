@@ -23,7 +23,13 @@ import {
   extractSwotSections,
   extractFollowUpVectors,
 } from '../postprocess.js';
-import { exportReport, openSlideDeckModal, AudioBriefingController } from '../exports.js';
+import {
+  exportReport,
+  openSlideDeckModal,
+  AudioBriefingController,
+  DEFAULT_STUDIO_VOICES,
+  formatAudioTime,
+} from '../exports.js';
 
 const audioController = new AudioBriefingController();
 
@@ -275,27 +281,16 @@ export function renderReportViewerView(container, ctx) {
         </div>
 
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <div style="display:inline-flex; align-items:center; gap:6px;">
-            <button
-              type="button"
-              id="ixAudioBriefingBtn"
-              class="ix-btn ix-btn-secondary ix-btn-sm"
-              title="Listen to AI Voice Audio Briefing"
-            >
-              <i class="fa-solid fa-headphones"></i>
-              <span>Audio Briefing</span>
-            </button>
-            <select
-              id="ixAudioRateSelect"
-              class="ix-select ix-hidden"
-              style="width:74px; height:30px; font-size:var(--text-xs); padding:0 22px 0 8px;"
-              aria-label="Audio playback speed"
-            >
-              <option value="1">1.0x</option>
-              <option value="1.25">1.25x</option>
-              <option value="1.5">1.5x</option>
-            </select>
-          </div>
+          <button
+            type="button"
+            id="ixAudioBriefingBtn"
+            class="ix-btn ix-btn-secondary ix-btn-sm"
+            aria-expanded="false"
+            title="Open AI Executive Audio Briefing Studio"
+          >
+            <i class="fa-solid fa-headphones"></i>
+            <span>Audio Briefing</span>
+          </button>
 
           <button
             type="button"
@@ -308,6 +303,89 @@ export function renderReportViewerView(container, ctx) {
           </button>
         </div>
       </div>
+
+      <!-- Studio Audio Briefing Dock -->
+      <section class="ix-audio-studio ix-hidden" id="ixAudioStudioCard" aria-label="InquireX Audio Briefing Studio">
+        <div class="ix-audio-studio-top">
+          <div class="ix-audio-brand">
+            <span class="ix-audio-badge-icon"><i class="fa-solid fa-tower-broadcast"></i></span>
+            <div style="min-width:0;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <strong style="font-size:var(--text-sm); color:var(--text-primary);">Executive Audio Briefing Studio</strong>
+                <span class="ix-badge" id="ixAudioEngineBadge" style="font-size:11px;">Ready</span>
+              </div>
+              <div class="ix-help" id="ixAudioSubtitle" style="margin:2px 0 0; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                Synthesizes a broadcast executive summary from your verified report prose.
+              </div>
+            </div>
+          </div>
+
+          <div class="ix-audio-controls-meta">
+            <select id="ixAudioModeSelect" class="ix-select" style="width:auto; height:30px; font-size:11px; padding:0 24px 0 8px;" aria-label="Audio briefing format">
+              <option value="executive" selected>Executive Brief (~2–3 min)</option>
+              <option value="detailed">Deep Walk-Through (~5 min)</option>
+              <option value="full">Full Cleaned Report</option>
+            </select>
+
+            <select id="ixAudioVoiceSelect" class="ix-select" style="width:auto; max-width:210px; height:30px; font-size:11px; padding:0 24px 0 8px;" aria-label="Studio narrator voice">
+              ${DEFAULT_STUDIO_VOICES.map((v) => `<option value="${escapeHtml(v.id)}">${escapeHtml(v.label)}</option>`).join('')}
+            </select>
+
+            <button type="button" id="ixAudioTranscriptBtn" class="ix-btn ix-btn-ghost ix-btn-sm" style="height:30px; font-size:11px;">
+              <i class="fa-regular fa-file-lines"></i> Script
+            </button>
+
+            <a id="ixAudioDownloadBtn" class="ix-btn ix-btn-secondary ix-btn-sm ix-hidden" href="#" download style="height:30px; font-size:11px;">
+              <i class="fa-solid fa-download"></i> MP3
+            </a>
+
+            <button type="button" id="ixAudioCloseBtn" class="ix-icon-btn ix-icon-btn-sm" aria-label="Close audio studio" title="Close Audio Studio">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="ix-audio-deck">
+          <button type="button" id="ixAudioPlayPauseBtn" class="ix-audio-play-btn" aria-label="Play or pause briefing">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button type="button" id="ixAudioBackBtn" class="ix-audio-skip-btn" title="Rewind 15 seconds" disabled>-15s</button>
+          <button type="button" id="ixAudioFwdBtn" class="ix-audio-skip-btn" title="Forward 15 seconds" disabled>+15s</button>
+
+          <div class="ix-audio-eq" aria-hidden="true">
+            ${Array.from({ length: 16 }).map(() => `<span class="ix-audio-eq-bar"></span>`).join('')}
+          </div>
+
+          <div class="ix-audio-timeline">
+            <span class="ix-audio-time" id="ixAudioElapsed">00:00</span>
+            <input type="range" id="ixAudioScrubber" class="ix-audio-scrubber" min="0" max="100" value="0" step="0.5" aria-label="Audio progress timeline" disabled />
+            <span class="ix-audio-time" id="ixAudioDuration">00:00</span>
+          </div>
+
+          <select id="ixAudioRateSelect" class="ix-select" style="width:72px; height:30px; font-size:11px; padding:0 20px 0 8px;" aria-label="Audio playback speed">
+            <option value="0.85">0.85x</option>
+            <option value="1" selected>1.0x</option>
+            <option value="1.15">1.15x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="1.75">1.75x</option>
+          </select>
+
+          <button type="button" id="ixAudioStopBtn" class="ix-btn ix-btn-ghost ix-btn-sm" style="height:30px; font-size:11px;" title="Stop playback">
+            <i class="fa-solid fa-stop"></i>
+          </button>
+        </div>
+
+        <div class="ix-audio-transcript ix-hidden" id="ixAudioTranscriptPanel">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span class="ix-help" id="ixAudioTranscriptMeta" style="margin:0; font-size:11px; font-weight:600;">Spoken Briefing Script</span>
+            <button type="button" id="ixAudioCopyScriptBtn" class="ix-btn ix-btn-ghost ix-btn-sm" style="height:26px; font-size:11px;">
+              <i class="fa-regular fa-copy"></i> Copy Script
+            </button>
+          </div>
+          <div class="ix-audio-transcript-body" id="ixAudioTranscriptBody"></div>
+        </div>
+      </section>
 
       <!-- Summary Metrics Strip (Strictly Real Report Counts) -->
       <div class="ix-stats-grid" style="margin-bottom:var(--space-5);">
@@ -680,33 +758,11 @@ export function renderReportViewerView(container, ctx) {
   };
   document.addEventListener('keydown', onKeyDown);
 
-  // AI Audio Briefing Controls
-  const audioBtn = container.querySelector('#ixAudioBriefingBtn');
-  const rateSelect = container.querySelector('#ixAudioRateSelect');
-
-  const syncAudioBtn = (playing) => {
-    if (!audioBtn) return;
-    audioBtn.innerHTML = playing
-      ? '<i class="fa-solid fa-stop"></i> <span>Stop Briefing</span>'
-      : '<i class="fa-solid fa-headphones"></i> <span>Audio Briefing</span>';
-    if (rateSelect) rateSelect.classList.toggle('ix-hidden', !playing);
-  };
-
-  audioBtn?.addEventListener('click', () => {
-    if (audioController.isPlaying) {
-      audioController.stop(syncAudioBtn);
-    } else {
-      const spokenText = container.querySelector('#ixReportProse')?.innerText || report.reportMarkdown || '';
-      audioController.play(spokenText, syncAudioBtn);
-    }
-  });
-
-  rateSelect?.addEventListener('change', (e) => {
-    audioController.setRate(Number(e.target.value));
-    if (audioController.isPlaying) {
-      const spokenText = container.querySelector('#ixReportProse')?.innerText || '';
-      audioController.play(spokenText, syncAudioBtn);
-    }
+  // Studio AI Audio Briefing Controls
+  const unsubAudio = wireAudioStudio({
+    container,
+    report,
+    audioController,
   });
 
   // Gallery Lightbox triggers
@@ -810,8 +866,225 @@ export function renderReportViewerView(container, ctx) {
     document.removeEventListener('click', onDocClick);
     document.removeEventListener('keydown', onKeyDown);
     document.body.style.overflow = '';
-    audioController.stop();
+    unsubAudio?.();
+    audioController.destroy();
   };
+}
+
+function wireAudioStudio({ container, report, audioController }) {
+  const triggerBtn = container.querySelector('#ixAudioBriefingBtn');
+  const studioCard = container.querySelector('#ixAudioStudioCard');
+  const engineBadge = container.querySelector('#ixAudioEngineBadge');
+  const subtitleEl = container.querySelector('#ixAudioSubtitle');
+  const modeSelect = container.querySelector('#ixAudioModeSelect');
+  const voiceSelect = container.querySelector('#ixAudioVoiceSelect');
+  const rateSelect = container.querySelector('#ixAudioRateSelect');
+  const playPauseBtn = container.querySelector('#ixAudioPlayPauseBtn');
+  const backBtn = container.querySelector('#ixAudioBackBtn');
+  const fwdBtn = container.querySelector('#ixAudioFwdBtn');
+  const stopBtn = container.querySelector('#ixAudioStopBtn');
+  const closeBtn = container.querySelector('#ixAudioCloseBtn');
+  const scrubber = container.querySelector('#ixAudioScrubber');
+  const elapsedEl = container.querySelector('#ixAudioElapsed');
+  const durationEl = container.querySelector('#ixAudioDuration');
+  const transcriptBtn = container.querySelector('#ixAudioTranscriptBtn');
+  const transcriptPanel = container.querySelector('#ixAudioTranscriptPanel');
+  const transcriptMeta = container.querySelector('#ixAudioTranscriptMeta');
+  const transcriptBody = container.querySelector('#ixAudioTranscriptBody');
+  const copyScriptBtn = container.querySelector('#ixAudioCopyScriptBtn');
+  const downloadBtn = container.querySelector('#ixAudioDownloadBtn');
+
+  let hasLoadedOnce = false;
+  let isScrubbing = false;
+
+  const getSourceText = () =>
+    (report.reportMarkdown || container.querySelector('#ixReportProse')?.innerText || '').trim();
+
+  const startGeneration = () => {
+    const content = getSourceText();
+    if (!content || content.length < 20) {
+      showToast('Report content is too short for an executive audio briefing.', 'warning');
+      return;
+    }
+    hasLoadedOnce = false;
+    audioController.loadAndPlay({
+      reportId: report.id || '',
+      title: report.prompt || 'Research Report',
+      content,
+      mode: modeSelect?.value || 'executive',
+      voice: voiceSelect?.value || 'en-US-AndrewNeural',
+    });
+  };
+
+  const openStudioAndMaybeGenerate = (forceRegenerate = false) => {
+    studioCard?.classList.remove('ix-hidden');
+    triggerBtn?.setAttribute('aria-expanded', 'true');
+    if (forceRegenerate || (!hasLoadedOnce && audioController.status !== 'generating')) {
+      startGeneration();
+    }
+  };
+
+  const renderState = (snap) => {
+    const playing = snap.status === 'playing';
+    const generating = snap.status === 'generating';
+    const hasAudio = Boolean(snap.audioUrl);
+    if (playing || snap.status === 'paused') {
+      hasLoadedOnce = true;
+    } else if (snap.status === 'idle' || snap.status === 'error') {
+      hasLoadedOnce = false;
+    }
+
+    studioCard?.classList.toggle('is-playing', playing);
+
+    if (triggerBtn) {
+      triggerBtn.innerHTML = generating
+        ? '<i class="fa-solid fa-spinner fa-spin"></i> <span>Preparing...</span>'
+        : playing
+        ? '<i class="fa-solid fa-volume-high"></i> <span>Briefing Playing</span>'
+        : snap.status === 'paused' && hasAudio
+        ? '<i class="fa-solid fa-circle-play"></i> <span>Resume Briefing</span>'
+        : '<i class="fa-solid fa-headphones"></i> <span>Audio Briefing</span>';
+    }
+
+    if (playPauseBtn) {
+      playPauseBtn.disabled = generating;
+      playPauseBtn.innerHTML = generating
+        ? '<i class="fa-solid fa-spinner fa-spin"></i>'
+        : playing
+        ? '<i class="fa-solid fa-pause"></i>'
+        : '<i class="fa-solid fa-play"></i>';
+    }
+
+    if (backBtn) backBtn.disabled = !hasAudio || generating;
+    if (fwdBtn) fwdBtn.disabled = !hasAudio || generating;
+    if (scrubber) {
+      scrubber.disabled = !hasAudio || generating || !snap.duration;
+      scrubber.max = String(Math.max(1, snap.duration || 100));
+      if (!isScrubbing) {
+        scrubber.value = String(Math.min(snap.duration || 100, snap.currentTime || 0));
+      }
+    }
+
+    if (elapsedEl) elapsedEl.textContent = formatAudioTime(snap.currentTime);
+    if (durationEl) durationEl.textContent = formatAudioTime(snap.duration);
+
+    if (engineBadge) {
+      if (generating) engineBadge.textContent = 'Preparing Studio Audio...';
+      else if (snap.playbackNote && snap.status === 'paused') engineBadge.textContent = 'Ready — Press Play';
+      else if (snap.engine === 'edge_neural') engineBadge.textContent = 'Neural Studio HD';
+      else if (snap.engine === 'gemini_tts') engineBadge.textContent = 'Gemini Native Audio';
+      else if (snap.engine === 'browser_fallback') engineBadge.textContent = 'Browser Voice Fallback';
+      else if (snap.status === 'error') engineBadge.textContent = 'Unavailable';
+      else engineBadge.textContent = 'Ready';
+    }
+
+    if (subtitleEl) {
+      if (generating) {
+        subtitleEl.textContent = `Distilling ${snap.mode} script & warming Neural HD stream (~3–6s)...`;
+      } else if (snap.error) {
+        subtitleEl.textContent = snap.error;
+      } else if (snap.playbackNote) {
+        subtitleEl.textContent = `${snap.playbackNote} • ${snap.voiceLabel} • ${snap.wordCount.toLocaleString()} words`;
+      } else if (snap.wordCount > 0) {
+        subtitleEl.textContent = `${snap.voiceLabel} • ${snap.wordCount.toLocaleString()} words • ${snap.rate}x speed`;
+      }
+    }
+
+    if (downloadBtn) {
+      if (snap.downloadUrl) {
+        downloadBtn.href = snap.downloadUrl;
+        downloadBtn.download = snap.filename || 'inquirex_briefing.mp3';
+        downloadBtn.textContent = '';
+        downloadBtn.innerHTML = `<i class="fa-solid fa-download"></i> ${snap.filename?.endsWith('.wav') ? 'WAV' : 'MP3'}`;
+        downloadBtn.classList.remove('ix-hidden');
+      } else {
+        downloadBtn.classList.add('ix-hidden');
+      }
+    }
+
+    if (transcriptBody && snap.script && transcriptBody.textContent !== snap.script) {
+      transcriptBody.textContent = snap.script;
+    }
+    if (transcriptMeta && snap.wordCount > 0) {
+      transcriptMeta.textContent = `Broadcast Script (${snap.wordCount.toLocaleString()} spoken words • ~${formatAudioTime(snap.duration)})`;
+    }
+  };
+
+  const unsub = audioController.subscribe(renderState);
+
+  triggerBtn?.addEventListener('click', () => {
+    const hidden = studioCard?.classList.contains('ix-hidden');
+    if (hidden) {
+      openStudioAndMaybeGenerate(false);
+    } else if (audioController.status === 'generating') {
+      // Keep visible and show status instead of hiding silently mid-synthesis
+      studioCard?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if (audioController.status === 'playing') {
+      audioController.pause();
+    } else if (audioController.status === 'paused') {
+      audioController.resume();
+    } else {
+      studioCard?.classList.add('ix-hidden');
+      triggerBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  playPauseBtn?.addEventListener('click', () => {
+    if (audioController.status === 'idle' || audioController.status === 'error') {
+      startGeneration();
+    } else {
+      audioController.togglePlayPause();
+    }
+  });
+
+  backBtn?.addEventListener('click', () => audioController.skip(-15));
+  fwdBtn?.addEventListener('click', () => audioController.skip(15));
+  stopBtn?.addEventListener('click', () => audioController.stop());
+
+  closeBtn?.addEventListener('click', () => {
+    audioController.stop();
+    studioCard?.classList.add('ix-hidden');
+    triggerBtn?.setAttribute('aria-expanded', 'false');
+  });
+
+  if (rateSelect) {
+    rateSelect.value = String(audioController.rate || 1);
+  }
+
+  modeSelect?.addEventListener('change', () => openStudioAndMaybeGenerate(true));
+  voiceSelect?.addEventListener('change', () => openStudioAndMaybeGenerate(true));
+  rateSelect?.addEventListener('change', (e) => audioController.setRate(Number(e.target.value)));
+
+  scrubber?.addEventListener('pointerdown', () => {
+    isScrubbing = true;
+  });
+  scrubber?.addEventListener('input', (e) => {
+    if (elapsedEl) elapsedEl.textContent = formatAudioTime(Number(e.target.value));
+  });
+  scrubber?.addEventListener('pointerup', () => {
+    isScrubbing = false;
+  });
+  scrubber?.addEventListener('change', (e) => {
+    isScrubbing = false;
+    audioController.seek(Number(e.target.value));
+  });
+
+  transcriptBtn?.addEventListener('click', () => {
+    transcriptPanel?.classList.toggle('ix-hidden');
+  });
+
+  copyScriptBtn?.addEventListener('click', async () => {
+    const text = audioController.script || transcriptBody?.textContent || '';
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Audio briefing script copied.', 'success');
+    } catch {
+      showToast('Could not copy script.', 'warning');
+    }
+  });
+
+  return unsub;
 }
 
 function renderSwotQuadrant(title, iconClass, colorVar, items) {

@@ -85,9 +85,9 @@ Open [http://localhost:8000](http://localhost:8000) in your browser and enter an
 - **Full-Viewport Modal & Navigation:** Responsive presentation overlay with keyboard shortcuts (<kbd>←</kbd> / <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>Esc</kbd>), slide counter, and clean section transitions.
 - **Slide Deck PDF Export:** Direct printing and PDF saving capability for stakeholder presentations.
 
-### 🔊 Report Audio Briefings
-- **In-Browser Audio Narration:** Built-in `SpeechSynthesis` narration engine delivering hands-free executive briefings directly from generated report prose.
-- **Interactive Playback Controls:** Play/stop narration with adjustable speech rate directly inside the Report Viewer toolbar.
+### 🔊 Executive Audio Briefing Studio
+- **AI-Distilled Broadcast Scripts & Neural Voices:** Transforms research reports into spoken executive briefings (or deep walk-throughs / full cleaned narration) synthesized server-side via verified Edge Neural Studio voices (`en-US-AndrewNeural`, `Ava`, `Aria`, `Guy`, `Sonia`, `Ryan`, `Neerja`, `Prabhat`) or Gemini Native TTS (`gemini-2.5-flash-preview-tts`), with chunked browser speech fallback.
+- **Studio Player Dock:** Full HTML5 audio deck (`Play/Pause`, `-15s/+15s` skip, scrubbable progress timeline, live `0.85x`–`1.75x` playback speed without restarting, 16-bar animated equalizer, readable Transcript panel, and one-click `.mp3`/`.wav` download).
 
 ### 📄 Omni-Format Document Export Suite
 Export research documents with one click via a non-intrusive floating popover menu with client-side dynamic fallbacks:
@@ -320,6 +320,7 @@ http://127.0.0.1:8000
 ```
 InquireX/
 ├── backend/
+│   ├── audio/                 # Studio Audio Briefing script distillation, Edge Neural / Gemini TTS & byte-range streaming
 │   ├── auth/                  # Supabase database client, Bcrypt hashing, Google OAuth, JWT auth middleware
 │   ├── chat/                  # Context-aware chat agent with report memory
 │   ├── companion/             # AI Companion SSE streaming brain, rate limiting & Whisper STT endpoints
@@ -366,10 +367,11 @@ InquireX/
 - `GET /api/reports/storage-status` & `POST /api/reports/migrate-local`: Inspect database backend readiness and sync local reports into Supabase.
 - `GET /files/`, `POST /upload/`, `DELETE /files/{filename}`: Manage private RAG documents isolated per user (`./my-docs/user_<id>/`).
 
-### AI Companion Endpoints (Authenticated)
+### AI Companion & Audio Briefing Endpoints (Authenticated)
 - `GET /api/companion/capabilities`: Retrieve configured LLM provider, model, free fallback chain, STT backend availability, and search capability metadata (without exposing API keys).
 - `POST /api/companion/transcribe`: Transcribe uploaded microphone audio (up to 15 MB) via Whisper STT (`whisper-large-v3-turbo` / `whisper-1`).
 - `POST /api/companion/stream`: Server-Sent Events (`text/event-stream`) endpoint streaming grounded companion responses (`start`, `token`, `sources`, `action`, `done`, `error`).
+- `GET /api/audio/voices`, `POST /api/audio/briefing`, `GET /api/audio/briefing/{briefing_id}`: List Neural studio voices, generate per-user executive audio briefings, and stream `.mp3`/`.wav` with HTTP `206` byte-range seek or download support.
 
 ### Real-Time WebSocket Channel (`/ws`)
 Connect to `ws://127.0.0.1:8000/ws` for live bidirectional research streaming.

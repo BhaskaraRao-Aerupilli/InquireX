@@ -54,8 +54,10 @@ def _get_user_doc_path(user_id: str | None) -> str:
 
 try:
     from companion.routes import router as companion_router
+    from audio.routes import router as audio_router
 except ImportError:
     from backend.companion.routes import router as companion_router
+    from backend.audio.routes import router as audio_router
 
 # MongoDB services removed - no database persistence needed
 
@@ -191,9 +193,10 @@ DOC_PATH = os.getenv("DOC_PATH", "./my-docs")
 # Lifespan events now handled in the lifespan context manager above
 
 
-# -- Mount auth & companion routers
+# -- Mount auth, companion & audio briefing routers
 app.include_router(auth_router)
 app.include_router(companion_router)
+app.include_router(audio_router)
 
 # -- Auth page routes
 @app.get("/login", response_class=HTMLResponse, include_in_schema=False)

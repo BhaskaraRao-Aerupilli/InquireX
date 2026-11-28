@@ -380,7 +380,9 @@ class CompanionService:
         payload = res.json()
         return str(payload.get("text", "")).strip()
 
-    def _build_provider(self, detail_level: str) -> GenericLLMProvider:
+    def _build_provider(
+        self, detail_level: str, *, fail_fast: bool = False, max_tokens_override: Optional[int] = None
+    ) -> GenericLLMProvider:
         provider_name, model, cfg_kwargs = self._resolve_llm_config()
         if not provider_name or not model:
             raise RuntimeError("No LLM provider or model configured in InquireX.")
@@ -397,28 +399,37 @@ class CompanionService:
 
         # Respect stricter provider output-token limits (e.g. Groq qwen OTPM=1000 limit)
         if provider_name == "groq":
-            kwargs["max_tokens"] = 900 if detail_level == "detailed" else 600
-            kwargs.setdefault("max_retries", 1)
+            default_cap = 900 if detail_level == "detailed" else 600
+            kwargs["max_tokens"] = min(default_cap, max_tokens_override) if max_tokens_override else default_cap
+            kwargs["max_retries"] = 0 if fail_fast else kwargs.get("max_retries", 1)
         elif provider_name in {"openrouter", "mistralai"}:
-            kwargs["max_tokens"] = 1200 if detail_level == "detailed" else 650
-            kwargs.setdefault("max_retries", 1)
+            default_cap = 1200 if detail_level == "detailed" else 650
+            kwargs["max_tokens"] = min(default_cap, max_tokens_override) if max_tokens_override else default_cap
+            kwargs["max_retries"] = 0 if fail_fast else kwargs.get("max_retries", 1)
         else:
-            kwargs["max_tokens"] = 1800 if detail_level == "detailed" else 900
+            kwargs["max_tokens"] = max_tokens_override or (1800 if detail_level == "detailed" else 900)
+            if fail_fast and provider_name == "google_genai":
+                kwargs["max_retries"] = 0
 
         if provider_name == "openai" and os.environ.get("OPENAI_BASE_URL"):
             kwargs["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
 
         return GenericLLMProvider.from_provider(provider_name, **kwargs)
 
-    def _build_named_free_provider(self, provider_name: str, detail_level: str) -> Optional[GenericLLMProvider]:
+    def _build_named_free_provider(
+        self, provider_name: str, detail_level: str, *, fail_fast: bool = False
+    ) -> Optional[GenericLLMProvider]:
+        retries = 0 if fail_fast else 1
         try:
             if provider_name == "google_genai" and (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
-                model = os.getenv("COMPANION_FALLBACK_GEMINI_MODEL", "gemini-2.5-flash")
+                model = os.getenv("COMPANION_FALLBACK_GEMINI_MODEL", "gemini-3.8-flash")
                 return GenericLLMProvider.from_provider(
                     "google_genai",
                     model=model,
                     temperature=0.45,
                     max_tokens=1600 if detail_level == "detailed" else 800,
+                    max_retries=retries,
+                    timeout=9.0 if fail_fast else 25.0,
                 )
             if provider_name == "openrouter" and os.getenv("OPENROUTER_API_KEY"):
                 model = _sanitize_free_openrouter_model(os.getenv("COMPANION_FREE_OPENROUTER_MODEL", "openrouter/free"))
@@ -427,7 +438,7 @@ class CompanionService:
                     model=model,
                     temperature=0.45,
                     max_tokens=1200 if detail_level == "detailed" else 650,
-                    max_retries=1,
+                    max_retries=retries,
                 )
             if provider_name == "mistralai" and os.getenv("MISTRAL_API_KEY"):
                 model = os.getenv("COMPANION_FREE_MISTRAL_MODEL", "mistral-small-latest")
@@ -436,28 +447,30 @@ class CompanionService:
                     model=model,
                     temperature=0.45,
                     max_tokens=1200 if detail_level == "detailed" else 650,
-                    max_retries=1,
+                    max_retries=retries,
                 )
         except Exception as exc:
             logger.warning(f"Free fallback provider '{provider_name}' init skipped: {exc}")
         return None
 
-    def _build_fallback_provider(self, primary_provider: str | None, detail_level: str) -> Optional[GenericLLMProvider]:
+    def _build_fallback_provider(
+        self, primary_provider: str | None, detail_level: str, *, fail_fast: bool = False
+    ) -> Optional[GenericLLMProvider]:
         if primary_provider != "google_genai":
-            return self._build_named_free_provider("google_genai", detail_level)
+            return self._build_named_free_provider("google_genai", detail_level, fail_fast=fail_fast)
         return None
 
     def _build_fallback_chain(
-        self, primary_provider: Optional[str], detail_level: str
+        self, primary_provider: Optional[str], detail_level: str, *, fail_fast: bool = False
     ) -> List[Tuple[str, GenericLLMProvider]]:
         chain: List[Tuple[str, GenericLLMProvider]] = []
-        first = self._build_fallback_provider(primary_provider, detail_level)
+        first = self._build_fallback_provider(primary_provider, detail_level, fail_fast=fail_fast)
         if first is not None:
             chain.append(("google_genai" if primary_provider != "google_genai" else "fallback", first))
         for name in ("openrouter", "mistralai"):
             if primary_provider == name:
                 continue
-            prov = self._build_named_free_provider(name, detail_level)
+            prov = self._build_named_free_provider(name, detail_level, fail_fast=fail_fast)
             if prov is not None:
                 chain.append((name, prov))
         return chain
@@ -874,6 +887,61 @@ When—and ONLY when—the user wants to open a page, view slides, export, or st
             "actions": actions,
             "sources": web_sources,
         }
+
+    async def complete_text(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        detail_level: str = "concise",
+        timeout_seconds: float = 8.0,
+        total_budget_seconds: float = 10.0,
+        max_tokens_override: Optional[int] = None,
+    ) -> Optional[str]:
+        """Run a fail-fast non-streaming completion across primary and free fallback providers."""
+        try:
+            primary_name, _, _ = self._resolve_llm_config()
+        except Exception:
+            primary_name = None
+
+        candidates: List[Tuple[str, GenericLLMProvider]] = []
+        try:
+            candidates.append(
+                (
+                    primary_name or "primary",
+                    self._build_provider(detail_level, fail_fast=True, max_tokens_override=max_tokens_override),
+                )
+            )
+        except Exception as exc:
+            logger.warning(f"Shared completion primary provider init error: {exc}")
+
+        candidates.extend(self._build_fallback_chain(primary_name, detail_level, fail_fast=True))
+        if not candidates:
+            return None
+
+        lc_messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_prompt),
+        ]
+        deadline = time.monotonic() + total_budget_seconds
+
+        for cand_name, cand_provider in candidates:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.5:
+                break
+            try:
+                output = await asyncio.wait_for(
+                    cand_provider.llm.ainvoke(lc_messages),
+                    timeout=min(timeout_seconds, remaining),
+                )
+                raw = _extract_text(getattr(output, "content", ""))
+                cleaned = re.sub(r"<think>.*?</think>", "", raw or "", flags=re.DOTALL).strip()
+                if cleaned:
+                    return cleaned
+            except Exception as exc:
+                logger.info(f"Shared completion fallback from '{cand_name}' after error: {exc}")
+                continue
+        return None
 
 
 companion_service = CompanionService()

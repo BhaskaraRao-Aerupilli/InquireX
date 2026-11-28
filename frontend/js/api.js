@@ -111,6 +111,27 @@ export async function fetchAgentDiscovery() {
   return res.json();
 }
 
+export async function fetchAudioVoices() {
+  const res = await fetch('/api/audio/voices', { credentials: 'include' });
+  if (!res.ok) throw new Error(`Failed to fetch studio voices (${res.status})`);
+  return res.json();
+}
+
+export async function generateAudioBriefing(payload, { signal } = {}) {
+  const res = await fetch('/api/audio/briefing', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    signal,
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.detail || `Audio briefing failed (${res.status})`);
+  }
+  return data;
+}
+
 export async function checkPathExists(url) {
   if (!url || url === '#' || url.includes('undefined')) return false;
   try {
