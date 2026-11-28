@@ -173,6 +173,116 @@ def _safe_excerpt(text: str, max_chars: int = 3600) -> str:
     return clean[: max_chars - 3] + "..."
 
 
+def _is_free_only_enabled() -> bool:
+    return os.getenv("COMPANION_FREE_ONLY", "true").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _sanitize_free_openrouter_model(model: Optional[str]) -> str:
+    """Enforce zero-cost OpenRouter models when COMPANION_FREE_ONLY is enabled."""
+    chosen = (model or "openrouter/free").strip() or "openrouter/free"
+    if not _is_free_only_enabled():
+        return chosen
+    if chosen == "openrouter/free" or chosen.endswith(":free"):
+        return chosen
+    logger.warning(f"Overriding non-free OpenRouter model '{chosen}' to 'openrouter/free' (COMPANION_FREE_ONLY=true).")
+    return "openrouter/free"
+
+
+_ZERO_TOKEN_ROUTE_ALIASES: Tuple[Tuple[Tuple[str, ...], str, str], ...] = (
+    (("home", "home page", "landing page"), "home", "Home"),
+    (("dashboard", "overview"), "dashboard", "Dashboard"),
+    (("new research", "start research", "research page", "research workspace"), "new-research", "New Research"),
+    (("my research", "saved reports", "saved research"), "my-research", "My Research"),
+    (("history", "research history"), "history", "Research History"),
+    (("live research", "live view", "live progress"), "live-research", "Live Research"),
+    (("report viewer", "viewer", "latest report", "last report"), "report-viewer", "Report Viewer"),
+    (("team", "research team", "ai team", "agents"), "team", "AI Research Team"),
+    (("knowledge graph", "graph", "mind map"), "knowledge-graph", "Knowledge Graph"),
+    (("fact verification", "fact check", "verification"), "fact-verification", "Fact Verification"),
+    (("documents", "document intelligence", "files", "uploaded files"), "documents", "Document Intelligence"),
+    (("presentations", "slides", "slide deck"), "presentations", "Presentations"),
+    (("monitor", "research monitor", "status"), "monitor", "Research Monitor"),
+    (("settings", "preferences", "theme settings"), "settings", "Settings"),
+)
+
+_QUESTION_BLOCK_WORDS = (
+    "?",
+    "what ",
+    "why ",
+    "how ",
+    "when ",
+    "where ",
+    "who ",
+    "summarize",
+    "summary",
+    "explain",
+    "compare",
+    "analyze",
+    "brief",
+    "about ",
+    "and ",
+)
+
+
+def _match_zero_token_command(message: str) -> Optional[Tuple[str, Dict[str, Any]]]:
+    """Handle direct short navigation requests deterministically using 0 API tokens."""
+    text = (message or "").strip()
+    if not text or len(text) > 55:
+        return None
+    lower = re.sub(r"[.!]+$", "", text.lower()).strip()
+    if any(tok in lower for tok in _QUESTION_BLOCK_WORDS):
+        return None
+    m = re.match(r"^(?:hey\s+jarvis[,]?\s+)?(?:please\s+)?(?:open|go\s+to|show|switch\s+to|navigate\s+to)\s+(?:the\s+|my\s+)?(.+)$", lower)
+    if not m:
+        return None
+    target = m.group(1).strip()
+    for aliases, route, label in _ZERO_TOKEN_ROUTE_ALIASES:
+        if target in aliases:
+            return (
+                f"Opening {label} now. Tap the button below if it does not navigate automatically.",
+                {"type": "navigate", "route": route, "label": f"Open {label}"},
+            )
+    return None
+
+
+def _needs_report_context(
+    message: str,
+    history: List[Dict[str, str]],
+    mode: str,
+    active_route: str,
+) -> bool:
+    """Only attach heavy report excerpts when the conversation references workspace research/reports."""
+    if mode in {"brief", "narrate"} or active_route in {"report-viewer", "live-research"}:
+        return True
+    recent_user = " ".join(
+        str(m.get("content", "")) for m in (history or [])[-2:] if str(m.get("role", "")).lower() == "user"
+    )
+    combined = f"{message or ''} {recent_user}".lower()
+    keywords = (
+        "report",
+        "research",
+        "summary",
+        "summarize",
+        "brief",
+        "source",
+        "citation",
+        "finding",
+        "topic",
+        "file",
+        "document",
+        "doc",
+        "slide",
+        "compare",
+        "what am i",
+        "recent",
+        "saved",
+        "active",
+        "graph",
+        "fact",
+    )
+    return any(k in combined for k in keywords)
+
+
 class CompanionService:
     """Core AI Companion conversational & workspace-grounded LLM engine."""
 
@@ -195,6 +305,16 @@ class CompanionService:
             model = getattr(cfg, "smart_llm_model", None) or getattr(cfg, "fast_llm_model", None)
         return provider, model, dict(getattr(cfg, "llm_kwargs", None) or {})
 
+    def _build_free_fallbacks_list(self, primary_provider: Optional[str]) -> List[str]:
+        names: List[str] = []
+        if primary_provider != "google_genai" and (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
+            names.append("google_genai")
+        if primary_provider != "openrouter" and os.getenv("OPENROUTER_API_KEY"):
+            names.append("openrouter")
+        if primary_provider != "mistralai" and os.getenv("MISTRAL_API_KEY"):
+            names.append("mistralai")
+        return names
+
     def get_capabilities(self) -> Dict[str, Any]:
         try:
             provider, model, _ = self._resolve_llm_config()
@@ -206,6 +326,8 @@ class CompanionService:
             "available": available,
             "provider": provider or "unconfigured",
             "model": model or "unconfigured",
+            "fallback_providers": self._build_free_fallbacks_list(provider),
+            "free_only_guard": _is_free_only_enabled(),
             "web_search_enabled": bool(os.getenv("TAVILY_API_KEY")),
             "stt_backend_available": stt_backend_available,
             "default_history_limit": self.default_history_limit,
@@ -263,6 +385,9 @@ class CompanionService:
         if not provider_name or not model:
             raise RuntimeError("No LLM provider or model configured in InquireX.")
 
+        if provider_name == "openrouter":
+            model = _sanitize_free_openrouter_model(model)
+
         kwargs: Dict[str, Any] = {"model": model, **cfg_kwargs}
         kwargs.pop("verbose", None)
         if model not in NO_SUPPORT_TEMPERATURE_MODELS:
@@ -274,6 +399,9 @@ class CompanionService:
         if provider_name == "groq":
             kwargs["max_tokens"] = 900 if detail_level == "detailed" else 600
             kwargs.setdefault("max_retries", 1)
+        elif provider_name in {"openrouter", "mistralai"}:
+            kwargs["max_tokens"] = 1200 if detail_level == "detailed" else 650
+            kwargs.setdefault("max_retries", 1)
         else:
             kwargs["max_tokens"] = 1800 if detail_level == "detailed" else 900
 
@@ -282,9 +410,9 @@ class CompanionService:
 
         return GenericLLMProvider.from_provider(provider_name, **kwargs)
 
-    def _build_fallback_provider(self, primary_provider: str | None, detail_level: str) -> Optional[GenericLLMProvider]:
-        if primary_provider != "google_genai" and (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
-            try:
+    def _build_named_free_provider(self, provider_name: str, detail_level: str) -> Optional[GenericLLMProvider]:
+        try:
+            if provider_name == "google_genai" and (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
                 model = os.getenv("COMPANION_FALLBACK_GEMINI_MODEL", "gemini-2.5-flash")
                 return GenericLLMProvider.from_provider(
                     "google_genai",
@@ -292,9 +420,47 @@ class CompanionService:
                     temperature=0.45,
                     max_tokens=1600 if detail_level == "detailed" else 800,
                 )
-            except Exception as exc:
-                logger.warning(f"Gemini fallback provider init skipped: {exc}")
+            if provider_name == "openrouter" and os.getenv("OPENROUTER_API_KEY"):
+                model = _sanitize_free_openrouter_model(os.getenv("COMPANION_FREE_OPENROUTER_MODEL", "openrouter/free"))
+                return GenericLLMProvider.from_provider(
+                    "openrouter",
+                    model=model,
+                    temperature=0.45,
+                    max_tokens=1200 if detail_level == "detailed" else 650,
+                    max_retries=1,
+                )
+            if provider_name == "mistralai" and os.getenv("MISTRAL_API_KEY"):
+                model = os.getenv("COMPANION_FREE_MISTRAL_MODEL", "mistral-small-latest")
+                return GenericLLMProvider.from_provider(
+                    "mistralai",
+                    model=model,
+                    temperature=0.45,
+                    max_tokens=1200 if detail_level == "detailed" else 650,
+                    max_retries=1,
+                )
+        except Exception as exc:
+            logger.warning(f"Free fallback provider '{provider_name}' init skipped: {exc}")
         return None
+
+    def _build_fallback_provider(self, primary_provider: str | None, detail_level: str) -> Optional[GenericLLMProvider]:
+        if primary_provider != "google_genai":
+            return self._build_named_free_provider("google_genai", detail_level)
+        return None
+
+    def _build_fallback_chain(
+        self, primary_provider: Optional[str], detail_level: str
+    ) -> List[Tuple[str, GenericLLMProvider]]:
+        chain: List[Tuple[str, GenericLLMProvider]] = []
+        first = self._build_fallback_provider(primary_provider, detail_level)
+        if first is not None:
+            chain.append(("google_genai" if primary_provider != "google_genai" else "fallback", first))
+        for name in ("openrouter", "mistralai"):
+            if primary_provider == name:
+                continue
+            prov = self._build_named_free_provider(name, detail_level)
+            if prov is not None:
+                chain.append((name, prov))
+        return chain
 
     async def _maybe_quick_web_search(self, query: str) -> List[Dict[str, str]]:
         api_key = os.getenv("TAVILY_API_KEY")
@@ -359,6 +525,7 @@ class CompanionService:
         detail_level: str,
         context: Dict[str, Any],
         web_sources: List[Dict[str, str]],
+        include_report_excerpts: bool = True,
     ) -> str:
         active_route = str(context.get("active_route", "home"))
         active_report = context.get("active_report") or {}
@@ -370,18 +537,21 @@ class CompanionService:
         if isinstance(active_report, dict) and (active_report.get("title") or active_report.get("excerpt")):
             title = str(active_report.get("title", "Untitled"))[:180]
             rep_id = str(active_report.get("id", ""))[:80]
-            excerpt = _safe_excerpt(active_report.get("excerpt", ""), 4200)
-            sources = active_report.get("sources") or []
-            src_lines = "\n".join(
-                f"- {str(s.get('title', s.get('url', '')))} ({str(s.get('url', ''))})"
-                for s in (sources[:12] if isinstance(sources, list) else [])
-                if isinstance(s, dict)
-            )
-            report_block = (
-                f"Active Report ID: {rep_id}\nTitle: {title}\n"
-                f"Content Excerpt:\n{excerpt}\n"
-                + (f"Cited Sources:\n{src_lines}" if src_lines else "")
-            )
+            if include_report_excerpts:
+                excerpt = _safe_excerpt(active_report.get("excerpt", ""), 4200)
+                sources = active_report.get("sources") or []
+                src_lines = "\n".join(
+                    f"- {str(s.get('title', s.get('url', '')))} ({str(s.get('url', ''))})"
+                    for s in (sources[:12] if isinstance(sources, list) else [])
+                    if isinstance(s, dict)
+                )
+                report_block = (
+                    f"Active Report ID: {rep_id}\nTitle: {title}\n"
+                    f"Content Excerpt:\n{excerpt}\n"
+                    + (f"Cited Sources:\n{src_lines}" if src_lines else "")
+                )
+            else:
+                report_block = f"Active Report ID: {rep_id} | Title: {title} (excerpt omitted for brevity; ask user if details needed)"
 
         recent_block = "None saved."
         if isinstance(recent_reports, list) and recent_reports:
@@ -392,10 +562,11 @@ class CompanionService:
                 rid = str(r.get("id", ""))[:40]
                 rtitle = str(r.get("title", "Untitled"))[:120]
                 rtype = str(r.get("report_type", "research_report"))
-                rexcerpt = _safe_excerpt(r.get("excerpt", ""), 420)
                 line = f"- [id={rid}] {rtitle} ({rtype})"
-                if rexcerpt:
-                    line += f"\n  Summary Excerpt: {rexcerpt}"
+                if include_report_excerpts:
+                    rexcerpt = _safe_excerpt(r.get("excerpt", ""), 420)
+                    if rexcerpt:
+                        line += f"\n  Summary Excerpt: {rexcerpt}"
                 lines.append(line)
             if lines:
                 recent_block = "\n".join(lines)
@@ -526,16 +697,33 @@ When—and ONLY when—the user wants to open a page, view slides, export, or st
             }
             return
 
+        zero_token_hit = _match_zero_token_command(message) if mode == "chat" else None
+        if zero_token_hit is not None:
+            reply_text, action_obj = zero_token_hit
+            yield {"type": "token", "delta": reply_text}
+            yield {"type": "action", "action": action_obj}
+            yield {
+                "type": "done",
+                "request_id": request_id,
+                "content": reply_text,
+                "actions": [action_obj],
+                "sources": [],
+            }
+            return
+
         web_sources = await self._maybe_quick_web_search(message)
         if web_sources:
             yield {"type": "sources", "sources": web_sources}
 
+        active_route = str((workspace_context or {}).get("active_route", "home"))
+        include_excerpts = _needs_report_context(message, history, mode, active_route)
         system_prompt = self._build_system_prompt(
             user_name=user_name,
             mode=mode,
             detail_level=detail_level,
             context=workspace_context or {},
             web_sources=web_sources,
+            include_report_excerpts=include_excerpts,
         )
         lc_messages = self._build_lc_messages(
             system_prompt,
@@ -549,13 +737,17 @@ When—and ONLY when—the user wants to open a page, view slides, export, or st
         except Exception:
             primary_name = None
 
+        candidates: List[Tuple[str, GenericLLMProvider]] = []
         try:
-            provider = self._build_provider(detail_level)
+            candidates.append((primary_name or "primary", self._build_provider(detail_level)))
         except Exception as exc:
-            logger.warning(f"Companion provider init error: {exc}")
+            logger.warning(f"Companion primary provider init error: {exc}")
+
+        candidates.extend(self._build_fallback_chain(primary_name, detail_level))
+        if not candidates:
             yield {
                 "type": "error",
-                "detail": "AI Companion could not initialize the configured LLM provider. Check server LLM environment settings.",
+                "detail": "AI Companion could not initialize any free LLM provider. Check server LLM environment settings.",
             }
             return
 
@@ -621,46 +813,47 @@ When—and ONLY when—the user wants to open a page, view slides, export, or st
                 if delta:
                     yield {"type": "token", "delta": delta}
 
-        try:
-            async for ev in _consume_provider(provider):
-                yield ev
-        except asyncio.TimeoutError:
-            yield {"type": "error", "detail": "Request timed out waiting for the language model."}
-            return
-        except TimeoutError as exc:
-            yield {"type": "error", "detail": str(exc)}
-            return
-        except Exception as exc:
-            err_lower = str(exc).lower()
-            is_rate_limit = "429" in err_lower or "rate_limit" in err_lower or "quota" in err_lower
-            fallback = (
-                self._build_fallback_provider(primary_name, detail_level)
-                if emitted_len == 0 and (is_rate_limit or primary_name == "groq")
-                else None
-            )
-            if fallback is not None:
-                logger.info(f"Companion switching to Gemini fallback after primary error: {exc}")
-                raw_accumulated = ""
-                emitted_len = 0
-                try:
-                    async for ev in _consume_provider(fallback):
-                        yield ev
-                except Exception as fb_exc:
-                    logger.error(f"Companion fallback failure: {fb_exc}", exc_info=True)
-                    yield {
-                        "type": "error",
-                        "detail": "AI provider is temporarily rate-limited or unavailable. Please retry in a few seconds.",
-                    }
-                    return
+        succeeded = False
+        last_exc: Optional[Exception] = None
+        last_was_rate_limit = False
+
+        for idx, (cand_name, cand_provider) in enumerate(candidates):
+            raw_accumulated = ""
+            emitted_len = 0
+            in_think = False
+            in_action_tail = False
+            start_time = time.monotonic()
+            try:
+                async for ev in _consume_provider(cand_provider):
+                    yield ev
+                if raw_accumulated.strip():
+                    succeeded = True
+                    break
+                raise RuntimeError(f"Empty completion from '{cand_name}'.")
+            except (asyncio.TimeoutError, TimeoutError, Exception) as exc:
+                last_exc = exc
+                err_lower = str(exc).lower()
+                last_was_rate_limit = any(
+                    tok in err_lower for tok in ("429", "rate_limit", "quota", "402", "billing", "temporarily rate-limited")
+                )
+                has_more = idx + 1 < len(candidates)
+                if emitted_len == 0 and has_more:
+                    logger.info(f"Companion switching from '{cand_name}' to next free provider after error: {exc}")
+                    continue
+                logger.error(f"Companion streaming failure on '{cand_name}': {exc}", exc_info=True)
+                break
+
+        if not succeeded:
+            if isinstance(last_exc, (asyncio.TimeoutError, TimeoutError)):
+                yield {"type": "error", "detail": "Request timed out waiting for the language model."}
             else:
-                logger.error(f"Companion streaming failure: {exc}", exc_info=True)
                 msg = (
-                    "The AI provider hit its temporary token rate limit while other research was running. Wait a few seconds and tap Retry."
-                    if is_rate_limit
+                    "All configured free AI providers are temporarily rate-limited or busy. Please retry in a few seconds."
+                    if last_was_rate_limit
                     else "The language model encountered an error while generating a response. Please retry."
                 )
                 yield {"type": "error", "detail": msg}
-                return
+            return
 
         # Finalize remaining non-action text and extract structured actions
         tail_delta, _, _ = _flush_safe_prefix(raw_accumulated, final=True)

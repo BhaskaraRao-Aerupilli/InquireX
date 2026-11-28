@@ -66,10 +66,10 @@
   --font-display: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --text-xs: 0.75rem;      /* 12px */
-  --text-sm: 0.8125rem;    /* 13px */
-  --text-base: 0.875rem;   /* 14px */
-  --text-md: 0.9375rem;    /* 15px */
+  --text-xs: 0.78125rem;   /* 12.5px */
+  --text-sm: 0.84375rem;   /* 13.5px */
+  --text-base: 0.90625rem; /* 14.5px */
+  --text-md: 0.96875rem;   /* 15.5px */
   --text-lg: 1.0625rem;    /* 17px */
   --text-xl: 1.25rem;      /* 20px */
   --text-2xl: 1.5rem;      /* 24px */

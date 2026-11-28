@@ -16,6 +16,8 @@ const DEFAULT_PREFERENCES = {
   defaultTone: 'Objective',
   defaultReportSource: 'web',
   defaultMaxSearchResults: 5,
+  defaultAgent: 'Auto Agent',
+  showPlanPreview: false,
 };
 
 function createEmptyLiveSession() {
@@ -126,7 +128,12 @@ class InquireXStore {
         this.state.draftConfig.report_type = this.state.preferences.defaultReportType;
         this.state.draftConfig.tone = this.state.preferences.defaultTone;
         this.state.draftConfig.report_source = this.state.preferences.defaultReportSource;
-        this.state.draftConfig.max_search_results = this.state.preferences.defaultMaxSearchResults;
+        this.state.draftConfig.max_search_results = Math.max(
+          1,
+          Math.min(20, Number(this.state.preferences.defaultMaxSearchResults) || 5)
+        );
+        this.state.draftConfig.agent = this.state.preferences.defaultAgent || 'Auto Agent';
+        this.state.draftConfig.showPlanPreview = Boolean(this.state.preferences.showPlanPreview);
       }
     } catch {}
   }
@@ -197,7 +204,10 @@ class InquireXStore {
   }
 
   _readLocalHistory() {
-    const keys = [this._historyKey(), 'conversationHistory_default', 'conversationHistory'];
+    const keys =
+      this._userSuffix() === 'default'
+        ? [this._historyKey(), 'conversationHistory_default', 'conversationHistory']
+        : [this._historyKey()];
     for (const key of keys) {
       try {
         const raw = localStorage.getItem(key);
@@ -226,6 +236,7 @@ class InquireXStore {
               chatMessages: entry.chatMessages || [],
               config: entry.config || {},
               timestamp: entry.timestamp || new Date().toISOString(),
+              pendingSync: Boolean(entry.pendingSync),
               sourceOrigin: 'local',
             };
           });
@@ -238,9 +249,11 @@ class InquireXStore {
   async loadReports() {
     const localItems = this._readLocalHistory();
     let backendItems = [];
+    let backendFetchOk = false;
 
     try {
       const apiReports = await fetchBackendReports();
+      backendFetchOk = true;
       backendItems = apiReports.map((r) => {
         const ordered = Array.isArray(r.orderedData) ? r.orderedData : [];
         const metaEntry = ordered.find((x) => x && x.type === 'metadata') || {};
@@ -267,9 +280,13 @@ class InquireXStore {
       console.warn('Could not load backend /api/reports:', err);
     }
 
-    // Merge backend + local reports without duplication
+    // When backend responded, trust backend reports (+ any unsynced local drafts);
+    // otherwise fall back to cached local items.
     const mergedMap = new Map();
-    [...backendItems, ...localItems].forEach((item) => {
+    const candidates = backendFetchOk
+      ? [...backendItems, ...localItems.filter((item) => item.pendingSync)]
+      : localItems;
+    candidates.forEach((item) => {
       const existing = mergedMap.get(item.id);
       if (!existing) {
         mergedMap.set(item.id, item);
@@ -292,6 +309,9 @@ class InquireXStore {
 
     this.state.reports = sorted;
     this.state.reportsLoaded = true;
+    if (backendFetchOk) {
+      this._persistLocalReports();
+    }
     if (!this.state.activeReportId && sorted.length > 0) {
       this.state.activeReportId = sorted[0].id;
     }
@@ -330,9 +350,8 @@ class InquireXStore {
 
     this.state.reports = [record, ...this.state.reports];
     this.state.activeReportId = reportId;
-    this._persistLocalReports();
 
-    // Persist to existing FastAPI ReportStore
+    // Persist to backend ReportStore (Supabase Postgres or local fallback)
     try {
       await upsertBackendReport({
         id: reportId,
@@ -356,8 +375,10 @@ class InquireXStore {
       });
     } catch (err) {
       console.warn('Could not persist report to /api/reports:', err);
+      record.pendingSync = true;
     }
 
+    this._persistLocalReports();
     this.notify('reports');
     return record;
   }
@@ -512,14 +533,16 @@ class InquireXStore {
           reportMarkdown: idx < 8 ? entry.reportMarkdown || '' : '',
           config: entry.config || {},
           reportKey,
+          pendingSync: Boolean(entry.pendingSync),
           timestamp: entry.timestamp,
         };
       });
       const json = JSON.stringify(trimmed);
       localStorage.setItem(this._historyKey(), json);
-      localStorage.setItem('conversationHistory', json);
-      // Keep legacy default key in sync so deleted reports cannot resurrect on reload
-      localStorage.setItem('conversationHistory_default', json);
+      if (this._userSuffix() === 'default') {
+        localStorage.setItem('conversationHistory', json);
+        localStorage.setItem('conversationHistory_default', json);
+      }
     } catch (e) {
       console.warn('localStorage history save warning:', e);
     }

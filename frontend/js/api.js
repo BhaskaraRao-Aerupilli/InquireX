@@ -44,6 +44,22 @@ export async function deleteBackendReport(reportId) {
   return true;
 }
 
+export async function fetchReportStorageStatus() {
+  const res = await fetch('/api/reports/storage-status', { credentials: 'include' });
+  if (!res.ok) throw new Error(`Failed to fetch storage status (${res.status})`);
+  return res.json();
+}
+
+export async function migrateLocalReportsToSupabase() {
+  const res = await fetch('/api/reports/migrate-local', {
+    method: 'POST',
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || `Migration failed (${res.status})`);
+  return data;
+}
+
 export async function fetchUploadedFiles() {
   const res = await fetch('/files/', { credentials: 'include' });
   if (!res.ok) throw new Error(`Failed to fetch files (${res.status})`);

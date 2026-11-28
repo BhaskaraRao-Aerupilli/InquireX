@@ -25,6 +25,9 @@ class DetailedReport:
         mcp_configs=None,
         mcp_strategy=None,
         max_search_results=None,
+        agent=None,
+        role=None,
+        doc_path=None,
     ):
         self.query = query
         self.report_type = report_type
@@ -39,6 +42,7 @@ class DetailedReport:
         self.headers = headers or {}
         self.complement_source_urls = complement_source_urls
         self.max_search_results = max_search_results
+        self.doc_path = doc_path
         
         # Generate a unique research ID for this report
         self.research_id = self._generate_research_id(query)
@@ -57,6 +61,10 @@ class DetailedReport:
             "headers": self.headers,
             "complement_source_urls": self.complement_source_urls,
         }
+        if agent is not None:
+            inquirex_params["agent"] = agent
+        if role is not None:
+            inquirex_params["role"] = role
 
         # Add MCP parameters if provided
         if mcp_configs is not None:
@@ -66,9 +74,12 @@ class DetailedReport:
 
         self.inquirex_researcher = InquireXResearcher(**inquirex_params)
 
-        # Override max_search_results_per_query if provided by user
+        # Override max_search_results_per_query / doc_path if provided per user
         if max_search_results is not None:
             self.inquirex_researcher.cfg.max_search_results_per_query = int(max_search_results)
+        if doc_path:
+            self.inquirex_researcher.cfg.doc_path = doc_path
+            self.inquirex_researcher.cfg.validate_doc_path()
         self.existing_headers: List[Dict] = []
         self.global_context: List[str] = []
         self.global_written_sections: List[str] = []
@@ -157,9 +168,12 @@ class DetailedReport:
             mcp_strategy=self.inquirex_researcher.mcp_strategy
         )
 
-        # Propagate max_search_results override to subtopic researcher
+        # Propagate max_search_results / doc_path overrides to subtopic researcher
         if self.max_search_results is not None:
             subtopic_assistant.cfg.max_search_results_per_query = int(self.max_search_results)
+        if self.doc_path:
+            subtopic_assistant.cfg.doc_path = self.doc_path
+            subtopic_assistant.cfg.validate_doc_path()
 
         subtopic_assistant.context = list(set(self._hashable_context(self.global_context)))
         await subtopic_assistant.conduct_research()

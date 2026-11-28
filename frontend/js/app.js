@@ -828,6 +828,7 @@ class InquireXApp {
   }
 
   startResearch(payload) {
+    store.updateDraftConfig({ task: '' });
     store.resetLiveSession(payload.task, payload);
     store.addNotification('Research Started', (payload.task || '').slice(0, 80), 'info');
     this.navigate('live-research');
@@ -900,10 +901,16 @@ class InquireXApp {
       };
 
       if (contentType === 'agent_generated') {
-        const agentMatch = cleanOut.match(/as\s+([A-Za-z0-9 &_-]+)/i);
-        if (agentMatch) patch.activeAgentName = agentMatch[1].trim();
+        const afterAs = cleanOut.match(/\bas\s+(.+)/i);
+        const rawAgent = (afterAs ? afterAs[1] : cleanOut)
+          .replace(/^[^\p{L}\p{N}]+/u, '')
+          .replace(/\.+$/, '')
+          .trim();
+        if (rawAgent && rawAgent.toLowerCase() !== 'none' && rawAgent.toLowerCase() !== 'null') {
+          patch.activeAgentName = rawAgent;
+        }
         patch.stage = Math.max(ls.stage || 1, 1);
-        patch.stageLabel = `Assigned persona: ${patch.activeAgentName || cleanOut.slice(0, 50)}`;
+        patch.stageLabel = `Assigned persona: ${patch.activeAgentName || 'Auto-routing...'}`;
       } else if (contentType === 'planning_research' || contentType === 'subqueries') {
         patch.stage = Math.max(ls.stage || 1, 2);
         patch.stageLabel = 'Decomposing & running search queries';

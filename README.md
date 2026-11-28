@@ -119,9 +119,10 @@ Export research documents with one click via a non-intrusive floating popover me
 ### 💬 Context-Aware Follow-Up Chat
 - **Report Memory Persistence:** Interactive Q&A chat assistant directly grounded in the synthesized research report to ask follow-up questions or request deeper analysis.
 
-### 🔐 Enterprise Authentication & Session Security
-- **Supabase PostgreSQL Database:** Secure user credential management and profile persistence.
-- **Bcrypt & JWT Security:** High-performance salted password hashing with stateless JSON Web Tokens stored in HTTP-only cookies.
+### 🔐 Enterprise Authentication & Per-User Supabase Persistence
+- **Supabase PostgreSQL Database:** Secure user account management (`public.users`) and per-user report history persistence (`public.reports` via [supabase_reports.sql](backend/server/supabase_reports.sql)) with automatic local JSON fallback (`data/reports.json`) and one-click local-to-cloud migration.
+- **Per-User Document Isolation:** Uploaded private RAG files (`./my-docs/user_<id>/`) and API/WebSocket report access enforce strict user ownership checks.
+- **Google OAuth & JWT Security:** Supports Google Sign-In and bcrypt password authentication with stateless JWT HTTP-only session cookies.
 
 ---
 
@@ -350,22 +351,22 @@ http://127.0.0.1:8000
 ```
 InquireX/
 ├── backend/
-│   ├── auth/                  # Supabase database client, Bcrypt hashing, JWT auth middleware
+│   ├── auth/                  # Supabase database client, Bcrypt hashing, Google OAuth, JWT auth middleware
 │   ├── chat/                  # Context-aware chat agent with report memory
 │   ├── companion/             # AI Companion SSE streaming brain, rate limiting & Whisper STT endpoints
-│   ├── report_type/           # Research strategies (Basic, Detailed, Deep Research)
-│   └── server/                # FastAPI app routes, WebSocket streaming manager, no-cache headers, utilities
+│   ├── report_type/           # Research strategies (Basic, Detailed, Deep Research) with Persona routing
+│   └── server/                # FastAPI app routes, hybrid Supabase/local ReportStore, supabase_reports.sql, WS manager
 ├── frontend/
 │   ├── index.html             # Main InquireX SaaS shell & zero-flash theme loader
 │   ├── login.html             # User authentication sign-in
 │   ├── register.html          # User registration page
 │   ├── css/                   # Semantic design tokens, base, components, shell, views & companion CSS
 │   └── js/                    # Modular ES6 SPA views (home, dashboard, research, live, companion, etc.) & voice engine
-├── tests/                     # Companion, auth, and WebSocket unit tests
+├── tests/                     # Companion, ReportStore, auth, and WebSocket unit tests
 ├── inquirex/                  # Core InquireX deep research engine & autonomous intelligence
 │   ├── actions/               # Query generation, web scraping, markdown processing
 │   ├── document/              # Multi-format document ingestion loaders (PDF, DOCX, TXT)
-│   ├── llm_provider/          # LLM integrations (OpenAI, Claude, Gemini, Ollama, Groq)
+│   ├── llm_provider/          # LLM integrations (OpenAI, Claude, Gemini, OpenRouter, Ollama, Groq)
 │   ├── memory/                # Vector embeddings and context stores
 │   ├── retrievers/            # Multi-engine search connectors (Tavily, DDG, Google, ArXiv, MCP)
 │   ├── scraper/               # Resilient web page scrapers & text extractors
@@ -391,13 +392,19 @@ InquireX/
 ## 🔌 API & WebSocket Protocol
 
 ### Authentication Endpoints
-- `POST /api/auth/register`: Register a new user account with email and password.
-- `POST /api/auth/login`: Authenticate credentials, set HTTP-only JWT session cookie.
-- `POST /api/auth/logout`: Revoke active session and clear authentication cookies.
-- `GET /api/auth/me`: Retrieve currently authenticated user profile.
+- `POST /auth/register`: Register a new user account with email and password.
+- `POST /auth/login`: Authenticate credentials, set HTTP-only JWT session cookie (`gptr_session`).
+- `GET /auth/logout`: Revoke active session and clear authentication cookies.
+- `GET /auth/google` & `GET /auth/google/callback`: Sign in with Google OAuth.
+- `GET /auth/me`: Retrieve currently authenticated user profile.
+
+### Reports & Private Documents Endpoints (Authenticated, User-Scoped)
+- `GET /api/reports` & `POST /api/reports`: List and save reports per `user_id` via Supabase (`public.reports`) or local JSON fallback.
+- `GET /api/reports/storage-status` & `POST /api/reports/migrate-local`: Inspect database backend readiness and sync local reports into Supabase.
+- `GET /files/`, `POST /upload/`, `DELETE /files/{filename}`: Manage private RAG documents isolated per user (`./my-docs/user_<id>/`).
 
 ### AI Companion Endpoints (Authenticated)
-- `GET /api/companion/capabilities`: Retrieve configured LLM provider, model, STT backend availability, and search capability metadata (without exposing API keys).
+- `GET /api/companion/capabilities`: Retrieve configured LLM provider, model, free fallback chain, STT backend availability, and search capability metadata (without exposing API keys).
 - `POST /api/companion/transcribe`: Transcribe uploaded microphone audio (up to 15 MB) via Whisper STT (`whisper-large-v3-turbo` / `whisper-1`).
 - `POST /api/companion/stream`: Server-Sent Events (`text/event-stream`) endpoint streaming grounded companion responses (`start`, `token`, `sources`, `action`, `done`, `error`).
 

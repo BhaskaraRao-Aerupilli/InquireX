@@ -213,14 +213,25 @@ class GenericLLMProvider:
 
             llm = ChatTogether(**kwargs)
         elif provider == "mistralai":
-            _check_pkg("langchain_mistralai")
-            from langchain_mistralai import ChatMistralAI
+            if importlib.util.find_spec("langchain_mistralai"):
+                from langchain_mistralai import ChatMistralAI
 
-            # Support custom Mistral-compatible APIs via MISTRAL_BASE_URL
-            if "endpoint" not in kwargs and "base_url" not in kwargs and os.environ.get("MISTRAL_BASE_URL"):
-                kwargs["endpoint"] = os.environ["MISTRAL_BASE_URL"]
+                # Support custom Mistral-compatible APIs via MISTRAL_BASE_URL
+                if "endpoint" not in kwargs and "base_url" not in kwargs and os.environ.get("MISTRAL_BASE_URL"):
+                    kwargs["endpoint"] = os.environ["MISTRAL_BASE_URL"]
 
-            llm = ChatMistralAI(**kwargs)
+                llm = ChatMistralAI(**kwargs)
+            else:
+                _check_pkg("langchain_openai")
+                from langchain_openai import ChatOpenAI
+
+                base_url = (
+                    kwargs.pop("endpoint", None)
+                    or kwargs.pop("base_url", None)
+                    or os.environ.get("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
+                )
+                api_key = kwargs.pop("mistral_api_key", None) or os.environ["MISTRAL_API_KEY"]
+                llm = ChatOpenAI(openai_api_base=base_url, openai_api_key=api_key, **kwargs)
         elif provider == "huggingface":
             _check_pkg("langchain_huggingface")
             from langchain_huggingface import ChatHuggingFace

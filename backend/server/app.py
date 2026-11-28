@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Dict, List, Any
 import time
 import logging
@@ -37,8 +38,19 @@ from chat.chat import ChatAgentWithMemory
 from server.report_store import ReportStore
 
 # Auth system
+from auth.auth import decode_access_token
 from auth.routes import router as auth_router
 from auth.middleware import AuthMiddleware
+
+
+def _get_user_doc_path(user_id: str | None) -> str:
+    """Resolve an isolated per-user local document directory without path traversal."""
+    if not user_id:
+        return DOC_PATH
+    safe_uid = re.sub(r"[^a-zA-Z0-9_-]", "_", str(user_id)).strip("_")[:64]
+    if not safe_uid:
+        return DOC_PATH
+    return os.path.join(DOC_PATH, f"user_{safe_uid}")
 
 try:
     from companion.routes import router as companion_router
@@ -97,7 +109,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning(f"Frontend directory not found: {frontend_path}")
     
-    logger.info("GPT Researcher API ready - local mode (no database persistence)")
+    try:
+        storage_info = await report_store.get_storage_status()
+        if storage_info.get("backend") == "supabase":
+            logger.info("InquireX API ready - Supabase PostgreSQL report persistence active")
+        else:
+            logger.info("InquireX API ready - local fallback active (data/reports.json); run backend/server/supabase_reports.sql in Supabase SQL Editor for DB persistence")
+    except Exception:
+        logger.info("InquireX API ready")
     yield
     # Shutdown
     logger.info("Research API shutting down")
@@ -225,17 +244,50 @@ async def read_report(request: Request, research_id: str):
     return FileResponse(docx_path)
 
 
-# Simplified API routes - no database persistence
+def _get_request_user_id(request: Request) -> str | None:
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        return None
+    uid = user.get("sub") or user.get("email")
+    return str(uid) if uid else None
+
+
+# Report Persistence Routes (Supabase Postgres with automatic local fallback)
+@app.get("/api/reports/storage-status")
+async def get_report_storage_status(request: Request):
+    user_id = _get_request_user_id(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    return await report_store.get_storage_status()
+
+
+@app.post("/api/reports/migrate-local")
+async def migrate_local_reports(request: Request):
+    user_id = _get_request_user_id(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+    try:
+        result = await report_store.migrate_local_to_supabase(user_id)
+        return {"success": True, **result}
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.error(f"Error migrating local reports to Supabase: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/api/reports")
-async def get_all_reports(report_ids: str = None):
+async def get_all_reports(request: Request, report_ids: str = None):
+    user_id = _get_request_user_id(request)
     report_ids_list = report_ids.split(",") if report_ids else None
-    reports = await report_store.list_reports(report_ids_list)
+    reports = await report_store.list_reports(report_ids_list, user_id=user_id)
     return {"reports": reports}
 
 
 @app.get("/api/reports/{research_id}")
-async def get_report_by_id(research_id: str):
-    report = await report_store.get_report(research_id)
+async def get_report_by_id(research_id: str, request: Request):
+    user_id = _get_request_user_id(request)
+    report = await report_store.get_report(research_id, user_id=user_id)
     if report is None:
         raise HTTPException(status_code=404, detail="Report not found")
     return {"report": report}
@@ -243,12 +295,13 @@ async def get_report_by_id(research_id: str):
 
 @app.post("/api/reports")
 async def create_or_update_report(request: Request):
+    user_id = _get_request_user_id(request)
     try:
         data = await request.json()
         research_id = data.get("id", "temp_id")
 
         now_ms = int(time.time() * 1000)
-        existing = await report_store.get_report(research_id)
+        existing = await report_store.get_report(research_id, user_id=user_id)
         incoming_timestamp = data.get("timestamp")
         timestamp = incoming_timestamp if isinstance(incoming_timestamp, int) else now_ms
         if existing and isinstance(existing.get("timestamp"), int):
@@ -256,6 +309,7 @@ async def create_or_update_report(request: Request):
 
         report = {
             "id": research_id,
+            "user_id": user_id,
             "question": data.get("question"),
             "answer": data.get("answer"),
             "orderedData": data.get("orderedData") or [],
@@ -263,8 +317,10 @@ async def create_or_update_report(request: Request):
             "timestamp": timestamp,
         }
 
-        await report_store.upsert_report(research_id, report)
+        await report_store.upsert_report(research_id, report, user_id=user_id)
         return {"success": True, "id": research_id}
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except Exception as e:
         logger.error(f"Error processing report creation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -272,7 +328,8 @@ async def create_or_update_report(request: Request):
 
 @app.put("/api/reports/{research_id}")
 async def update_report(research_id: str, request: Request):
-    existing = await report_store.get_report(research_id)
+    user_id = _get_request_user_id(request)
+    existing = await report_store.get_report(research_id, user_id=user_id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Report not found")
 
@@ -283,24 +340,33 @@ async def update_report(research_id: str, request: Request):
         **existing,
         **{k: v for k, v in data.items() if v is not None},
         "id": research_id,
+        "user_id": user_id,
         "timestamp": now_ms,
     }
 
-    await report_store.upsert_report(research_id, updated)
-    return {"success": True, "id": research_id}
+    try:
+        await report_store.upsert_report(research_id, updated, user_id=user_id)
+        return {"success": True, "id": research_id}
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
 
 
 @app.delete("/api/reports/{research_id}")
-async def delete_report(research_id: str):
-    existed = await report_store.delete_report(research_id)
+async def delete_report(research_id: str, request: Request):
+    user_id = _get_request_user_id(request)
+    try:
+        existed = await report_store.delete_report(research_id, user_id=user_id)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     if not existed:
         raise HTTPException(status_code=404, detail="Report not found")
     return {"success": True}
 
 
 @app.get("/api/reports/{research_id}/chat")
-async def get_report_chat(research_id: str):
-    report = await report_store.get_report(research_id)
+async def get_report_chat(research_id: str, request: Request):
+    user_id = _get_request_user_id(request)
+    report = await report_store.get_report(research_id, user_id=user_id)
     if report is None:
         raise HTTPException(status_code=404, detail="Report not found")
     return {"chatMessages": report.get("chatMessages") or []}
@@ -308,7 +374,8 @@ async def get_report_chat(research_id: str):
 
 @app.post("/api/reports/{research_id}/chat")
 async def add_report_chat_message(research_id: str, request: Request):
-    report = await report_store.get_report(research_id)
+    user_id = _get_request_user_id(request)
+    report = await report_store.get_report(research_id, user_id=user_id)
     if report is None:
         raise HTTPException(status_code=404, detail="Report not found")
 
@@ -322,12 +389,16 @@ async def add_report_chat_message(research_id: str, request: Request):
     now_ms = int(time.time() * 1000)
     updated = {
         **report,
+        "user_id": user_id,
         "chatMessages": chat_messages,
         "timestamp": now_ms,
     }
 
-    await report_store.upsert_report(research_id, updated)
-    return {"success": True, "id": research_id}
+    try:
+        await report_store.upsert_report(research_id, updated, user_id=user_id)
+        return {"success": True, "id": research_id}
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
 
 
 async def write_report(research_request: ResearchRequest, research_id: str = None):
@@ -382,11 +453,14 @@ async def generate_report(research_request: ResearchRequest, background_tasks: B
 
 
 @app.get("/files/")
-async def list_files():
-    if not os.path.exists(DOC_PATH):
-        os.makedirs(DOC_PATH, exist_ok=True)
-    files = os.listdir(DOC_PATH)
-    print(f"Files in {DOC_PATH}: {files}")
+async def list_files(request: Request):
+    user_doc_path = _get_user_doc_path(_get_request_user_id(request))
+    os.makedirs(user_doc_path, exist_ok=True)
+    files = sorted(
+        f for f in os.listdir(user_doc_path)
+        if os.path.isfile(os.path.join(user_doc_path, f))
+    )
+    print(f"Files in {user_doc_path}: {files}")
     return {"files": files}
 
 
@@ -397,20 +471,34 @@ async def run_agent_teams():
 
 
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
-    return await handle_file_upload(file, DOC_PATH)
+async def upload_file(request: Request, file: UploadFile = File(...)):
+    user_doc_path = _get_user_doc_path(_get_request_user_id(request))
+    return await handle_file_upload(file, user_doc_path)
 
 
 @app.delete("/files/{filename}")
-async def delete_file(filename: str):
-    return await handle_file_deletion(filename, DOC_PATH)
+async def delete_file(filename: str, request: Request):
+    user_doc_path = _get_user_doc_path(_get_request_user_id(request))
+    return await handle_file_deletion(filename, user_doc_path)
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    ws_user_id = None
+    try:
+        token = websocket.cookies.get("gptr_session")
+        if token:
+            payload = decode_access_token(token)
+            if isinstance(payload, dict):
+                uid = payload.get("sub") or payload.get("email")
+                ws_user_id = str(uid) if uid else None
+    except Exception:
+        ws_user_id = None
+    ws_doc_path = _get_user_doc_path(ws_user_id)
+
     await manager.connect(websocket)
     try:
-        await handle_websocket_communication(websocket, manager)
+        await handle_websocket_communication(websocket, manager, doc_path=ws_doc_path)
     except WebSocketDisconnect as e:
         # Disconnect with more detailed logging about the WebSocket disconnect reason
         logger.info(f"WebSocket disconnected with code {e.code} and reason: '{e.reason}'")
@@ -463,52 +551,3 @@ async def chat(chat_request: ChatRequest):
     except Exception as e:
         logger.error(f"Error processing chat request: {str(e)}", exc_info=True)
         return {"error": str(e)}
-
-@app.post("/api/reports/{research_id}/chat")
-async def research_report_chat(research_id: str, request: Request):
-    """Handle chat requests for a specific research report.
-    Directly processes the raw request data to avoid validation errors.
-    """
-    try:
-        # Get raw JSON data from request
-        data = await request.json()
-        
-        # Create chat agent with the report
-        chat_agent = ChatAgentWithMemory(
-            report=data.get("report", ""),
-            config_path="default",
-            headers=None
-        )
-
-        # Process the chat and get response with metadata
-        response_content, tool_calls_metadata = await chat_agent.chat(data.get("messages", []), None)
-        
-        if tool_calls_metadata:
-            logger.info(f"Tool calls used: {json.dumps(tool_calls_metadata)}")
-
-        # Format response as a ChatMessage object
-        response_message = {
-            "role": "assistant",
-            "content": response_content,
-            "timestamp": int(time.time() * 1000),
-            "metadata": {
-                "tool_calls": tool_calls_metadata
-            } if tool_calls_metadata else None
-        }
-
-        return {"response": response_message}
-    except Exception as e:
-        logger.error(f"Error in research report chat: {str(e)}", exc_info=True)
-        return {"error": str(e)}
-
-@app.put("/api/reports/{research_id}")
-async def update_report(research_id: str, request: Request):
-    """Update a specific research report by ID - no database configured."""
-    logger.debug(f"Update requested for report {research_id} - no database configured, not persisted")
-    return {"success": True, "id": research_id}
-
-@app.delete("/api/reports/{research_id}")
-async def delete_report(research_id: str):
-    """Delete a specific research report by ID - no database configured."""
-    logger.debug(f"Delete requested for report {research_id} - no database configured, nothing to delete")
-    return {"success": True, "id": research_id}

@@ -6,6 +6,8 @@ from unittest.mock import patch
 from backend.companion.service import (
     CompanionService,
     SlidingWindowRateLimiter,
+    _needs_report_context,
+    _sanitize_free_openrouter_model,
     extract_clean_text_and_actions,
     validate_action,
 )
@@ -180,6 +182,101 @@ class CompanionServiceTests(unittest.TestCase):
         events = asyncio.run(collect())
         done_ev = next(e for e in events if e["type"] == "done")
         self.assertEqual(done_ev["content"], "Fallback response succeeded.")
+
+    def test_sanitize_free_openrouter_model_enforces_free_tier(self):
+        with patch.dict("os.environ", {"COMPANION_FREE_ONLY": "true"}):
+            self.assertEqual(_sanitize_free_openrouter_model("openai/gpt-4o"), "openrouter/free")
+            self.assertEqual(
+                _sanitize_free_openrouter_model("google/gemma-4-31b-it:free"),
+                "google/gemma-4-31b-it:free",
+            )
+            self.assertEqual(_sanitize_free_openrouter_model("openrouter/free"), "openrouter/free")
+
+    def test_zero_token_navigation_command_skips_llm(self):
+        service = CompanionService()
+
+        async def collect():
+            events = []
+            with patch.object(service, "_build_provider", side_effect=AssertionError("Should use 0 tokens")):
+                async for ev in service.stream_reply(
+                    user_key="u_zero",
+                    user_name="Tony",
+                    message="Hey Jarvis open knowledge graph",
+                    history=[],
+                    workspace_context={"active_route": "dashboard"},
+                ):
+                    events.append(ev)
+            return events
+
+        events = asyncio.run(collect())
+        done_ev = next(e for e in events if e["type"] == "done")
+        self.assertEqual(done_ev["actions"][0]["type"], "navigate")
+        self.assertEqual(done_ev["actions"][0]["route"], "knowledge-graph")
+
+    def test_on_demand_report_context_saves_tokens_for_casual_chat(self):
+        service = CompanionService()
+        self.assertFalse(_needs_report_context("Good morning Jarvis", [], "chat", "dashboard"))
+        self.assertTrue(_needs_report_context("Summarize my latest report", [], "chat", "dashboard"))
+        prompt_casual = service._build_system_prompt(
+            user_name="Tony",
+            mode="chat",
+            detail_level="concise",
+            context={
+                "active_route": "dashboard",
+                "active_report": {"id": "r1", "title": "Fusion Report", "excerpt": "VERY_LONG_EXCERPT_BODY"},
+            },
+            web_sources=[],
+            include_report_excerpts=False,
+        )
+        self.assertIn("Fusion Report", prompt_casual)
+        self.assertNotIn("VERY_LONG_EXCERPT_BODY", prompt_casual)
+
+    def test_stream_reply_cycles_multiple_free_fallbacks(self):
+        class FakeChunk:
+            def __init__(self, content):
+                self.content = content
+
+        class FailingPrimaryLLM:
+            async def astream(self, _messages):
+                raise RuntimeError("Error code: 429 - rate_limit_exceeded")
+                yield  # pragma: no cover
+
+        class FailingFirstFallbackLLM:
+            async def astream(self, _messages):
+                raise RuntimeError("Error code: 402 - billing_no_api_budget_configured")
+                yield  # pragma: no cover
+
+        class WorkingOpenRouterFreeLLM:
+            async def astream(self, _messages):
+                yield FakeChunk("OpenRouter free tier handled it.")
+
+        service = CompanionService()
+        primary = type("P", (), {"llm": FailingPrimaryLLM()})()
+        fb1 = type("F1", (), {"llm": FailingFirstFallbackLLM()})()
+        fb2 = type("F2", (), {"llm": WorkingOpenRouterFreeLLM()})()
+
+        async def collect():
+            events = []
+            with patch.object(service, "_resolve_llm_config", return_value=("groq", "qwen/qwen3.8-27b", {})), \
+                 patch.object(service, "_build_provider", return_value=primary), \
+                 patch.object(
+                     service,
+                     "_build_fallback_chain",
+                     return_value=[("mistralai", fb1), ("openrouter", fb2)],
+                 ):
+                async for ev in service.stream_reply(
+                    user_key="u_chain",
+                    user_name="Tester",
+                    message="Explain quantum entanglement simply",
+                    history=[],
+                    workspace_context={},
+                ):
+                    events.append(ev)
+            return events
+
+        events = asyncio.run(collect())
+        done_ev = next(e for e in events if e["type"] == "done")
+        self.assertEqual(done_ev["content"], "OpenRouter free tier handled it.")
 
 
 class CompanionRouteAuthTests(unittest.TestCase):

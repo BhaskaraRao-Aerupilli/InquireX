@@ -23,6 +23,9 @@ class BasicReport:
         mcp_configs=None,
         mcp_strategy=None,
         max_search_results=None,
+        agent=None,
+        role=None,
+        doc_path=None,
     ):
         self.query = query
         self.query_domains = query_domains
@@ -51,6 +54,10 @@ class BasicReport:
             "websocket": self.websocket,
             "headers": self.headers,
         }
+        if agent is not None:
+            inquirex_params["agent"] = agent
+        if role is not None:
+            inquirex_params["role"] = role
 
         # Add MCP parameters if provided
         if mcp_configs is not None:
@@ -60,9 +67,12 @@ class BasicReport:
 
         self.inquirex_researcher = InquireXResearcher(**inquirex_params)
 
-        # Override max_search_results_per_query if provided by user
+        # Override max_search_results_per_query / doc_path if provided per user
         if max_search_results is not None:
             self.inquirex_researcher.cfg.max_search_results_per_query = int(max_search_results)
+        if doc_path:
+            self.inquirex_researcher.cfg.doc_path = doc_path
+            self.inquirex_researcher.cfg.validate_doc_path()
 
     def _generate_research_id(self, query: str) -> str:
         """Generate a unique research ID from query and timestamp."""

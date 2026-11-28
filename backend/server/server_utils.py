@@ -123,7 +123,7 @@ def sanitize_filename(filename: str) -> str:
     return re.sub(r"[^\w\s-]", "", sanitized).strip()
 
 
-async def handle_start_command(websocket, data: str, manager):
+async def handle_start_command(websocket, data: str, manager, doc_path: str | None = None):
     json_data = json.loads(data[6:])
     (
         task,
@@ -138,6 +138,7 @@ async def handle_start_command(websocket, data: str, manager):
         mcp_strategy,
         mcp_configs,
         max_search_results,
+        agent,
     ) = extract_command_data(json_data)
 
     if not task or not report_type:
@@ -170,6 +171,8 @@ async def handle_start_command(websocket, data: str, manager):
         mcp_strategy,
         mcp_configs,
         max_search_results,
+        agent=agent,
+        doc_path=doc_path,
     )
     report = str(report)
     file_paths = await generate_report_files(report, sanitized_filename)
@@ -293,7 +296,11 @@ def update_environment_variables(config: Dict[str, str]):
 
 
 async def handle_file_upload(file, DOC_PATH: str) -> Dict[str, str]:
-    file_path = os.path.join(DOC_PATH, os.path.basename(file.filename))
+    safe_name = os.path.basename(file.filename or "").strip()
+    if not safe_name or safe_name in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+    os.makedirs(DOC_PATH, exist_ok=True)
+    file_path = os.path.join(DOC_PATH, safe_name)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     print(f"File uploaded to {file_path}")
@@ -301,12 +308,15 @@ async def handle_file_upload(file, DOC_PATH: str) -> Dict[str, str]:
     document_loader = DocumentLoader(DOC_PATH)
     await document_loader.load()
 
-    return {"filename": file.filename, "path": file_path}
+    return {"filename": safe_name, "path": file_path}
 
 
 async def handle_file_deletion(filename: str, DOC_PATH: str) -> JSONResponse:
-    file_path = os.path.join(DOC_PATH, os.path.basename(filename))
-    if os.path.exists(file_path):
+    safe_name = os.path.basename(filename or "").strip()
+    if not safe_name or safe_name in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+    file_path = os.path.join(DOC_PATH, safe_name)
+    if os.path.isfile(file_path):
         os.remove(file_path)
         print(f"File deleted: {file_path}")
         return JSONResponse(content={"message": "File deleted successfully"})
@@ -326,7 +336,7 @@ async def execute_agent_teams(manager) -> Any:
 execute_multi_agents = execute_agent_teams
 
 
-async def handle_websocket_communication(websocket, manager):
+async def handle_websocket_communication(websocket, manager, doc_path: str | None = None):
     running_task: asyncio.Task | None = None
 
     def run_long_running_task(awaitable: Awaitable) -> asyncio.Task:
@@ -386,7 +396,7 @@ async def handle_websocket_communication(websocket, manager):
                 elif data.strip().startswith("start"):
                     logger.info(f"Processing start command")
                     running_task = run_long_running_task(
-                        handle_start_command(websocket, data, manager)
+                        handle_start_command(websocket, data, manager, doc_path=doc_path)
                     )
                 elif data.strip().startswith("human_feedback"):
                     logger.info(f"Processing human_feedback command")
@@ -412,6 +422,14 @@ async def handle_websocket_communication(websocket, manager):
             running_task.cancel()
 
 def extract_command_data(json_data: Dict) -> tuple:
+    raw_max = json_data.get("max_search_results")
+    max_search_results = None
+    if raw_max is not None and str(raw_max).strip() != "":
+        try:
+            max_search_results = max(1, min(20, int(raw_max)))
+        except (TypeError, ValueError):
+            max_search_results = None
+
     return (
         json_data.get("task"),
         json_data.get("report_type"),
@@ -424,5 +442,6 @@ def extract_command_data(json_data: Dict) -> tuple:
         json_data.get("mcp_enabled", False),
         json_data.get("mcp_strategy", "fast"),
         json_data.get("mcp_configs", []),
-        json_data.get("max_search_results"),
+        max_search_results,
+        json_data.get("agent"),
     )

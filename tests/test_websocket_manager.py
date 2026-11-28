@@ -109,6 +109,73 @@ class WebSocketManagerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(report, "stub-report")
         self.assertEqual(call_kwargs["config_path"], "custom-config")
 
+    async def test_start_streaming_passes_persona_tone_and_sources(self):
+        websocket_manager = _load_websocket_manager_module()
+        manager = websocket_manager.WebSocketManager()
+        call_args = []
+        call_kwargs = {}
+
+        async def fake_run_agent(*args, **kwargs):
+            call_args.extend(args)
+            call_kwargs.update(kwargs)
+            return "stub-report"
+
+        websocket_manager.run_agent = fake_run_agent
+
+        report = await manager.start_streaming(
+            task="quantum networking",
+            report_type="detailed_report",
+            report_source="web",
+            source_urls=["https://example.com"],
+            document_urls=[],
+            tone="unknown_tone",
+            websocket=object(),
+            max_search_results=12,
+            agent="Technical Lead",
+        )
+        self.assertEqual(report, "stub-report")
+        self.assertEqual(call_kwargs["agent"], "Technical Lead")
+        self.assertEqual(call_kwargs["max_search_results"], 12)
+        self.assertEqual(call_args[5].name, "Objective")
+
+    def test_resolve_agent_persona_and_extract_command_data(self):
+        from backend.server.server_utils import extract_command_data
+        from backend.server.websocket_manager import resolve_agent_persona, resolve_tone
+
+        auto_agent, auto_role = resolve_agent_persona("Auto Agent")
+        self.assertIsNone(auto_agent)
+        self.assertIsNone(auto_role)
+
+        tech_agent, tech_role = resolve_agent_persona("Technical Lead")
+        self.assertIn("Technical", tech_agent)
+        self.assertIn("engineering", tech_role.lower())
+
+        fin_agent, fin_role = resolve_agent_persona("Financial Analyst")
+        self.assertIn("Financial", fin_agent)
+        self.assertIn("financial", fin_role.lower())
+
+        self.assertEqual(resolve_tone("Analytical").name, "Analytical")
+        self.assertEqual(resolve_tone("analytical").name, "Analytical")
+        self.assertEqual(resolve_tone("NonExistent").name, "Objective")
+
+        extracted = extract_command_data(
+            {
+                "task": "fusion breakthroughs",
+                "report_type": "detailed_report",
+                "report_source": "sources",
+                "source_urls": ["https://arxiv.org"],
+                "tone": "Formal",
+                "agent": "Academic Researcher",
+                "max_search_results": "25",
+                "query_domains": ["arxiv.org"],
+                "mcp_enabled": True,
+                "mcp_strategy": "deep",
+                "mcp_configs": [{"name": "github"}],
+            }
+        )
+        self.assertEqual(extracted[11], 20)
+        self.assertEqual(extracted[12], "Academic Researcher")
+
 
 if __name__ == "__main__":
     unittest.main()

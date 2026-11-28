@@ -256,52 +256,29 @@ class ResearchConductor:
 
 
 
-        if self.researcher.verbose:
-
-            await stream_output(
-
-                "logs",
-
-                "starting_research",
-
-                f"🔍 Starting the research task for '{self.researcher.query}'...",
-
-                self.researcher.websocket,
-
-            )
-
-            await stream_output(
-
-                "logs",
-
-                "agent_generated",
-
-                self.researcher.agent,
-
-                self.researcher.websocket
-
-            )
-
-
-
         # Choose agent and role if not already defined
-
         if not (self.researcher.agent and self.researcher.role):
-
             self.researcher.agent, self.researcher.role = await choose_agent(
-
                 query=self.researcher.query,
-
                 cfg=self.researcher.cfg,
-
                 parent_query=self.researcher.parent_query,
-
                 cost_callback=self.researcher.add_costs,
-
                 headers=self.researcher.headers,
-
                 prompt_family=self.researcher.prompt_family
+            )
 
+        if self.researcher.verbose:
+            await stream_output(
+                "logs",
+                "starting_research",
+                f"🔍 Starting the research task for '{self.researcher.query}'...",
+                self.researcher.websocket,
+            )
+            await stream_output(
+                "logs",
+                "agent_generated",
+                f"🤖 Researching as {self.researcher.agent}",
+                self.researcher.websocket
             )
 
                 

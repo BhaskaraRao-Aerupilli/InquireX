@@ -35,6 +35,9 @@ import {
   uploadDocumentFile,
   deleteUploadedFile,
   fetchAgentDiscovery,
+  checkPathExists,
+  fetchReportStorageStatus,
+  migrateLocalReportsToSupabase,
 } from '../api.js';
 import { getThemeMode, applyThemeMode } from '../theme.js';
 
@@ -1280,12 +1283,14 @@ export function renderSettingsView(container, ctx) {
                   <option value="research_report" ${preferences.defaultReportType === 'research_report' ? 'selected' : ''}>Summary Report</option>
                   <option value="detailed_report" ${preferences.defaultReportType === 'detailed_report' ? 'selected' : ''}>Detailed Report</option>
                   <option value="deep" ${preferences.defaultReportType === 'deep' ? 'selected' : ''}>Deep Research</option>
+                  <option value="resource_report" ${preferences.defaultReportType === 'resource_report' ? 'selected' : ''}>Resource Report</option>
+                  <option value="outline_report" ${preferences.defaultReportType === 'outline_report' ? 'selected' : ''}>Outline Report</option>
                 </select>
               </div>
               <div class="ix-field">
                 <label class="ix-label" for="ixPrefTone">Default Writing Tone</label>
                 <select id="ixPrefTone" class="ix-select">
-                  ${['Objective', 'Analytical', 'Formal', 'Informative', 'Comparative', 'Critical']
+                  ${['Objective', 'Analytical', 'Formal', 'Informative', 'Comparative', 'Critical', 'Explanatory', 'Persuasive', 'Descriptive', 'Speculative']
                     .map(
                       (t) =>
                         `<option value="${t}" ${preferences.defaultTone === t ? 'selected' : ''}>${t}</option>`
@@ -1299,13 +1304,32 @@ export function renderSettingsView(container, ctx) {
                   <option value="web" ${preferences.defaultReportSource === 'web' ? 'selected' : ''}>Web Search</option>
                   <option value="hybrid" ${preferences.defaultReportSource === 'hybrid' ? 'selected' : ''}>Hybrid (Web + Local Docs)</option>
                   <option value="local" ${preferences.defaultReportSource === 'local' ? 'selected' : ''}>Local Documents Only</option>
+                  <option value="sources" ${preferences.defaultReportSource === 'sources' ? 'selected' : ''}>Specific URLs</option>
                 </select>
+              </div>
+            </div>
+
+            <div class="ix-config-row-2" style="margin-top:var(--space-4);">
+              <div class="ix-field">
+                <label class="ix-label" for="ixPrefAgent">Default Research Persona</label>
+                <select id="ixPrefAgent" class="ix-select">
+                  ${['Auto Agent', 'Business Analyst', 'Academic Researcher', 'Technical Lead', 'Financial Analyst', 'Quantitative Analyst']
+                    .map(
+                      (a) =>
+                        `<option value="${a}" ${(preferences.defaultAgent || 'Auto Agent') === a ? 'selected' : ''}>${a}</option>`
+                    )
+                    .join('')}
+                </select>
+              </div>
+              <div class="ix-field">
+                <label class="ix-label" for="ixPrefMaxSources">Default Max Sources per Query</label>
+                <input id="ixPrefMaxSources" type="number" min="1" max="20" value="${Number(preferences.defaultMaxSearchResults) || 5}" class="ix-input" />
               </div>
             </div>
 
             <div style="display:flex; align-items:center; justify-content:space-between; margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--border-subtle); flex-wrap:wrap; gap:12px;">
               <label class="ix-switch">
-                <input type="checkbox" id="ixPrefPlanPreview" ${preferences.showPlanPreview !== false ? 'checked' : ''} />
+                <input type="checkbox" id="ixPrefPlanPreview" ${preferences.showPlanPreview ? 'checked' : ''} />
                 <span class="ix-switch-track"></span>
                 <span style="font-size:var(--text-sm); color:var(--text-primary);">Show execution plan preview in New Research</span>
               </label>
@@ -1323,11 +1347,52 @@ export function renderSettingsView(container, ctx) {
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
               <div>
                 <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(user?.name || 'Authenticated Researcher')}</div>
-                <div class="ix-help">${escapeHtml(user?.email || 'Active gptr_session authenticated user')}</div>
+                <div class="ix-help">${escapeHtml(user?.email || 'Authenticated InquireX session')}</div>
               </div>
               <a href="/auth/logout" class="ix-btn ix-btn-secondary">
                 <i class="fa-solid fa-right-from-bracket"></i> Sign Out
               </a>
+            </div>
+
+            <div class="ix-divider"></div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <div style="font-size:var(--text-sm); font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                    <span>Report History Storage</span>
+                    <span class="ix-badge" id="ixStorageStatusBadge">Checking...</span>
+                  </div>
+                  <div class="ix-help" id="ixStorageStatusDesc">Verifying Supabase PostgreSQL connection...</div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button type="button" id="ixRecheckStorageBtn" class="ix-btn ix-btn-secondary ix-btn-sm">
+                    <i class="fa-solid fa-rotate"></i> Check DB
+                  </button>
+                  <button type="button" id="ixSyncLocalToSupabaseBtn" class="ix-btn ix-btn-primary ix-btn-sm ix-hidden">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync Local Reports
+                  </button>
+                </div>
+              </div>
+              <div id="ixSupabaseSqlHint" class="ix-hidden" style="padding:10px 12px; border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--bg-secondary);">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                  <span style="font-size:var(--text-xs); font-weight:600; color:var(--text-primary);">Run once in Supabase Dashboard &rarr; SQL Editor:</span>
+                  <button type="button" id="ixCopySupabaseSqlBtn" class="ix-btn ix-btn-ghost ix-btn-sm" style="height:24px;">Copy SQL</button>
+                </div>
+                <pre class="ix-mono" id="ixSupabaseSqlCode" style="margin:0; font-size:11px; white-space:pre-wrap; color:var(--text-secondary);">CREATE TABLE IF NOT EXISTS public.reports (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  question TEXT,
+  answer TEXT,
+  ordered_data JSONB NOT NULL DEFAULT '[]'::jsonb,
+  chat_messages JSONB NOT NULL DEFAULT '[]'::jsonb,
+  timestamp BIGINT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_reports_user_ts ON public.reports (user_id, timestamp DESC);
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;</pre>
+              </div>
             </div>
 
             <div class="ix-divider"></div>
@@ -1347,6 +1412,61 @@ export function renderSettingsView(container, ctx) {
     </div>
   `;
 
+  const storageBadgeEl = container.querySelector('#ixStorageStatusBadge');
+  const storageDescEl = container.querySelector('#ixStorageStatusDesc');
+  const syncBtnEl = container.querySelector('#ixSyncLocalToSupabaseBtn');
+  const sqlHintEl = container.querySelector('#ixSupabaseSqlHint');
+
+  const refreshStorageStatus = async () => {
+    try {
+      const info = await fetchReportStorageStatus();
+      if (!storageBadgeEl || !document.body.contains(storageBadgeEl)) return;
+      if (info.reports_table_ready) {
+        storageBadgeEl.className = 'ix-badge ix-badge-success';
+        storageBadgeEl.textContent = 'Supabase PostgreSQL';
+        storageDescEl.textContent = 'Reports and follow-up chats are persisted per user in public.reports.';
+        sqlHintEl?.classList.add('ix-hidden');
+        syncBtnEl?.classList.toggle('ix-hidden', !(info.local_count > 0));
+      } else {
+        storageBadgeEl.className = 'ix-badge ix-badge-warning';
+        storageBadgeEl.textContent = 'Local Fallback (JSON)';
+        storageDescEl.textContent = info.supabase_configured
+          ? 'Create public.reports once in Supabase SQL Editor, then click Check DB.'
+          : 'Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.';
+        syncBtnEl?.classList.add('ix-hidden');
+        sqlHintEl?.classList.toggle('ix-hidden', !info.supabase_configured);
+      }
+    } catch (err) {
+      if (storageBadgeEl && document.body.contains(storageBadgeEl)) {
+        storageBadgeEl.className = 'ix-badge';
+        storageBadgeEl.textContent = 'Unavailable';
+        storageDescEl.textContent = err.message || 'Could not inspect storage status.';
+      }
+    }
+  };
+  refreshStorageStatus();
+
+  container.querySelector('#ixRecheckStorageBtn')?.addEventListener('click', () => refreshStorageStatus());
+  container.querySelector('#ixCopySupabaseSqlBtn')?.addEventListener('click', async () => {
+    const sql = container.querySelector('#ixSupabaseSqlCode')?.textContent || '';
+    try {
+      await navigator.clipboard.writeText(sql);
+      showToast('SQL schema copied to clipboard.', 'success');
+    } catch {
+      showToast('Select and copy the SQL snippet manually.', 'info');
+    }
+  });
+  container.querySelector('#ixSyncLocalToSupabaseBtn')?.addEventListener('click', async () => {
+    try {
+      const res = await migrateLocalReportsToSupabase();
+      showToast(`Synced ${res.migrated} local report(s) to Supabase.`, 'success');
+      await store.loadReports();
+      refreshStorageStatus();
+    } catch (err) {
+      showToast(err.message || 'Migration failed', 'error');
+    }
+  });
+
   container.querySelectorAll('[data-theme-option]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const mode = btn.getAttribute('data-theme-option');
@@ -1360,18 +1480,28 @@ export function renderSettingsView(container, ctx) {
     const defaultReportType = container.querySelector('#ixPrefDepth').value;
     const defaultTone = container.querySelector('#ixPrefTone').value;
     const defaultReportSource = container.querySelector('#ixPrefSource').value;
+    const defaultAgent = container.querySelector('#ixPrefAgent')?.value || 'Auto Agent';
+    const defaultMaxSearchResults = Math.max(
+      1,
+      Math.min(20, Number(container.querySelector('#ixPrefMaxSources')?.value) || 5)
+    );
     const showPlanPreview = container.querySelector('#ixPrefPlanPreview').checked;
 
     store.updatePreferences({
       defaultReportType,
       defaultTone,
       defaultReportSource,
+      defaultAgent,
+      defaultMaxSearchResults,
       showPlanPreview,
     });
     store.updateDraftConfig({
       report_type: defaultReportType,
       tone: defaultTone,
       report_source: defaultReportSource,
+      agent: defaultAgent,
+      max_search_results: defaultMaxSearchResults,
+      showPlanPreview,
     });
     showToast('Default research preferences saved.', 'success');
   });
